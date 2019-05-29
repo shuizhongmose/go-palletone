@@ -30,7 +30,7 @@ import (
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/crypto"
 
-	"github.com/ethereum/go-ethereum/rlp"
+	//"github.com/ethereum/go-ethereum/rlp"
 	"github.com/palletone/go-palletone/contracts/syscontract"
 	"github.com/palletone/go-palletone/dag/modules"
 	"github.com/palletone/go-palletone/tokenengine/internal/txscript"
