@@ -46,14 +46,14 @@ type LesServer struct {
 	config          *ptn.Config
 	protocolManager *ProtocolManager
 	fcManager       *flowcontrol.ClientManager // nil if our node is client only
-	fcCostStats     *requestCostStats
-	defParams       *flowcontrol.ServerParams
-	srv             *p2p.Server
-	corss           *p2p.Server
-	privateKey      *ecdsa.PrivateKey
-	quitSync        chan struct{}
-	protocolname    string
-	fullnode        *ptn.PalletOne
+	//fcCostStats     *requestCostStats
+	defParams    *flowcontrol.ServerParams
+	srv          *p2p.Server
+	corss        *p2p.Server
+	privateKey   *ecdsa.PrivateKey
+	quitSync     chan struct{}
+	protocolname string
+	fullnode     *ptn.PalletOne
 }
 
 func NewLesServer(ptn *ptn.PalletOne, config *ptn.Config, protocolname string) (*LesServer, error) {
@@ -87,7 +87,7 @@ func NewLesServer(ptn *ptn.PalletOne, config *ptn.Config, protocolname string) (
 		MinRecharge: 50000,
 	}
 	srv.fcManager = flowcontrol.NewClientManager(uint64(config.LightServ), 10, 1000000000)
-	srv.fcCostStats = newCostStats(ptn.UnitDb())
+	//srv.fcCostStats = newCostStats(ptn.UnitDb())
 	return srv, nil
 }
 
@@ -139,11 +139,10 @@ func (s *LesServer) loopCors() {
 			select {
 			case header := <-headCh:
 				peers := s.protocolManager.peers.AllPeers(s.protocolManager.assetId)
-				log.Debug("LesServer loopCors", "len(peers)", len(peers), "Light recv Cors header:", header)
+				log.Debug("LesServer loopCors Light recv Cors header", "len(peers)", len(peers), "assetid", header.Number.AssetID, "index", header.Number.Index, "hash", header.Hash())
 				if len(peers) > 0 {
 					announce := announceData{Hash: header.Hash(), Number: *header.Number, Header: *header}
 					for _, p := range peers {
-						log.Debug("Light Palletone", "ProtocolManager->blockLoop p.announceType", p.announceType)
 						p.announceChn <- announce
 						//switch p.announceType {
 						//case announceTypeSimple:
@@ -258,6 +257,7 @@ type requestCostStatsRlp []struct {
 
 var rcStatsKey = []byte("_requestCostStats")
 
+/*
 func newCostStats(db ptndb.Database) *requestCostStats {
 	stats := make(map[uint64]*linReg)
 	for _, code := range reqList {
@@ -286,7 +286,8 @@ func newCostStats(db ptndb.Database) *requestCostStats {
 		stats: stats,
 	}
 }
-
+*/
+/*
 func (s *requestCostStats) store() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -301,7 +302,8 @@ func (s *requestCostStats) store() {
 		s.db.Put(rcStatsKey, data)
 	}
 }
-
+*/
+/*
 func (s *requestCostStats) getCurrentList() RequestCostList {
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -325,7 +327,7 @@ func (s *requestCostStats) getCurrentList() RequestCostList {
 	}
 	return list
 }
-
+*/
 func (s *requestCostStats) update(msgCode, reqCnt, cost uint64) {
 	s.lock.Lock()
 	defer s.lock.Unlock()

@@ -333,8 +333,8 @@ func (d *Downloader) Synchronise(id string, head common.Hash, index uint64, mode
 // it will use the best peer possible and synchronize if its TD is higher than our own. If any of the
 // checks fail an error will be returned. This method is synchronous
 func (d *Downloader) synchronise(id string, hash common.Hash, index uint64, mode SyncMode, assetId modules.AssetId) error {
-	log.Debug("Enter Downloader synchronise", "peer id:", id)
-	defer log.Debug("End Downloader synchronise", "peer id:", id)
+	log.Debug("Enter Downloader synchronise", "assetid", assetId, "peer id:", id)
+	defer log.Debug("End Downloader synchronise", "assetid", assetId, "peer id:", id)
 	// Mock out the synchronisation if testing
 	if d.synchroniseMock != nil {
 		return d.synchroniseMock(id, hash)
@@ -414,7 +414,7 @@ func (d *Downloader) syncWithPeer(p *peerConnection, hash common.Hash, index uin
 		return errTooOld
 	}
 
-	log.Debug("Synchronising with the network", "peer", p.id, "ptn", p.version, "head", hash, "index", index, "mode", d.mode)
+	log.Debug("Synchronising with the network", "peer", p.id, "assetid", assetId, "head", hash, "index", index, "mode", d.mode)
 	defer func(start time.Time) {
 		log.Debug("Synchronisation terminated", "elapsed", time.Since(start), "peer", p.id)
 	}(time.Now())
@@ -626,7 +626,7 @@ func (d *Downloader) findAncestor(p *peerConnection, latest *modules.Header, ass
 	index := &modules.ChainIndex{
 		AssetID: assetId,
 		//IsMain:  true,
-		Index:   uint64(from),
+		Index: uint64(from),
 	}
 
 	go p.peer.RequestHeadersByNumber(index, count, 15, false)
@@ -1661,6 +1661,22 @@ func (d *Downloader) requestTTL() time.Duration {
 	return ttl
 }
 
+func (d *Downloader) DeliverAllToken(id string, headers []*modules.Header) error {
+	ttl := d.requestTTL()
+	timeout := time.After(ttl)
+	select {
+	//case <-d.cancelCh:
+	//	return errCancelBlockFetch
+	case d.headerCh <- &headerPack{id, headers}:
+		return nil
+	case <-timeout:
+		log.Debug("Waiting for head header timed out", "elapsed", ttl, "peer", id)
+		return errTimeout
+	}
+
+	return nil
+}
+
 func (d *Downloader) FetchAllToken(id string) ([]*modules.Header, error) {
 	log.Debug("Retrieving remote all token", "peer", id)
 
@@ -1677,8 +1693,8 @@ func (d *Downloader) FetchAllToken(id string) ([]*modules.Header, error) {
 	timeout := time.After(ttl)
 	for {
 		select {
-		case <-d.cancelCh:
-			return nil, errCancelBlockFetch
+		//case <-d.cancelCh:
+		//	return nil, errCancelBlockFetch
 
 		case packet := <-d.headerCh:
 			// Discard anything not from the origin peer

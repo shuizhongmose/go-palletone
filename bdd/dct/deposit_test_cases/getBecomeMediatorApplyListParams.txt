@@ -29,12 +29,17 @@ Resource          publicParams.txt
     [Return]    ${address}    ${time}
 
 getBecomeMediatorApplyList
+    [Arguments]    ${address}
     ${one}    Create List    GetBecomeMediatorApplyList
     ${two}    Create List    ${one}
     ${resp}    创建公用的POST请求    ${depositContractQuery}    GetBecomeMediatorApplyList    ${two}
     ${respContentJson}    to json    ${resp.content}
-    ${resultLen}    get Length    ${respContentJson['result']}
-    ${address}    Run Keyword If    ${resultLen} == 0    Create List    list is nil
-    @{addressList}    Run Keyword If    ${resultLen} == 0    Create List    ${address}
-    @{addressList}    Run Keyword If    ${resultLen} != 0    Evaluate    [addressList['address'] for addressList in ${respContentJson['result']}]
-    [Return]    @{addressList}
+    #    get Length    ${respContentJson['result']}
+    #    Run Keyword If    ${resultLen} == 0    Create List    list is nil
+    #    Run Keyword If    ${resultLen} == 0    Create List    ${address}
+    #    Run Keyword If    ${resultLen} != 0    Evaluate    [addressList['address'] for addressList in ${respContentJson['result']}]
+    log    ${respContentJson['result']}
+    ${resultDic}    Evaluate    demjson.decode(u'${respContentJson['result']}')    demjson
+    ${isIn}    Get From Dictionary    ${resultDic}    ${address}
+    log    ${isIn}
+    [Return]    ${isIn}

@@ -1,6 +1,8 @@
 *** Settings ***
 Library           RequestsLibrary
-Library		  Collections
+Library           Collections
+Library           demjson
+
 *** Keywords ***
 创建公用的POST请求
     [Arguments]    ${method}    ${alias}    ${params}
