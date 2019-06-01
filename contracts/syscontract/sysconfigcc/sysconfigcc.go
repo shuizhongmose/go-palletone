@@ -77,7 +77,7 @@ func (s *SysConfigChainCode) Invoke(stub shim.ChaincodeStubInterface) peer.Respo
 		return shim.Success(resultByte)
 	case "getWithoutVoteResult":
 		log.Info("Start getWithoutVoteResult Invoke")
-		resultByte, err := stub.GetState(modules.SysParam)
+		resultByte, err := stub.GetState(modules.DesiredSysParams)
 		if err != nil {
 			jsonResp := "{\"Error\":\"getWithoutVoteResult err: " + err.Error() + "\"}"
 			return shim.Success([]byte(jsonResp))
@@ -419,85 +419,36 @@ func (s *SysConfigChainCode) getAllSysParamsConf(stub shim.ChaincodeStubInterfac
 }
 
 func (s *SysConfigChainCode) updateSysParamWithoutVote(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	//invokeFromAddr, err := stub.GetInvokeAddress()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//TODO 基金会地址
-	//foundationAddress, _ := stub.GetSystemConfig("FoundationAddress")
-	//if invokeFromAddr != foundationAddress {
-	//	jsonResp := "{\"Error\":\"Only foundation can call this function\"}"
-	//	return nil, fmt.Errorf(jsonResp)
-	//}
-	//key := args[0]
-	//newValue := args[1]
-	//oldValue, err := stub.GetState(args[0])
-	//if err != nil {
-	//	return nil, err
-	//}
-	//err = stub.PutState(key, []byte(newValue))
-	//if err != nil {
-	//	return nil, err
-	//}
-	//sysValByte, err := stub.GetState("sysConf")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//sysVal := &core.SystemConfig{}
-	//err = json.Unmarshal(sysValByte, sysVal)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//switch key {
-	//case "DepositAmountForJury":
-	//	sysVal.DepositAmountForJury = newValue
-	//case "DepositRate":
-	//	sysVal.DepositRate = newValue
-	//case "FoundationAddress":
-	//	sysVal.FoundationAddress = newValue
-	//case "DepositAmountForMediator":
-	//	sysVal.DepositAmountForMediator = newValue
-	//case "DepositAmountForDeveloper":
-	//	sysVal.DepositAmountForDeveloper = newValue
-	//case "DepositPeriod":
-	//	sysVal.DepositPeriod = newValue
-	//case "RootCAHolder":
-	//	sysVal.RootCAHolder = newValue
-	//}
-	//sysValByte, err = json.Marshal(sysVal)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//err = stub.PutState("sysConf", sysValByte)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//jsonResp := "{\"Success\":\"update value from " + string(oldValue) + " to " + newValue + "\"}"
-	//return []byte(jsonResp), nil
-
-	//TODO mediator 换届时的相关处理
-	modify := &modules.FoundModify{}
-	modify.Key = args[0]
-	modify.Value = args[1]
-	resultBytes, err := stub.GetState(modules.SysParam)
+	resultBytes, err := stub.GetState(modules.DesiredSysParams)
 	if err != nil {
+		log.Debugf(err.Error())
 		return nil, err
 	}
-	var modifies []*modules.FoundModify
-	if resultBytes == nil {
-		modifies = append(modifies, modify)
-	} else {
+
+	var modifies map[string]string
+	if resultBytes != nil {
 		err := json.Unmarshal(resultBytes, &modifies)
 		if err != nil {
+			log.Debugf(err.Error())
 			return nil, err
 		}
-		modifies = append(modifies, modify)
 	}
+
+	if args[0] == modules.DesiredActiveMediator {
+		_, err := strconv.ParseUint(args[1], 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("can not convert to integer")
+		}
+	}
+
+	modifies[args[0]] = args[1]
 	modifyByte, err := json.Marshal(modifies)
-	err = stub.PutState(modules.SysParam, modifyByte)
+	err = stub.PutState(modules.DesiredSysParams, modifyByte)
 	if err != nil {
+		log.Debugf(err.Error())
 		return nil, err
 	}
+
 	return []byte(modifyByte), nil
 }
 
