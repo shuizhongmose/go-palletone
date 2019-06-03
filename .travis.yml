@@ -14,7 +14,8 @@ env:
     - BDD_LOG_PATH=/home/travis/gopath/src/github.com/palletone/go-palletone/bdd/logs
     - DEPOSIT_LOG_PATH=/home/travis/gopath/src/github.com/palletone/go-palletone/bdd/dct/log
     - CREATE_TRANS_DIR=createTrans
-    - CCINVOKE_DIR=ccinvoke
+    - 20CONTRACT_DIR=crt20Contract
+    - 721CONTRACT_DIR=crt721Contract
     - VOTECONTRACT_DIR=voteContract
     - DIGITAL_IDENTITY_DIR=DigitalIdentityCert
     - DEPOSIT_DIR=deposit
@@ -25,7 +26,8 @@ env:
     - IS_RUN_DEPOSIT=true
     - IS_RUN_TESTCONTRACTCASES=true
     - IS_RUN_CREATE_TRANS=true
-    - IS_RUN_CCINVOKE=true
+    - IS_RUN_20CONTRACT=true
+    - IS_RUN_721CONTRACT=true
     - IS_RUN_DIGITAL=true
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
@@ -60,15 +62,19 @@ script:
   - cd ${BASE_DIR}/bdd
   - mkdir -p ${BDD_LOG_PATH}
   - if [ $IS_RUN_CREATE_TRANS == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans;
+    python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/${CREATE_TRANS_DIR};
     fi
 
-  - if [ $IS_RUN_CCINVOKE == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CCINVOKE_DIR} -i normal ./testcase/crtCoinContract;
+  - if [ $IS_RUN_20CONTRACT == 'true' ]; then
+    python -m robot.run -d ${BDD_LOG_PATH}/${20CONTRACT_DIR} -i normal ./testcase/${20CONTRACT_DIR};
     fi
-
+    
+  - if [ $IS_RUN_721CONTRACT == 'true' ]; then
+    python -m robot.run -d ${BDD_LOG_PATH}/${721CONTRACT_DIR} -i normal ./testcase/${721CONTRACT_DIR};
+    fi
+    
   - if [ $IS_RUN_VOTE == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract/;
+    python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/${VOTECONTRACT_DIR};
     fi
 
   - if [ $IS_RUN_DIGITAL == 'true' ]; then
@@ -103,9 +109,15 @@ after_script:
     fi
 
   # upload ccinvoke log and report
-  - if [ $IS_RUN_CCINVOKE == 'true' ]; then
-    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$CCINVOKE_DIR/$LOG_NAME -T $BDD_LOG_PATH/$CCINVOKE_DIR/$LOG_NAME -v;
-    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$CCINVOKE_DIR/${REPORT_NAME} -T $BDD_LOG_PATH/$CCINVOKE_DIR/${REPORT_NAME} -v;
+  - if [ $IS_RUN_20CONTRACT == 'true' ]; then
+    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$20CONTRACT_DIR/$LOG_NAME -T $BDD_LOG_PATH/$20CONTRACT_DIR/$LOG_NAME -v;
+    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$20CONTRACT_DIR/${REPORT_NAME} -T $BDD_LOG_PATH/$20CONTRACT_DIR/${REPORT_NAME} -v;
+    fi
+    
+  # upload 721contract log and report
+  - if [ $IS_RUN_20CONTRACT == 'true' ]; then
+    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$721CONTRACT_DIR/$LOG_NAME -T $BDD_LOG_PATH/$721CONTRACT_DIR/$LOG_NAME -v;
+    curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/$721CONTRACT_DIR/${REPORT_NAME} -T $BDD_LOG_PATH/$721CONTRACT_DIR/${REPORT_NAME} -v;
     fi
 
   # upload voteContract log and report
