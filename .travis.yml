@@ -62,19 +62,19 @@ script:
   - cd ${BASE_DIR}/bdd
   - mkdir -p ${BDD_LOG_PATH}
   - if [ $IS_RUN_CREATE_TRANS == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/${CREATE_TRANS_DIR};
+    python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans;
     fi
 
   - if [ $IS_RUN_20CONTRACT == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${20CONTRACT_DIR} -i normal ./testcase/${20CONTRACT_DIR};
+    python -m robot.run -d ${BDD_LOG_PATH}/${20CONTRACT_DIR} -i normal ./testcase/crt20Contract;
     fi
     
   - if [ $IS_RUN_721CONTRACT == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${721CONTRACT_DIR} -i normal ./testcase/${721CONTRACT_DIR};
+    python -m robot.run -d ${BDD_LOG_PATH}/${721CONTRACT_DIR} -i normal ./testcase/crt721Contract;
     fi
     
   - if [ $IS_RUN_VOTE == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/${VOTECONTRACT_DIR};
+    python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract;
     fi
 
   - if [ $IS_RUN_DIGITAL == 'true' ]; then
