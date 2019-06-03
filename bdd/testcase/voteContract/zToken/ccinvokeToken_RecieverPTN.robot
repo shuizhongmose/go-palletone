@@ -9,8 +9,8 @@ Resource          ../../utilKwd/behaveKwd.txt
 *** Variables ***
 
 *** Test Cases ***
-Ccinvoke Token
-    [Documentation]    Scenario: Verify Reciever's PTN
+Scenario: Vote Contract - Ccinvoke Token
+    [Documentation]    Verify Reciever's PTN
     ${geneAdd}    Given Get genesis address
     ${PTN2P}    ${key}    And Request getbalance before create token    ${geneAdd}
     When Create token of vote contract    ${geneAdd}

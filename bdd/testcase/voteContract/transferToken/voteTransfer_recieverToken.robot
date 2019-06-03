@@ -9,7 +9,7 @@ Resource          ../../utilKwd/behaveKwd.txt
 *** Variables ***
 
 *** Test Cases ***
-Vote Contract - Transfer Token
+Scenario: Vote Contract - Transfer Token
     [Documentation]    Verify Reciever's Transfer PTN
     ${geneAdd}    Given Get genesis address
     #${ret}    When Create token of vote contract    ${geneAdd}
@@ -37,7 +37,7 @@ Request getbalance before create token
     #\    log    ${keys}
     #${strResult}    Evaluate    str(${jsonRes})
     ${item1}    voteExist    ${key}    ${result2}
-    sleep    4
+    sleep    3
     [Return]    ${key}    ${item1}
 
 Request transfer token
