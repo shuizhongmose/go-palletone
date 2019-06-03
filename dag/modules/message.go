@@ -63,9 +63,10 @@ const (
 )
 
 const (
-	DesiredSysParams      = "desiredSysParams"
-	SysParams             = "sysParams"
-	DesiredActiveMediator = "ActiveMediatorCount"
+	DesiredSysParamsWithoutVote = "desiredSysParamsWithoutVote"
+	DesiredSysParamsWithVote    = "desiredSysParamsWithVote"
+	DesiredActiveMediatorCount  = "ActiveMediatorCount"
+	DepositAmountForMediator    = "DepositAmountForMediator"
 )
 
 func (mt MessageType) IsRequest() bool {

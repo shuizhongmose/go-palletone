@@ -142,7 +142,7 @@ func TestStateDb_GetSysParamWithoutVote(t *testing.T) {
 	modifiesByte, _ := json.Marshal(modifies)
 	//[{\"Key\":\"depositAmountForJury\",\"Value\":\"9000000\"}]
 	//err := statedb.SaveContractState(syscontract.SysConfigContractAddress.Bytes21(), modules.DesiredSysParams, modifiesByte, version)
-	err := statedb.SaveSysConfig(modules.DesiredSysParams, modifiesByte, version)
+	err := statedb.SaveSysConfig(modules.DesiredSysParamsWithoutVote, modifiesByte, version)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -158,7 +158,7 @@ func TestStateDb_GetSysParamsWithVotes(t *testing.T) {
 	sysSupportResult := &modules.SysSupportResult{}
 	sysVoteResult := &modules.SysVoteResult{}
 	sysTokenIDInfo.CreateTime = time.Now().UTC()
-	sysTokenIDInfo.AssetID = "sysParams"
+	sysTokenIDInfo.AssetID = modules.DesiredSysParamsWithVote
 	sysTokenIDInfo.CreateAddr = "P1--------xxxxxxxxxxxxxxxxx"
 	sysTokenIDInfo.IsVoteEnd = false
 	sysTokenIDInfo.TotalSupply = 10
@@ -172,7 +172,7 @@ func TestStateDb_GetSysParamsWithVotes(t *testing.T) {
 	statedb := NewStateDb(db)
 	infoByte, _ := json.Marshal(sysTokenIDInfo)
 	version := &modules.StateVersion{Height: &modules.ChainIndex{Index: 123}, TxIndex: 1}
-	err := statedb.SaveSysConfig("sysParams", infoByte, version)
+	err := statedb.SaveSysConfig(modules.DesiredSysParamsWithVote, infoByte, version)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -186,34 +186,13 @@ func TestStateDb_GetSysParamsWithVotes(t *testing.T) {
 }
 
 func TestStateDb_UpdateSysParams(t *testing.T) {
+	// 初始化 环境
 	version := &modules.StateVersion{Height: &modules.ChainIndex{Index: 123}, TxIndex: 1}
 	db, _ := ptndb.NewMemDatabase()
 	statedb := NewStateDb(db)
 
-	sysParam, _, err := statedb.GetSysConfig(modules.DesiredSysParams)
-	// if err != nil {
-	// 	t.Log(err.Error())
-	// }
-	assert.NotNil(t, err)
-	if sysParam == nil {
-		t.Log("update sysParam success")
-	} else {
-		t.Logf("%#v\n", sysParam)
-		t.Error("update sysParam fail")
-	}
-	sysParams, _, err := statedb.GetSysConfig("sysParams")
-	assert.NotNil(t, err)
-
-	if err != nil {
-		t.Log(err.Error())
-	}
-	if sysParams == nil {
-		t.Log("update sysParams success")
-	} else {
-		t.Logf("%#v\n", sysParams)
-		t.Error("update sysParams fail")
-	}
-	err = statedb.SaveSysConfig("key1", []byte("lala1"), version)
+	// 初始化3个参数
+	err := statedb.SaveSysConfig("key1", []byte("lala1"), version)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -221,48 +200,47 @@ func TestStateDb_UpdateSysParams(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	err = statedb.SaveSysConfig("FoundationAddress", []byte("P1--------xxxxxxxxxxxxxxxxx"), version)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	modifies := make(map[string]string)
-	modifies["key1"] = "val1"
-	modifies["key2"] = "val2"
-	modifiesByte, _ := json.Marshal(modifies)
-	err = statedb.SaveSysConfig(modules.DesiredSysParams, modifiesByte, version)
+	err = statedb.SaveSysConfig(modules.DepositAmountForMediator, []byte("1000"), version)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
+	// 1, 不通过投票修改参数
+	modifies := make(map[string]string)
+	modifies["key1"] = "val1"
+	modifies["key2"] = "val2"
+	modifiesByte, _ := json.Marshal(modifies)
+	err = statedb.SaveSysConfig(modules.DesiredSysParamsWithoutVote, modifiesByte, version)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	// 2, 通过投票修改参数
 	sysTokenIDInfo := &modules.SysTokenIDInfo{}
 	sysSupportResult := &modules.SysSupportResult{}
 	sysTokenIDInfo.CreateTime = time.Now().UTC()
-	sysTokenIDInfo.AssetID = "sysParams"
+	sysTokenIDInfo.AssetID = modules.DesiredSysParamsWithVote
 	sysTokenIDInfo.CreateAddr = "P1--------xxxxxxxxxxxxxxxxx"
 	sysTokenIDInfo.IsVoteEnd = true
 	sysTokenIDInfo.TotalSupply = 20
 	sysTokenIDInfo.LeastNum = 10
 	sysSupportResult.TopicIndex = 1
-	sysSupportResult.TopicTitle = "DepositAmountForMediator"
+	sysSupportResult.TopicTitle = modules.DepositAmountForMediator
 	sysVoteResult1 := &modules.SysVoteResult{}
 	sysVoteResult1.SelectOption = "2000"
 	sysVoteResult1.Num = 13
 	sysVoteResult2 := &modules.SysVoteResult{}
-
 	sysVoteResult2.SelectOption = "4000"
 	sysVoteResult2.Num = 7
 	sysSupportResult.VoteResults = []*modules.SysVoteResult{sysVoteResult1, sysVoteResult2}
 	sysTokenIDInfo.SupportResults = []*modules.SysSupportResult{sysSupportResult}
 	infoByte, _ := json.Marshal(sysTokenIDInfo)
-	err = statedb.SaveSysConfig("DepositAmountForMediator", []byte("1000"), version)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = statedb.SaveSysConfig("sysParams", infoByte, version)
+	err = statedb.SaveSysConfig(modules.DesiredSysParamsWithVote, infoByte, version)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
+	t.Logf("\n============换届之前，还没有更改系统参数")
 	val1, _, err := statedb.GetSysConfig("key1")
 	if err != nil {
 		t.Error(err.Error())
@@ -273,20 +251,19 @@ func TestStateDb_UpdateSysParams(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Logf("key2=%s\n", val1)
-	depositAmountForMediator, _, err := statedb.GetSysConfig("DepositAmountForMediator")
+	depositAmountForMediator, _, err := statedb.GetSysConfig(modules.DepositAmountForMediator)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	t.Logf("DepositAmountForMediator=%s\n\n", depositAmountForMediator)
-	t.Logf("第一次============换届之前，还没有更改系统参数")
-	//更新
+	t.Logf("DepositAmountForMediator=%s\n", depositAmountForMediator)
+
+	// 环境更新参数
 	err = statedb.UpdateSysParams(version)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	t.Logf("第一次============换届之后，已经更改系统参数\n\n")
 
-	//
+	t.Logf("\n============换届之后，已经更改系统参数")
 	val1, _, err = statedb.GetSysConfig("key1")
 	if err != nil {
 		t.Error(err.Error())
@@ -297,13 +274,14 @@ func TestStateDb_UpdateSysParams(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Logf("key2=%s\n", val2)
-	depositAmountForMediator, _, err = statedb.GetSysConfig("DepositAmountForMediator")
+	depositAmountForMediator, _, err = statedb.GetSysConfig(modules.DepositAmountForMediator)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	t.Logf("DepositAmountForMediator=%s\n", depositAmountForMediator)
 
-	sysParam, _, err = statedb.GetSysConfig(modules.DesiredSysParams)
+	// 检查是否重置为nil
+	sysParam, _, err := statedb.GetSysConfig(modules.DesiredSysParamsWithoutVote)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -315,7 +293,7 @@ func TestStateDb_UpdateSysParams(t *testing.T) {
 	} else {
 		t.Log("update sysParams success")
 	}
-	sysParams, _, err = statedb.GetSysConfig("sysParams")
+	sysParams, _, err := statedb.GetSysConfig(modules.DesiredSysParamsWithVote)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -327,52 +305,4 @@ func TestStateDb_UpdateSysParams(t *testing.T) {
 	} else {
 		t.Log("update sysParams success")
 	}
-
-	modifies5 := make(map[string]string)
-	modifies5["key1"] = "val1"
-	modifies5["key2"] = "val2"
-	modifiesByte5, _ := json.Marshal(modifies5)
-	err = statedb.SaveSysConfig(modules.DesiredSysParams, modifiesByte5, version)
-	if err != nil {
-		t.Error(err.Error())
-	}
-
-	t.Logf("第二次============换届之前，还没有更改系统参数")
-	//更新
-	err = statedb.UpdateSysParams(version)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Logf("第二次============换届之后，已经更改系统参数\n\n")
-
-	val1, _, err = statedb.GetSysConfig("key1")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Logf("key1=%s\n", val1)
-	val2, _, err = statedb.GetSysConfig("key2")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Logf("key2=%s\n", val2)
-	sysParam, _, err = statedb.GetSysConfig(modules.DesiredSysParams)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	// if sysParam == nil {
-	// 	t.Log("update sysParam success")
-	// } else if len(sysParam) > 0 {
-	// 	t.Logf("%#v\n", sysParam)
-	// 	t.Error("update sysParam fail")
-	// } else {
-	// 	t.Log("update sysParams success")
-	// }
-
-	t.Logf("第三次============换届之前，还没有更改系统参数")
-	//更新
-	err = statedb.UpdateSysParams(version)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Logf("第三次============换届之后，已经更改系统参数\n\n")
 }
