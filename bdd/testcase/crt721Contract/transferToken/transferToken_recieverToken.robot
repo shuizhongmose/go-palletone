@@ -37,14 +37,14 @@ Create token of 721 contract
     [Return]    ${jsonRes['result']}
 
 Request getbalance before transfer token
-    sleep    5
+    sleep    3
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     sleep    4
     ${queryResult}    ccqueryById    ${721ContractId}    getTokenInfo    ${preTokenId}
     ${tokenCommonId}    ${countList}    jsonLoads    ${queryResult['result']}    AssetID    TokenIDs
     Set Suite Variable    ${key}    ${tokenCommonId}-${subId}
     ${voteToken}    Get From Dictionary    ${result1['result']}    ${key}
-    ${type}    Evaluate    type(${voteToken})
+	sleep    2
     [Return]    ${key}    ${voteToken}
 
 Request transfer token
@@ -58,7 +58,7 @@ Request getbalance after transfer token
     ${PTN1}    ${result2}    normalGetBalance    ${recieverAdd}
     sleep    4
     ${voteToken2}    Get From Dictionary    ${result2['result']}    ${key}
-    #${type}    Evaluate    type(${voteToken2})
+	sleep    2
     [Return]    ${voteToken2}
 
 Assert gain

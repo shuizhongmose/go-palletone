@@ -37,7 +37,7 @@ Request getbalance before create token
     #\    log    ${keys}
     #${strResult}    Evaluate    str(${jsonRes})
     ${item1}    voteExist    ${key}    ${result2}
-    sleep    3
+    sleep    4
     [Return]    ${key}    ${item1}
 
 Request transfer token

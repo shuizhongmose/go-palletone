@@ -47,6 +47,8 @@ script:
   - nohup ./gptn &
   - sleep 15
   - netstat -ap | grep gptn
+  
+  :<<!
   - if [ $IS_RUN_DEPOSIT == 'true' ]; then
     cd ../dct;
     ./deposit_test.sh 4;
@@ -57,7 +59,8 @@ script:
     chmod +x ./test_start.sh;
     ./test_start.sh;
     fi
-
+  !
+  
   # into bdd path, all testcases is here
   - cd ${BASE_DIR}/bdd
   - mkdir -p ${BDD_LOG_PATH}
@@ -76,7 +79,8 @@ script:
   - if [ $IS_RUN_VOTE == 'true' ]; then
     python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract;
     fi
-
+    
+    :<<!
   - if [ $IS_RUN_DIGITAL == 'true' ]; then
     python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./DigitalIdentityCert;
     fi
@@ -88,11 +92,12 @@ script:
     sleep 15;
     python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases;
     fi
+    !
 
 after_script:
   - killall gptn
   - sleep 2
-#  - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
+  #  - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
   # upload all log
   - curl --ftp-create-dirs -u ${USER}:${PASSWORD} ftp://98.142.130.141/pub/ -T ${ALL_LOG_PATH} -v
 
