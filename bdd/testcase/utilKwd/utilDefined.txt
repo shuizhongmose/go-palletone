@@ -67,7 +67,7 @@ voteTransToken
     ${result}    getBalance    ${listAccounts[0]}
     sleep    5
     ${voteToken}    getTokenId    ${voteId}    ${result}
-    Transfer token of vote contract    ${listAccounts[0]}
+    Request transfer token of vote    ${listAccounts[0]}
     sleep    4
     Set Suite Variable    ${listAccounts}    ${listAccounts}
     Set Suite Variable    ${voteToken}    ${voteToken}

@@ -7,7 +7,7 @@ Resource          ../../utilKwd/utilDefined.txt
 Resource          ../../utilKwd/behaveKwd.txt
 
 *** Variables ***
-${preTokenId}     QA058
+${preTokenId}     QA258
 
 *** Test Cases ***
 Feature: Vote Contract- Create token
@@ -26,7 +26,7 @@ CcinvokePass normal
     ${ccList}    Create List    ${crtTokenMethod}    ${evidence}    ${preTokenId}    ${tokenDecimal}    ${tokenAmount}
     ${ret}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${20ContractId}    ${ccList}
-    sleep    2
+    sleep    4
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
@@ -63,7 +63,7 @@ Request getbalance after create token
     ${result2}    getBalance    ${geneAdd}
     sleep    5
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
-    sleep    2
+    sleep    1
     ${PTN2}    Get From Dictionary    ${result2}    PTN
     sleep    1
     [Return]    ${PTN2}    ${coinToken2}

@@ -86,7 +86,7 @@ Request GetTxByReqId
     ${ret}    Should Match Regexp    ${resp.content}['result']    ${commonResultCode}    msg="result:does't match Result expression"
     [Return]    ${ret}
 
-Transfer token of vote contract
+Request transfer token of vote
     [Arguments]    ${geneAdd}
     ${ccTokenList}    Create List    ${crtTokenMethod}    ${note}    ${tokenDecimal}    ${tokenAmount}    ${voteTime}
     ...    ${commonVoteInfo}

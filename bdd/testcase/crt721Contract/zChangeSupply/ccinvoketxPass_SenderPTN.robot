@@ -1,5 +1,5 @@
 *** Settings ***
-Default Tags      nomal
+Default Tags      normal
 Library           ../../utilFunc/createToken.py
 Resource          ../../utilKwd/utilVariables.txt
 Resource          ../../utilKwd/normalKwd.txt
@@ -7,7 +7,7 @@ Resource          ../../utilKwd/utilDefined.txt
 Resource          ../../utilKwd/behaveKwd.txt
 
 *** Variables ***
-${preTokenId}     QA074
+${preTokenId}     QA078
 
 *** Test Cases ***
 Scenario: 721 Contract - Change token then supply token
@@ -18,10 +18,10 @@ Scenario: 721 Contract - Change token then supply token
     ${PTN2}    And Request getbalance after supply token
     And Change supply address to new address
     ${PTN1}    And Request getbalance before supply token
-    #${PTNGAIN}    And Calculate gain
-    #And Supply token of 721 contract after change supply
-    #${PTN3}    And Request getbalance after change supply
-    #Then Assert gain    ${PTN1}    ${PTN3}    ${PTNGAIN}
+    ${PTNGAIN}    And Calculate gain
+    And Supply token of 721 contract after change supply
+    ${PTN3}    And Request getbalance after change supply
+    Then Assert gain    ${PTN1}    ${PTN3}    ${PTNGAIN}
     #And Genesis address supply token of 721 contract
     #And Request getbalance after genesis supply token
 
@@ -69,7 +69,7 @@ Request getbalance after supply token
 
 Change supply address to new address
     ${ccList}    Create List    ${changeSupplyMethod}    ${preTokenId}    ${reciever}
-    ${resp}    Request CcinvokePass    ${commonResultCode}    ${geneAdd}    ${reciever}    ${PTNAmount}    ${PTNPoundage}
+    ${resp}    Request CcinvokePass    ${commonResultCode}    ${geneAdd}    ${geneAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${721ContractId}    ${ccList}
     sleep    5
 
@@ -80,8 +80,8 @@ Request getbalance before supply token
     [Return]    ${PTN1}
 
 Calculate gain
-    ${GAIN}    Evaluate    ${PTNAmount}-${PTNPoundage}
-    ${PTNGAIN}    countRecieverPTN    ${GAIN}
+    #${GAIN}    Evaluate    ${PTNAmount}-${PTNPoundage}
+    ${PTNGAIN}    countRecieverPTN    ${PTNPoundage}
     #${PTNGAIN}    Evaluate    decimal.Decimal('${PTNAmount}')-decimal.Decimal('${PTNPoundage}')    decimal
     sleep    2
     [Return]    ${PTNGAIN}
@@ -113,7 +113,7 @@ Request getbalance after change supply
 
 Assert gain
     [Arguments]    ${PTN1}    ${PTN3}    ${PTNGAIN}
-    ${GAIN}    Evaluate    decimal.Decimal('${PTN1}')+decimal.Decimal('${PTNGAIN}')    decimal
+    ${GAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${PTNGAIN}')    decimal
     Should Be Equal As Strings    ${PTN3}    ${GAIN}
 
 Genesis address supply token of 721 contract

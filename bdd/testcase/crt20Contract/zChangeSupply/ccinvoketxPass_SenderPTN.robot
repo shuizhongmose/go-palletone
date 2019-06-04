@@ -33,19 +33,17 @@ Send PTN to recieverAdd
     ${ret3}    And normalSendTrans    ${ret2}
 
 Request ccinvokePass and transferToken
-    ${geneAdd}    getGeneAdd    ${host}
-    Set Suite Variable    ${geneAdd}    ${geneAdd}
     ${ccList}    Create List    ${crtTokenMethod}    ${evidence}    ${preTokenId}    ${tokenDecimal}    ${tokenAmount}
     ...    ${geneAdd}
     normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${reciever}    ${PTNAmount}    ${PTNPoundage}    ${20ContractId}
     ...    ${ccList}
     sleep    3
     ${result1}    getBalance    ${geneAdd}
+    sleep    5
     ${key}    getTokenId    ${preTokenId}    ${result1}
-    sleep    4
+    sleep    2
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${reciever}    2000    ${PTNPoundage}
     ...    ${evidence}    ${duration}
-    sleep    4
 
 Change supply of contract
     ${ccList}    Create List    ${changeSupplyMethod}    ${preTokenId}    ${reciever}
@@ -61,9 +59,9 @@ Assert the supplyAddr
 
 Request getbalance before create token
     ${result1}    getBalance    ${reciever}
-    sleep    4
+    sleep    5
     ${key}    getTokenId    ${preTokenId}    ${result1}
-    sleep    2
+    sleep    1
     ${PTN1}    Get From Dictionary    ${result1}    PTN
     sleep    1
     ${coinToken1}    Get From Dictionary    ${result1}    ${key}
@@ -84,9 +82,9 @@ Calculate gain of recieverAdd
 Request getbalance after create token
     [Arguments]    ${geneAdd}    ${key}    ${tokenAmount}
     ${result2}    getBalance    ${reciever}
-    sleep    4
+    sleep    5
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
-    sleep    2
+    sleep    1
     ${PTN2}    Get From Dictionary    ${result2}    PTN
     sleep    1
     ${tokenGAIN}    Evaluate    float(${coinToken2})-float(${coinToken1})
@@ -95,7 +93,6 @@ Request getbalance after create token
 Assert gain
     [Arguments]    ${PTN1}    ${PTN2}    ${tokenGAIN}    ${tokenAmount}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${tokenAmount}')    decimal
-    sleep    3
     ${supplyTokenAmount}    Evaluate    ${supplyTokenAmount}*(10**-${tokenDecimal})
-    sleep    3
+    sleep    1
     Should Be Equal As Numbers    ${supplyTokenAmount}    ${tokenGAIN}

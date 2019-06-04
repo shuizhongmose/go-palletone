@@ -34,16 +34,12 @@ normalCcinvokePass
 
 normalTransferToken
     [Arguments]    ${result_code}
-    ${ret}    Given I_set_TransferToken_params_to_Normal    ${preTokenId}
-    ${resp}    When I_post_a_TransferToken_request    ${ret}
-    ${resultCrt}    Then I_get_a_TransferToken_result    ${resp}    ${result_code}
+    ${resultCrt}    Given I_set_TransferToken_params_to_Normal    ${preTokenId}
     [Return]    ${resultCrt}
 
 normalGetTxByReqId
     [Arguments]    ${result_code}
-    ${ret}    Given I_set_GetTxByReqId_params_to_Normal    ${tokenId}
-    ${resp}    When I_post_a_GetTxByReqId_request    ${ret}
-    ${resultCrt}    Then I_get_a_GetTxByReqId_result${result_code}    ${resp}
+    ${resultCrt}    Given I_set_GetTxByReqId_params_to_Normal    ${tokenId}
     [Return]    ${resultCrt}
 
 normalGetBalance
