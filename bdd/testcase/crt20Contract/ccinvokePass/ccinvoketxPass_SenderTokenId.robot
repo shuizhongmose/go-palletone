@@ -23,7 +23,7 @@ Request getbalance before create token
     ${geneAdd}    getGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     personalUnlockAccount    ${geneAdd}
-    sleep    1
+    sleep    3
     ${PTN1}    ${result}    normalGetBalance    ${geneAdd}
     sleep    5
     [Return]    ${PTN1}
@@ -47,8 +47,10 @@ Request getbalance after create token
     : FOR    ${key}    IN    ${result2.keys}
     \    log    ${key}
     ${count}    evaluate    int(pow(10,-${tokenDecimal})*${tokenAmount})
-    log    ${result2['result']}
+    #log    ${result2['result']}
+	sleep    1
     ${item}    getTokenId    ${preTokenId}    ${result2['result']}
+	sleep    1
     ${key}    Get From Dictionary    ${result2['result']}    ${item}
     [Return]    ${count}    ${key}
 
