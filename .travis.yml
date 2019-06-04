@@ -48,7 +48,8 @@ script:
   - sleep 15
   - netstat -ap | grep gptn
   
-  :<<!
+  
+  :'
   - if [ $IS_RUN_DEPOSIT == 'true' ]; then
     cd ../dct;
     ./deposit_test.sh 4;
@@ -59,7 +60,7 @@ script:
     chmod +x ./test_start.sh;
     ./test_start.sh;
     fi
-  !
+  '
   
   # into bdd path, all testcases is here
   - cd ${BASE_DIR}/bdd
@@ -80,7 +81,7 @@ script:
     python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract;
     fi
     
-    :<<!
+    :'
   - if [ $IS_RUN_DIGITAL == 'true' ]; then
     python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./DigitalIdentityCert;
     fi
@@ -92,7 +93,7 @@ script:
     sleep 15;
     python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases;
     fi
-    !
+    '
 
 after_script:
   - killall gptn
