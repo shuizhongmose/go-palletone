@@ -23,9 +23,9 @@ Request getbalance before create token
     ${geneAdd}    getGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     personalUnlockAccount    ${geneAdd}
-    sleep    1
+    sleep    3
     ${PTN1}    ${result}    normalGetBalance    ${geneAdd}
-    sleep    5
+    sleep    2
     [Return]    ${PTN1}
 
 Request normal CcinvokePass
@@ -38,7 +38,7 @@ Request normal CcinvokePass
 Calculate gain
     ${PTNGAIN}    Evaluate    ${PTNAmount}+${PTNPoundage}
     ${PTNGAIN}    countRecieverPTN    ${PTNGAIN}
-    sleep    2
+	sleep    1
     [Return]    ${PTNGAIN}
 
 Request getbalance after create token

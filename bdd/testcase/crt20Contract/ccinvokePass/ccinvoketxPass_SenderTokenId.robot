@@ -25,7 +25,7 @@ Request getbalance before create token
     personalUnlockAccount    ${geneAdd}
     sleep    3
     ${PTN1}    ${result}    normalGetBalance    ${geneAdd}
-    sleep    5
+    sleep    2
     [Return]    ${PTN1}
 
 Request normal CcinvokePass
@@ -36,9 +36,9 @@ Request normal CcinvokePass
     [Return]    ${ret}
 
 Calculate gain
+	sleep    3
     ${PTNGAIN}    Evaluate    ${PTNAmount}+${PTNPoundage}
     ${PTNGAIN}    countRecieverPTN    ${PTNGAIN}
-    sleep    2
     [Return]    ${PTNGAIN}
 
 Request getbalance after create token
@@ -50,7 +50,7 @@ Request getbalance after create token
     #log    ${result2['result']}
 	sleep    1
     ${item}    getTokenId    ${preTokenId}    ${result2['result']}
-	sleep    1
+	sleep    3
     ${key}    Get From Dictionary    ${result2['result']}    ${item}
     [Return]    ${count}    ${key}
 
