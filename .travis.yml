@@ -1,14 +1,5 @@
 language:go
 sudo: required    
- 
-matrix:
-  include:
-    - os: linux
-      dist: xenial
-      go: 1.10.8
-    - os: linux
-      dist: xenial
-      go: 1.12.5
 env:
   global:
     - BASE_DIR=/home/travis/gopath/src/github.com/palletone/go-palletone
@@ -37,6 +28,15 @@ env:
     - GO111MODULE=on
     - IS_UPLOAD = FALSE
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'
+ 
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+      go: 1.10.8
+    - os: linux
+      dist: xenial
+      go: 1.12.5
 
 script:
   - go build ./cmd/gptn
