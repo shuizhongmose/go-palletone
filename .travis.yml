@@ -1,4 +1,5 @@
 language: go 
+sudo: required
 env:
   global:
     - BASE_DIR=/home/travis/gopath/src/github.com/palletone/go-palletone
@@ -32,15 +33,14 @@ matrix:
   include:
     - os: linux
       dist: xenial
-      sudo: required
       go: 1.10.8
       script:
         - go build ./cmd/gptn
         - make gptn
         - $GOPATH/bin/goveralls -service=travis-ci
+        
     - os: linux
       dist: xenial
-      sudo: required
       go: 1.11
       script:
         - go build ./cmd/gptn
@@ -48,7 +48,6 @@ matrix:
         - $GOPATH/bin/goveralls -service=travis-ci
     - os: linux
       dist: xenial
-      sudo: required
       go: 1.12.5
       script:
         - go build ./cmd/gptn
@@ -69,52 +68,47 @@ matrix:
         - nohup ./gptn &
         - sleep 15
         - netstat -ap | grep gptn
-      
+        - if [ $IS_RUN_DEPOSIT == 'true' ]; then
+          cd ../dct;
+          ./deposit_test.sh 4;
+          fi
 
-  
-  
-  - if [ $IS_RUN_DEPOSIT == 'true' ]; then
-    cd ../dct;
-    ./deposit_test.sh 4;
-    fi
+        - if [ $IS_RUN_TESTCONTRACTCASES == 'true' ];then
+          cd ../contract/testcases;
+          chmod +x ./test_start.sh;
+          ./test_start.sh;
+          fi
+        # into bdd path, all testcases is here
+        - cd ${BASE_DIR}/bdd
+        - mkdir -p ${BDD_LOG_PATH}
+        - if [ $IS_RUN_CREATE_TRANS == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans;
+          fi
 
-  - if [ $IS_RUN_TESTCONTRACTCASES == 'true' ];then
-    cd ../contract/testcases;
-    chmod +x ./test_start.sh;
-    ./test_start.sh;
-    fi
+        - if [ $IS_RUN_20CONTRACT == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract;
+          fi
+            
+        - if [ $IS_RUN_721CONTRACT == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT721_DIR} -i normal ./testcase/crt721Contract;
+          fi
+            
+        - if [ $IS_RUN_VOTE == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract;
+          fi
+            
+        - if [ $IS_RUN_DIGITAL == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./DigitalIdentityCert;
+          fi
 
-  # into bdd path, all testcases is here
-  - cd ${BASE_DIR}/bdd
-  - mkdir -p ${BDD_LOG_PATH}
-  - if [ $IS_RUN_CREATE_TRANS == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans;
-    fi
-
-  - if [ $IS_RUN_20CONTRACT == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract;
-    fi
-    
-  - if [ $IS_RUN_721CONTRACT == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT721_DIR} -i normal ./testcase/crt721Contract;
-    fi
-    
-  - if [ $IS_RUN_VOTE == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract;
-    fi
-    
-  - if [ $IS_RUN_DIGITAL == 'true' ]; then
-    python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./DigitalIdentityCert;
-    fi
-
-  - if [ $IS_RUN_GASTOKEN == 'true' ]; then
-    cd ./GasToken;
-    chmod +x ./init_gas_token.sh;
-    ./init_gas_token.sh;
-    sleep 15;
-    python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases;
-    fi
-    
+        - if [ $IS_RUN_GASTOKEN == 'true' ]; then
+          cd ./GasToken;
+          chmod +x ./init_gas_token.sh;
+          ./init_gas_token.sh;
+          sleep 15;
+          python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases;
+          fi
+     
 after_script:
   - killall gptn
   - sleep 2
