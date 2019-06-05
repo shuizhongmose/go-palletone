@@ -71,8 +71,7 @@ matrix:
         - sleep 15
         - netstat -ap | grep gptn
       
-#script:
-#- $GOPATH/bin/goveralls -service=travis-ci
+
   
   
   - if [ $IS_RUN_DEPOSIT == 'true' ]; then
