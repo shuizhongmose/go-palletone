@@ -1,5 +1,4 @@
-language: go
-sudo: required   
+language: go 
 env:
   global:
     - BASE_DIR=/home/travis/gopath/src/github.com/palletone/go-palletone
