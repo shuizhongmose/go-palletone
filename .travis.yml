@@ -33,24 +33,47 @@ matrix:
   include:
     - os: linux
       dist: xenial
+      sudo: required
       go: 1.10.8
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - $GOPATH/bin/goveralls -service=travis-ci
+    - os: linux
+      dist: xenial
+      sudo: required
+      go: 1.11
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - $GOPATH/bin/goveralls -service=travis-ci
+    - os: linux
+      dist: xenial
+      sudo: required
+      go: 1.12.5
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - $GOPATH/bin/goveralls -service=travis-ci
     - os: linux
       dist: xenial
       go: 1.12.5
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - cp gptn bdd/node
+        - mkdir bdd/GasToken/node
+        - cp gptn bdd/GasToken/node
+        - cd bdd/node
+        - chmod +x gptn
+        - python init.py
+        - nohup ./gptn &
+        - sleep 15
+        - netstat -ap | grep gptn
       
-script:
-  - go build ./cmd/gptn
-  - make gptn
+#script:
   #- $GOPATH/bin/goveralls -service=travis-ci
-  - cp gptn bdd/node
-  - mkdir bdd/GasToken/node
-  - cp gptn bdd/GasToken/node
-  - cd bdd/node
-  - chmod +x gptn
-  - python init.py
-  - nohup ./gptn &
-  - sleep 15
-  - netstat -ap | grep gptn
+  
   
   - if [ $IS_RUN_DEPOSIT == 'true' ]; then
     cd ../dct;
