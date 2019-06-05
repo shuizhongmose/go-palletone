@@ -398,5 +398,9 @@ func (pm *ProtocolManager) LeafNodesMsg(msg p2p.Msg, p *peer) error {
 	if err != nil {
 		log.Debug("Failed to deliver headers", "err", err.Error())
 	}
+	//err := pm.downloader.DeliverHeaders(p.id, resp.Headers)
+	//if err != nil {
+	//	log.Debug(fmt.Sprint(err))
+	//}
 	return err
 }

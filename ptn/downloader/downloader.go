@@ -120,6 +120,7 @@ type Downloader struct {
 	committed       int32
 
 	// Channels
+	allTokenCh chan dataPack
 	headerCh   chan dataPack // [ptn/62] Channel receiving inbound block headers
 	bodyCh     chan dataPack // [ptn/62] Channel receiving inbound block bodies
 	receiptCh  chan dataPack // [ptn/63] Channel receiving inbound receipts
@@ -198,6 +199,7 @@ func New(mode SyncMode, mux *event.TypeMux, dropPeer peerDropFn, lightdag LightD
 		dag:           dag,
 		txpool:        txpool,
 		dropPeer:      dropPeer,
+		allTokenCh:    make(chan dataPack, 1),
 		headerCh:      make(chan dataPack, 1),
 		bodyCh:        make(chan dataPack, 1),
 		receiptCh:     make(chan dataPack, 1),
@@ -1086,7 +1088,7 @@ func (d *Downloader) fetchParts(errCancel error, deliveryCh chan dataPack, deliv
 						log.Debug("Stalling delivery, dropping", "type", kind)
 						if d.dropPeer == nil {
 							// The dropPeer method is nil when `--copydb` is used for a local copy.
-							// Timeouts can occur if e.g. compaction hits at the wrong time, and can be ignored
+							// Timeouts caDownloader fetchPartsn occur if e.g. compaction hits at the wrong time, and can be ignored
 							log.Warn("Downloader wants to drop peer, but peerdrop-function is not set", "peer", pid)
 						} else {
 							d.dropPeer(pid)
@@ -1667,7 +1669,7 @@ func (d *Downloader) DeliverAllToken(id string, headers []*modules.Header) error
 	select {
 	case <-d.cancelCh:
 		return errCancelBlockFetch
-	case d.headerCh <- &headerPack{id, headers}:
+	case d.allTokenCh <- &headerPack{id, headers}:
 		return nil
 	case <-timeout:
 		log.Debug("Waiting for head header timed out", "elapsed", ttl, "peer", id)
@@ -1687,7 +1689,6 @@ func (d *Downloader) FetchAllToken(id string) ([]*modules.Header, error) {
 	}
 
 	go p.peer.RequestLeafNodes()
-	//go p.peer.RequestHeadersByHash(headerHash, 1, 0, false)
 
 	ttl := d.requestTTL()
 	timeout := time.After(ttl)
@@ -1696,7 +1697,7 @@ func (d *Downloader) FetchAllToken(id string) ([]*modules.Header, error) {
 		case <-d.cancelCh:
 			return nil, errCancelBlockFetch
 
-		case packet := <-d.headerCh:
+		case packet := <-d.allTokenCh:
 			// Discard anything not from the origin peer
 			if packet.PeerId() != p.id {
 				log.Debug("Received headers from incorrect peer", "peer", packet.PeerId())
