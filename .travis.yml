@@ -189,18 +189,6 @@ before_install:
     - source ./build/goget_by_version.sh
     - source ./gomockgen.sh
 
-install:
-  - python -V
-  - whereis python
-  - which python
-  - sudo -H pip install --upgrade pip
-  - sudo -H pip install robotframework==2.8.5
-  - sudo -H pip install requests
-  - sudo -H pip install robotframework-requests
-  - sudo -H pip install demjson
-  - sudo -H pip install pexpect
-  - sudo -H apt-get install expect
-  #- sudo -H apt-get install jq tcl tk
 
 addons:
   apt:
