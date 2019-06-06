@@ -115,6 +115,18 @@ matrix:
           python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases;
           fi
      
+      install:
+        - python -V
+        - whereis python
+        - which python
+        - sudo -H pip install --upgrade pip
+        - sudo -H pip install robotframework==2.8.5
+        - sudo -H pip install requests
+        - sudo -H pip install robotframework-requests
+        - sudo -H pip install demjson
+        - sudo -H pip install pexpect
+        - sudo -H apt-get install expect
+        
 after_script:
   - killall gptn
   - sleep 2
