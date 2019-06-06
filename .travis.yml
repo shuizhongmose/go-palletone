@@ -34,6 +34,7 @@ matrix:
     - os: osx
       go: 1.12.5
       script:
+        - go get github.com/influxdata/influxdb
         - go build ./cmd/gptn
         - make gptn
         - $GOPATH/bin/goveralls -service=travis-ci
