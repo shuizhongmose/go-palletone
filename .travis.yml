@@ -37,9 +37,7 @@ matrix:
         #- go get github.com/influxdata/influxdb
         - go build ./cmd/gptn
         - make gptn
-        - cd $GOPATH/bin/
-        - ls -l
-        #- go test ./...  
+        - go test ./...  
     - os: linux
       dist: xenial
       go: 1.10.8
