@@ -59,6 +59,7 @@ type IUnitRepository interface {
 	GetHeaderByHash(hash common.Hash) (*modules.Header, error)
 	GetHeaderList(hash common.Hash, parentCount int) ([]*modules.Header, error)
 	SaveHeader(header *modules.Header) error
+	SaveNewestHeader(header *modules.Header) error
 	SaveHeaders(headers []*modules.Header) error
 	GetHeaderByNumber(index *modules.ChainIndex) (*modules.Header, error)
 	IsHeaderExist(uHash common.Hash) (bool, error)
@@ -172,6 +173,13 @@ func (rep *UnitRepository) GetHeaderList(hash common.Hash, parentCount int) ([]*
 }
 func (rep *UnitRepository) SaveHeader(header *modules.Header) error {
 	return rep.dagdb.SaveHeader(header)
+}
+func (rep *UnitRepository) SaveNewestHeader(header *modules.Header) error {
+	err := rep.dagdb.SaveHeader(header)
+	if err != nil {
+		return err
+	}
+	return rep.propdb.SetNewestUnit(header)
 }
 func (rep *UnitRepository) SaveHeaders(headers []*modules.Header) error {
 	return rep.dagdb.SaveHeaders(headers)
@@ -456,6 +464,7 @@ func (rep *UnitRepository) CreateUnit(mAddr common.Address, txpool txspool.ITxPo
 	}
 
 	outAds := arrangeAdditionFeeList(ads)
+
 	coinbase, rewards, err := rep.CreateCoinbase(outAds, chainIndex.Index)
 	if err != nil {
 		log.Error(err.Error())
@@ -492,7 +501,6 @@ func (rep *UnitRepository) CreateUnit(mAddr common.Address, txpool txspool.ITxPo
 
 	// step8. transactions merkle root
 	root := core.DeriveSha(txs)
-	log.Infof("core.DeriveSha cost time %s", time.Since(begin))
 	// step9. generate genesis unit header
 	header.TxsIllegal = illegalTxs
 	header.TxRoot = root
@@ -643,26 +651,24 @@ func arrangeAdditionFeeList(ads []*modules.Addition) []*modules.Addition {
 	if len(ads) <= 0 {
 		return nil
 	}
-	out := make([]*modules.Addition, 0)
+	out := make(map[string]*modules.Addition)
 	for _, a := range ads {
-		ok := false
-		b := &modules.Addition{}
-		for _, b = range out {
-			if ok, _ = a.IsEqualStyle(b); ok {
-				break
-			}
-		}
+		key := a.Key()
+		b, ok := out[key]
 		if ok {
 			b.Amount += a.Amount
-			continue
+		} else {
+			out[key] = a
 		}
-		out = append(out, a)
 	}
 	if len(out) < 1 {
 		return nil
-	} else {
-		return out
 	}
+	result := []*modules.Addition{}
+	for _, v := range out {
+		result = append(result, v)
+	}
+	return result
 }
 
 func (rep *UnitRepository) GetCurrentChainIndex(assetId modules.AssetId) (*modules.ChainIndex, error) {
@@ -1397,7 +1403,7 @@ func (rep *UnitRepository) CreateCoinbase(ads []*modules.Addition, height uint64
 	}
 }
 func (rep *UnitRepository) createCoinbaseState(ads []*modules.Addition) (*modules.Transaction, uint64, error) {
-	log.Debug("create a statedb record to write mediator and jury income")
+	//log.Debug("create a statedb record to write mediator and jury income")
 	totalIncome := uint64(0)
 	payload := modules.ContractInvokePayload{}
 	contractId := syscontract.CoinbaseContractAddress.Bytes()
