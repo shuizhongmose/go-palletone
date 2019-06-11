@@ -16,11 +16,13 @@ y
 EOF
 
 # edit genesis json
-gasToken="WWW"
 jsonFile="ptn-genesis.json"
 if [ -e "$jsonFile" ]; then
     #file already exist, modify
-    sed -i "s/\"gasToken\": \"PTN\"/\"gasToken\": \"$gasToken\"/g" $jsonFile
+    sed -i "s/\"activeMediatorCount\": \"5\"/\"activeMediatorCount\": \"3\"/g" $jsonFile
+    sed -i "s/\"initialActiveMediators\": \"5\"/\"initialActiveMediators\": \"3\"/g" $jsonFile
+    sed -i "s/\"minMediatorCount\": \"5\"/\"minMediatorCount\": \"3\"/g" $jsonFile
+    sed -i "s/\"maintenanceInterval\": \"600\"/\"maintenanceInterval\": \"150\"/g" $jsonFile
 else
     #file not found, new file
     echo "no $jsonFile"
