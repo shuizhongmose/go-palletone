@@ -3,9 +3,9 @@
 #tskill gptn
 #cd ../../cmd/gptn && go build
 cd ../../
-#rm -rf ./bdd/GasToken/node/*
-#cp ./cmd/gptn/gptn ./bdd/GasToken/node
-cd ./bdd/GasToken/node
+#rm -rf ./bdd/mediator-vote/node*
+#cp ./cmd/gptn/gptn ./bdd/mediator-vote/node
+cd ./bdd/mediator-vote/node
 chmod +x gptn
 
 # new genesis
