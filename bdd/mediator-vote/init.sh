@@ -29,6 +29,25 @@ else
     exit -1
 fi
 
+# edit toml file
+tomlFile="ptn-config.toml"
+if [ -e "$tomlFile" ]; then
+    #file already exist, modify
+    sed -i "s/HTTPPort = 8545/HTTPPort = 8595/g" $tomlFile
+    sed -i "s/WSPort = 8546/WSPort = 8596/g" $tomlFile
+    sed -i "s/Port = 8080/Port = 8091/g" $tomlFile
+    sed -i "s/ListenAddr = \":30303\"/ListenAddr = \":30393\"/g" $tomlFile
+    sed -i "s/CorsListenAddr = \":50505\"/CorsListenAddr = \":50595\"/g" $tomlFile
+    sed -i "s/BtcHost = \"localhost:18332\"/BtcHost = \"localhost:18392\"/g" $tomlFile
+    sed -i "s/ContractAddress = \"127.0.0.1:12345\"/ContractAddress = \"127.0.0.1:12395\"/g" $tomlFile
+    sed -i "s/CaUrl = \"http://localhost:8545\"/CaUrl = \"http://localhost:8595\"/g" $tomlFile
+    sed -i "s/OutputPaths = \[\"stdout\", \".\/log\/all.log\"\]/OutputPaths = \[\".\/log\/all.log\"\]/g" $tomlFile
+else
+    #file not found, new file
+    echo "no $tomlFile"
+    exit -1
+fi
+
 # gptn init
 ./gptn init << EOF
 1

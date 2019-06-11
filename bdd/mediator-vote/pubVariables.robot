@@ -2,7 +2,7 @@
 Library           RequestsLibrary
 
 *** Variables ***
-${host}           http://localhost:8545/
+${host}           http://localhost:8595/
 # methods
 ${transerferPTNMethod}    wallet_transferPtn
 ${getBalanceMethod}    wallet_getBalance
