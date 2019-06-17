@@ -28,7 +28,6 @@ import (
 	"github.com/palletone/go-palletone/contracts/shim"
 	"github.com/palletone/go-palletone/core/vmContractPub/protos/peer"
 	"github.com/palletone/go-palletone/dag/modules"
-	"github.com/palletone/go-palletone/ptnjson"
 	"sort"
 	"strconv"
 	"time"
@@ -45,28 +44,28 @@ func (s *SysConfigChainCode) Init(stub shim.ChaincodeStubInterface) peer.Respons
 func (s *SysConfigChainCode) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	funcName, args := stub.GetFunctionAndParameters()
 	switch funcName {
-	case "getAllSysParamsConf":
-		log.Info("Start getAllSysParamsConf Invoke")
-		resultByte, err := s.getAllSysParamsConf(stub)
-		if err != nil {
-			jsonResp := "{\"Error\":\"getAllSysParamsConf err: " + err.Error() + "\"}"
-			return shim.Error(jsonResp)
-		}
-		resut := ptnjson.ConvertAllSysConfigToJson(resultByte)
-		res, err := json.Marshal(resut)
-		if err != nil {
-			jsonResp := "{\"Error\":\"getAllSysParamsConf err: " + err.Error() + "\"}"
-			return shim.Error(jsonResp)
-		}
-		return shim.Success(res)
-	case "getSysParamValByKey":
-		log.Info("Start getSysParamValByKey Invoke")
-		resultByte, err := s.getSysParamValByKey(stub, args)
-		if err != nil {
-			jsonResp := "{\"Error\":\"getSysParamValByKey err: " + err.Error() + "\"}"
-			return shim.Error(jsonResp)
-		}
-		return shim.Success(resultByte)
+	//case "getAllSysParamsConf":
+	//	log.Info("Start getAllSysParamsConf Invoke")
+	//	resultByte, err := s.getAllSysParamsConf(stub)
+	//	if err != nil {
+	//		jsonResp := "{\"Error\":\"getAllSysParamsConf err: " + err.Error() + "\"}"
+	//		return shim.Error(jsonResp)
+	//	}
+	//	resut := ptnjson.ConvertAllSysConfigToJson(resultByte)
+	//	res, err := json.Marshal(resut)
+	//	if err != nil {
+	//		jsonResp := "{\"Error\":\"getAllSysParamsConf err: " + err.Error() + "\"}"
+	//		return shim.Error(jsonResp)
+	//	}
+	//	return shim.Success(res)
+	//case "getSysParamValByKey":
+	//	log.Info("Start getSysParamValByKey Invoke")
+	//	resultByte, err := s.getSysParamValByKey(stub, args)
+	//	if err != nil {
+	//		jsonResp := "{\"Error\":\"getSysParamValByKey err: " + err.Error() + "\"}"
+	//		return shim.Error(jsonResp)
+	//	}
+	//	return shim.Success(resultByte)
 	case "updateSysParamWithoutVote":
 		log.Info("Start updateSysParamWithoutVote Invoke")
 		resultByte, err := s.updateSysParamWithoutVote(stub, args)
@@ -424,13 +423,13 @@ func (s *SysConfigChainCode) nodesVote(stub shim.ChaincodeStubInterface, args []
 	return []byte("NodesVote success."), nil
 }
 
-func (s *SysConfigChainCode) getAllSysParamsConf(stub shim.ChaincodeStubInterface) (map[string]*modules.ContractStateValue, error) {
-	sysVal, err := stub.GetContractAllState()
-	if err != nil {
-		return nil, err
-	}
-	return sysVal, nil
-}
+//func (s *SysConfigChainCode) getAllSysParamsConf(stub shim.ChaincodeStubInterface) (map[string]*modules.ContractStateValue, error) {
+//	sysVal, err := stub.GetContractAllState()
+//	if err != nil {
+//		return nil, err
+//	}
+//	return sysVal, nil
+//}
 
 func (s *SysConfigChainCode) updateSysParamWithoutVote(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	// 检查参数
@@ -471,19 +470,20 @@ func (s *SysConfigChainCode) updateSysParamWithoutVote(stub shim.ChaincodeStubIn
 	return []byte(modifyByte), nil
 }
 
-func (s *SysConfigChainCode) getSysParamValByKey(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	if len(args) != 1 {
-		jsonResp := "{\"Error\":\" need 1 args (AssetID String)\"}"
-		return nil, fmt.Errorf(jsonResp)
-	}
-	val, err := stub.GetSystemConfig(args[0])
-	//val, err := stub.GetState(args[0])
-	if err != nil {
-		return nil, err
-	}
-	jsonResp := "{\"" + args[0] + "\":\"" + string(val) + "\"}"
-	return []byte(jsonResp), nil
-}
+//func (s *SysConfigChainCode) getSysParamValByKey(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+//	if len(args) != 1 {
+//		jsonResp := "{\"Error\":\" need 1 args (AssetID String)\"}"
+//		return nil, fmt.Errorf(jsonResp)
+//	}
+//	val, err := stub.GetSystemConfig(args[0])
+//	//val, err := stub.GetState(args[0])
+//	if err != nil {
+//		return nil, err
+//	}
+//	// 并不是所有的配置的string类型
+//	jsonResp := "{\"" + args[0] + "\":\"" + string(val) + "\"}"
+//	return []byte(jsonResp), nil
+//}
 
 func getSymbols(stub shim.ChaincodeStubInterface) *SysTokenInfo {
 	//

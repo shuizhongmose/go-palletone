@@ -67,7 +67,7 @@ func localIsMinSignature(tx *modules.Transaction) bool {
 }
 func generateJuryRedeemScript(jury []modules.ElectionInf) ([]byte, error) {
 	count := len(jury)
-	needed := byte(math.Ceil(float64(count) * 2 / 3))
+	needed := byte(math.Ceil((float64(count)*2 + 1) / 3))
 	pubKeys := [][]byte{}
 	for _, jurior := range jury {
 		pubKeys = append(pubKeys, jurior.PublicKey)
@@ -109,6 +109,25 @@ func processContractPayout(tx *modules.Transaction, elf []modules.ElectionInf) {
 	tx.TxMessages = msgs
 }
 
+func DeleOneMax(signs [][]byte) [][]byte {
+	n := len(signs)
+	maxSig := signs[0]
+	max := 0
+	for i := 1; i < n; i++ {
+		if bytes.Compare(maxSig, signs[i]) < 0 {
+			max = i
+		}
+	}
+	var signsNew [][]byte
+	for i := 0; i < max; i++ {
+		signsNew = append(signsNew, signs[i])
+	}
+	for i := max + 1; i < n; i++ {
+		signsNew = append(signsNew, signs[i])
+	}
+	return signsNew
+}
+
 func SortSigs(pubkeys [][]byte, signs [][]byte, redeem []byte) [][]byte {
 	//get all pubkey of redeem
 	redeemStr, _ := tokenengine.DisasmString(redeem)
@@ -122,7 +141,7 @@ func SortSigs(pubkeys [][]byte, signs [][]byte, redeem []byte) [][]byte {
 		pubkeyBytes = append(pubkeyBytes, common.Hex2Bytes(pubkeyStrs[i]))
 	}
 
-	//order
+	//select sign by public key
 	signsNew := make([][]byte, len(pubkeyBytes))
 	for i := range pubkeys {
 		for j := range pubkeyBytes {
@@ -132,12 +151,22 @@ func SortSigs(pubkeys [][]byte, signs [][]byte, redeem []byte) [][]byte {
 			}
 		}
 	}
+	//get order signs by public key
 	signsOrder := [][]byte{}
 	for i := range signsNew {
 		if len(signsNew[i]) > 0 {
 			signsOrder = append(signsOrder, signsNew[i])
 		}
 	}
+
+	//delete max for leave needed min
+	needed, _ := strconv.Atoi(pubkeyStrs[0])
+	delNum := len(signsOrder) - needed
+	for delNum > 0 {
+		signsOrder = DeleOneMax(signsOrder)
+		delNum--
+	}
+
 	return signsOrder
 }
 
@@ -264,7 +293,7 @@ func runContractCmd(rwM rwset.TxManager, dag iDag, contract *contracts.Contract,
 					templateId: reqPay.TplId,
 					txid:       tx.RequestHash().String(), //  hex.EncodeToString(common.BytesToAddress(tx.RequestHash().Bytes()).Bytes()),
 					args:       reqPay.Args,
-					timeout:    time.Duration(reqPay.Timeout)*time.Second,
+					timeout:    time.Duration(reqPay.Timeout) * time.Second,
 				}
 				deployResult, err := ContractProcess(rwM, contract, req)
 				if err != nil {
@@ -292,7 +321,7 @@ func runContractCmd(rwM rwset.TxManager, dag iDag, contract *contracts.Contract,
 					deployId: reqPay.ContractId,
 					args:     reqPay.Args,
 					txid:     tx.RequestHash().String(),
-					timeout:  time.Duration(reqPay.Timeout)*time.Second,
+					timeout:  time.Duration(reqPay.Timeout) * time.Second,
 				}
 
 				fullArgs, err := handleMsg0(tx, dag, req.args)
@@ -509,12 +538,28 @@ func (p *Processor) checkTxReqIdIsExist(reqId common.Hash) bool {
 }
 
 func (p *Processor) checkTxValid(tx *modules.Transaction) bool {
-	err := p.validator.ValidateTx(tx,  false)
+	_, err := p.validator.ValidateTx(tx, false)
 	if err != nil {
 		log.Debugf("[%s]checkTxValid, Validate fail, txHash[%s], err:%s", shortId(tx.RequestHash().String()), tx.Hash().String(), err.Error())
 	}
 
 	return err == nil
+}
+
+func checkTxReceived(all []*modules.Transaction, tx *modules.Transaction) bool {
+	if len(all) < 1 {
+		return false
+	}
+	if tx == nil {
+		return true
+	}
+	inHash := tx.Hash()
+	for _, local := range all {
+		if bytes.Equal(inHash.Bytes(), local.Hash().Bytes()) {
+			return true
+		}
+	}
+	return false
 }
 
 func msgsCompare(msgsA []*modules.Message, msgsB []*modules.Message, msgType modules.MessageType) bool {
@@ -567,7 +612,7 @@ func printTxInfo(tx *modules.Transaction) {
 				fmt.Printf("WriteSet:idx[%d], k[%v]-v[%v]\n", idx, v.Key, v.Value)
 			}
 			for idx, v := range p.ReadSet {
-				fmt.Printf("ReadSet:idx[%d], k[%v]-v[%v]\n", idx, v.Key, v.Value)
+				fmt.Printf("ReadSet:idx[%d], k[%v]-v[%v]\n", idx, v.Key, v.ContractId)
 			}
 		} else if app == modules.APP_SIGNATURE {
 			p := pay.(*modules.SignaturePayload)
@@ -660,16 +705,16 @@ func shortId(id string) string {
 	return id[0:8]
 }
 
-func getSystemContractConfig(dag iDag, key string) int {
-	resultStr, _, err := dag.GetConfig(key)
-	if err != nil {
-		log.Debugf("getSystemContractConfig, dag.GetConfig err: %s", err.Error())
-		return 0
-	}
-	resultInt, err := strconv.Atoi(string(resultStr))
-	if err != nil {
-		log.Debugf("strconv.ParseInt err: %s", err.Error())
-		return 0
-	}
-	return resultInt
-}
+//func getSystemContractConfig(dag iDag, key string) int {
+//	resultStr, err := dag.GetConfig(key)
+//	if err != nil {
+//		log.Debugf("getSystemContractConfig, dag.GetConfig err: %s", err.Error())
+//		return 0
+//	}
+//	resultInt, err := strconv.Atoi(string(resultStr))
+//	if err != nil {
+//		log.Debugf("strconv.ParseInt err: %s", err.Error())
+//		return 0
+//	}
+//	return resultInt
+//}

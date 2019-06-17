@@ -22,7 +22,6 @@ package dag
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -181,8 +180,8 @@ func (d *Dag) GetUnstableUnits() []*modules.Unit {
 }
 func (d *Dag) GetHeaderByHash(hash common.Hash) (*modules.Header, error) {
 	uHeader, err := d.unstableUnitRep.GetHeaderByHash(hash)
-	if errors.IsNotFoundError(err){
-		uHeader,err=d.getHeaderByHashFromPMemDag(hash)
+	if errors.IsNotFoundError(err) {
+		uHeader, err = d.getHeaderByHashFromPMemDag(hash)
 	}
 	if err != nil {
 		log.Debug("GetHeaderByHash failed", "error", err.Error())
@@ -190,31 +189,31 @@ func (d *Dag) GetHeaderByHash(hash common.Hash) (*modules.Header, error) {
 	}
 	return uHeader, nil
 }
-func (d *Dag) getHeaderByHashFromPMemDag(hash common.Hash) (*modules.Header, error){
-	for _,memdag:=range d.PartitionMemDag{
-		h,e:= memdag.GetHeaderByHash(hash)
-		if e==nil{
-			return h,e
+func (d *Dag) getHeaderByHashFromPMemDag(hash common.Hash) (*modules.Header, error) {
+	for _, memdag := range d.PartitionMemDag {
+		h, e := memdag.GetHeaderByHash(hash)
+		if e == nil {
+			return h, e
 		}
 	}
-	return nil,errors.ErrNotFound
+	return nil, errors.ErrNotFound
 }
-func (d *Dag) getHeaderByNumberFromPMemDag(number *modules.ChainIndex) (*modules.Header, error){
-	for _,memdag:=range d.PartitionMemDag{
-		h,e:= memdag.GetHeaderByNumber(number)
-		if e==nil{
-			return h,e
+func (d *Dag) getHeaderByNumberFromPMemDag(number *modules.ChainIndex) (*modules.Header, error) {
+	for _, memdag := range d.PartitionMemDag {
+		h, e := memdag.GetHeaderByNumber(number)
+		if e == nil {
+			return h, e
 		}
 	}
-	return nil,errors.ErrNotFound
+	return nil, errors.ErrNotFound
 }
 func (d *Dag) GetHeaderByNumber(number *modules.ChainIndex) (*modules.Header, error) {
 	uHeader, err := d.unstableUnitRep.GetHeaderByNumber(number)
-	if errors.IsNotFoundError(err){
-		uHeader,err=d.getHeaderByNumberFromPMemDag(number)
+	if errors.IsNotFoundError(err) {
+		uHeader, err = d.getHeaderByNumberFromPMemDag(number)
 	}
 	if err != nil {
-		log.Info("GetHeaderByNumber failed ", "error:", err, "hash", number.String())
+		log.Info("GetHeaderByNumber failed ", "error:", err, "number", number.String())
 		return nil, err
 	}
 	return uHeader, nil
@@ -272,7 +271,7 @@ func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error
 		}
 
 		timestamp := time.Unix(u.Timestamp(), 0)
-		log.Infof("InsertDag unit(%v) #%v parent(%v) @%v signed by %v", u.UnitHash.TerminalString(),
+		log.Debugf("InsertDag unit(%v) #%v parent(%v) @%v signed by %v", u.UnitHash.TerminalString(),
 			u.NumberU64(), u.ParentHash()[0].TerminalString(), timestamp.Format("2006-01-02 15:04:05"),
 			u.Author().Str())
 
@@ -545,7 +544,7 @@ func NewDag(db ptndb.Database) (*Dag, error) {
 	idxDb := storage.NewIndexDb(db)
 	propDb := storage.NewPropertyDb(db)
 
-	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb)
+	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb, propDb)
 	unitRep := dagcommon.NewUnitRepository(dagDb, idxDb, utxoDb, stateDb, propDb)
 	propRep := dagcommon.NewPropRepository(propDb)
 	stateRep := dagcommon.NewStateRepository(stateDb)
@@ -629,7 +628,7 @@ func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
 	idxDb := storage.NewIndexDb(db)
 	propDb := storage.NewPropertyDb(db)
 
-	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb)
+	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb, propDb)
 	unitRep := dagcommon.NewUnitRepository(dagDb, idxDb, utxoDb, stateDb, propDb)
 	validate := validator.NewValidate(dagDb, utxoRep, stateDb, nil)
 	propRep := dagcommon.NewPropRepository(propDb)
@@ -665,7 +664,7 @@ func NewDagForTest(db ptndb.Database) (*Dag, error) {
 	propDb := storage.NewPropertyDb(db)
 	propRep := dagcommon.NewPropRepository(propDb)
 	stateRep := dagcommon.NewStateRepository(stateDb)
-	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb)
+	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb, propDb)
 	unitRep := dagcommon.NewUnitRepository(dagDb, idxDb, utxoDb, stateDb, propDb)
 	statleUnitProduceRep := dagcommon.NewUnitProduceRepository(unitRep, propRep, stateRep)
 
@@ -874,7 +873,8 @@ func (d *Dag) GetAddrUtxos(addr common.Address) (map[modules.OutPoint]*modules.U
 }
 
 func (d *Dag) RefreshSysParameters() {
-	d.unstableStateRep.RefreshSysParameters()
+	//d.unstableStateRep.RefreshSysParameters()
+	d.unstableUnitProduceRep.RefreshSysParameters()
 }
 
 //func (d *Dag) SaveUtxoView(view *txspool.UtxoViewpoint) error {
@@ -890,14 +890,6 @@ func (d *Dag) GetAddrTransactions(addr common.Address) ([]*modules.TransactionWi
 func (d *Dag) GetContractState(id []byte, field string) ([]byte, *modules.StateVersion, error) {
 	return d.unstableStateRep.GetContractState(id, field)
 	//return d.statedb.GetContractState(common.HexToAddress(id), field)
-}
-
-func (d *Dag) GetConfig(name string) ([]byte, *modules.StateVersion, error) {
-	return d.unstableStateRep.GetConfig(name)
-}
-func (d *Dag) GetAllConfig() (map[string]*modules.ContractStateValue, error) {
-	return d.unstableStateRep.GetAllConfig()
-
 }
 
 //get contract all state
@@ -1321,14 +1313,14 @@ func (d *Dag) InsertLightHeader(headers []*modules.Header) (int, error) {
 	for _, header := range headers {
 		log.Debug("===InsertLightHeader===", "header index:", header.Index(), "assetid", header.Number.AssetID)
 	}
-	count,err:= d.InsertHeaderDag(headers)
+	count, err := d.InsertHeaderDag(headers)
 	//Debug code:
 	//if headers[len(headers)-1].Number.Index==uint64(310) {
 	//	hash := common.HexToHash("c9a364d0330c463942f101f98b9e07f3f48a651152c1b28f243a240eae7cd87e")
 	//	h, e := d.GetHeaderByHash(hash)
 	//	log.Debugf("310 header:%s,err:%v", h.Hash().String(), e)
 	//}
-	return count,err
+	return count, err
 }
 
 //All leaf nodes for dag downloader.
@@ -1397,15 +1389,17 @@ func (bc *Dag) GetPartitionChains() ([]*modules.PartitionChain, error) {
 func (bc *Dag) GetMainChain() (*modules.MainChain, error) {
 	return bc.unstableStateRep.GetMainChain()
 }
-func (d *Dag) GetCoinYearRate() float64 {
-	data, _, err := d.GetConfig("TxCoinYearRate")
-	if err != nil {
-		log.Warn("Cannot read system config by key :TxCoinYearRate")
-		return 0
-	}
-	rate, _ := strconv.ParseFloat(string(data), 64)
-	return rate
-}
+
+//func (d *Dag) GetCoinYearRate() float64 {
+//	//data, err := d.GetConfig("TxCoinYearRate")
+//	//if err != nil {
+//	//	log.Warn("Cannot read system config by key :TxCoinYearRate")
+//	//	return 0
+//	//}
+//	data := d.GetChainParameters().TxCoinYearRate
+//	rate, _ := strconv.ParseFloat(string(data), 64)
+//	return rate
+//}
 
 // SubscribeChainSideEvent registers a subscription of ChainSideEvent.
 //func (bc *Dag) SubscribeChainSideEvent(ch chan<- ChainSideEvent) event.Subscription {
@@ -1435,8 +1429,17 @@ func (d *Dag) SubscribeActiveMediatorsUpdatedEvent(ch chan<- modules.ActiveMedia
 
 func (d *Dag) Close() {
 	d.unstableUnitProduceRep.Close()
+	d.Db.Close()
+	log.Debug("Close all dag database connections")
 }
 
 func (dag *Dag) MediatorVotedResults() map[string]uint64 {
 	return dag.unstableUnitProduceRep.MediatorVotedResults()
+}
+
+func (dag *Dag) StoreDataVersion(dv *modules.DataVersion) error {
+	return dag.stableStateRep.StoreDataVersion(dv)
+}
+func (dag *Dag) GetDataVersion() (*modules.DataVersion, error) {
+	return dag.stableStateRep.GetDataVersion()
 }
