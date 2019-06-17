@@ -54,7 +54,7 @@ matrix:
     #  script:
     #    - go build ./cmd/gptn
     #    - make gptn
-    3    - go test ./...       
+    #    - go test ./...       
     #- os: linux
     #  dist: xenial
     #  go: 1.12.5
@@ -89,6 +89,7 @@ matrix:
           chmod +x ./test_start.sh;
           ./test_start.sh;
           fi
+          
         # into bdd path, all testcases is here
         - cd ${BASE_DIR}/bdd
         - mkdir -p ${BDD_LOG_PATH}
