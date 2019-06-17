@@ -33,13 +33,6 @@ env:
 
 matrix:
   include:
-    - os: osx
-      go: 1.12.5
-      script:
-        #- go get github.com/influxdata/influxdb
-        - go build ./cmd/gptn
-        - make gptn
-        - go test ./...
     - os: linux
       dist: xenial
       go: 1.10.8
@@ -48,20 +41,20 @@ matrix:
         - make gptn
         - $GOPATH/bin/goveralls -service=travis-ci
         
-    #- os: linux
-    #  dist: xenial
-    #  go: 1.11.x
-    #  script:
-    #    - go build ./cmd/gptn
-    #    - make gptn
-    #    - go test ./...       
-    #- os: linux
-    #  dist: xenial
-    #  go: 1.12.5
-    #  script:
-    #    - go build ./cmd/gptn
-    #    - make gptn
-    #s    - go test ./...      
+    - os: linux
+      dist: xenial
+      go: 1.11.x
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - go test ./...       
+    - os: linux
+      dist: xenial
+      go: 1.12.5
+      script:
+        - go build ./cmd/gptn
+        - make gptn
+        - go test ./...          
     - os: linux
       dist: xenial
       go: 1.12.5
