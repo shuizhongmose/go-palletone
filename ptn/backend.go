@@ -30,7 +30,6 @@ import (
 	"github.com/palletone/go-palletone/common/ptndb"
 	palletdb "github.com/palletone/go-palletone/common/ptndb"
 	"github.com/palletone/go-palletone/common/rpc"
-	"github.com/palletone/go-palletone/configure"
 	"github.com/palletone/go-palletone/consensus"
 	"github.com/palletone/go-palletone/consensus/jury"
 	mp "github.com/palletone/go-palletone/consensus/mediatorplugin"
@@ -41,7 +40,6 @@ import (
 	"github.com/palletone/go-palletone/core/node"
 	"github.com/palletone/go-palletone/dag"
 	"github.com/palletone/go-palletone/dag/dagconfig"
-	"github.com/palletone/go-palletone/dag/migration"
 	"github.com/palletone/go-palletone/dag/modules"
 	"github.com/palletone/go-palletone/dag/storage"
 	"github.com/palletone/go-palletone/dag/txspool"
@@ -52,11 +50,10 @@ import (
 	"github.com/palletone/go-palletone/ptnjson"
 	"github.com/palletone/go-palletone/tokenengine"
 	"github.com/shopspring/decimal"
-	"time"
 )
 
 type LesServer interface {
-	Start(srvr *p2p.Server, corss *p2p.Server)
+	Start(srvr *p2p.Server, corss *p2p.Server, syncCh chan bool)
 	Stop()
 	Protocols() []p2p.Protocol
 	CorsProtocols() []p2p.Protocol
@@ -103,6 +100,7 @@ type PalletOne struct {
 
 	//cors
 	corsServer LesServer
+	syncCh     chan bool
 }
 
 func (p *PalletOne) AddLesServer(ls LesServer) {
@@ -133,8 +131,6 @@ func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
 	}
 
 	dag.RefreshSysParameters()
-	// start migration
-	startMigration(dag)
 
 	ptn := &PalletOne{
 		config:         config,
@@ -144,8 +140,7 @@ func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
 		networkId:      config.NetworkId,
 		dag:            dag,
 		unitDb:         db,
-		//bloomRequests:  make(chan chan *bloombits.Retrieval),
-		//bloomIndexer:   NewBloomIndexer(db, BloomBitsBlocks),
+		syncCh:         make(chan bool, 1),
 	}
 	log.Info("Initialising PalletOne protocol", "versions", ProtocolVersions, "network", config.NetworkId)
 
@@ -184,7 +179,6 @@ func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
 	}
 
 	gasToken := config.Dag.GetGasToken()
-	//ptn.bloomIndexer.Start(dag, gasToken)
 	if ptn.protocolManager, err = NewProtocolManager(config.SyncMode, config.NetworkId, gasToken, ptn.txPool,
 		ptn.dag, ptn.eventMux, ptn.mediatorPlugin, genesis, ptn.contractPorcessor, ptn.engine); err != nil {
 		log.Error("NewProtocolManager err:", "error", err)
@@ -265,11 +259,8 @@ func (s *PalletOne) NetVersion() uint64                 { return s.networkId }
 func (s *PalletOne) Downloader() *downloader.Downloader { return s.protocolManager.downloader }
 func (s *PalletOne) Dag() dag.IDag                      { return s.dag }
 func (s *PalletOne) UnitDb() ptndb.Database             { return s.unitDb }
-
 func (s *PalletOne) ContractProcessor() *jury.Processor { return s.contractPorcessor }
 func (s *PalletOne) ProManager() *ProtocolManager       { return s.protocolManager }
-
-//func (s *PalletOne) GetLesServer() LesServer            { return s.lesServer }
 
 func (s *PalletOne) MockContractLocalSend(event jury.ContractEvent) {
 	s.protocolManager.ContractReqLocalSend(event)
@@ -308,7 +299,6 @@ func (s *PalletOne) Protocols() []p2p.Protocol {
 	}
 	protocols := append(s.protocolManager.SubProtocols, s.lesServer.Protocols()...)
 	return protocols
-	//return append(protocols, s.corsServer.CorsProtocols()...)
 }
 
 func (s *PalletOne) CorsProtocols() []p2p.Protocol {
@@ -325,20 +315,9 @@ func (s *PalletOne) CorsServer() LesServer {
 // Start implements node.Service, starting all internal goroutines needed by the
 // PalletOne protocol implementation.
 func (s *PalletOne) Start(srvr *p2p.Server, corss *p2p.Server) error {
-	// Start the bloom bits servicing goroutines
-	//s.startBloomHandlers()
-
 	// Start the RPC service
 	s.netRPCService = ptnapi.NewPublicNetAPI(srvr, s.NetVersion())
-
-	// Figure out a max peers count based on the server limits
-	//maxPeers := srvr.MaxPeers
-
-	// Start the networking layer and the light server if requested
-	//s.protocolManager.Start(srvr, maxPeers)
-
 	s.contractPorcessor.Start(srvr)
-
 	s.mediatorPlugin.Start(srvr)
 
 	maxPeers := srvr.MaxPeers
@@ -349,13 +328,14 @@ func (s *PalletOne) Start(srvr *p2p.Server, corss *p2p.Server) error {
 		maxPeers -= s.config.LightPeers
 	}
 	// Start the networking layer and the light server if requested
-	s.protocolManager.Start(srvr, maxPeers)
 	if s.lesServer != nil {
-		s.lesServer.Start(srvr, corss)
+		s.lesServer.Start(srvr, corss, s.syncCh)
 	}
 	if s.corsServer != nil {
-		s.corsServer.Start(srvr, corss)
+		s.corsServer.Start(srvr, corss, s.syncCh)
 	}
+
+	s.protocolManager.Start(srvr, maxPeers, s.syncCh)
 	return nil
 }
 
@@ -500,46 +480,4 @@ func (p *PalletOne) TransferPtn(from, to string, amount decimal.Decimal, text *s
 	res.Warning = ptnapi.DefaultResult
 
 	return res, nil
-}
-func startMigration(dag *dag.Dag) error {
-	// 获取旧的gptn版本号
-	t := time.Now()
-	defer func(t1 time.Time) {
-		log.Infof("exec migration spent time:%s", time.Since(t1))
-	}(t)
-	old_vertion, err := dag.GetDataVersion()
-	if err != nil {
-		return err
-	}
-	log.Infof("the old version:%s", old_vertion.Version)
-	// 获取当前gptn版本号
-	now_version := configure.Version
-	next_version := old_vertion.Version
-	if next_version != now_version {
-		log.Infof("start migration,upgrade gtpn vertion[%s] to [%s]", next_version, now_version)
-		// migrations
-		mig_versions := migration.NewMigrations(dag.Db)
-		for {
-			if mig, has := mig_versions[next_version]; has {
-				if err := mig.ExecuteUpgrade(); err != nil {
-					return err
-				}
-				next_version = mig.ToVersion()
-				data_version := new(modules.DataVersion)
-				data_version.Name = "gptn"
-				data_version.Version = next_version
-				dag.StoreDataVersion(data_version)
-			}
-			if next_version == now_version {
-				break
-			}
-			// 版本升级超时处理
-			if now := time.Now(); now.After(t.Add(1 * time.Minute)) {
-				log.Infof("upgrade gptn failed. error: timeout[%s]", time.Since(t))
-				break
-			}
-		}
-		return nil
-	}
-	return nil
 }
