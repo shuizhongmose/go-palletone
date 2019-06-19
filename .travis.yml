@@ -39,8 +39,7 @@ matrix:
       script:
         - go build ./cmd/gptn
         - make gptn
-        - $GOPATH/bin/goveralls -service=travis-ci
-        
+        - $GOPATH/bin/goveralls -service=travis-ci   
     - os: linux
       dist: xenial
       go: 1.11.x
