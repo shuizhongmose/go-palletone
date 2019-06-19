@@ -92,11 +92,10 @@ Supply token of 721 contract after change supply
     ...    ${721ContractId}    ${ccList}
     ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
     ${jsonRes}    To Json    ${jsonRes}
-    sleep    5
+    sleep    7
     [Return]    ${jsonRes['result']}
 
 Request getbalance after change supply
-    sleep    10
     ${PTN3}    ${result3}    normalGetBalance    ${reciever}
     sleep    7
     ${key}    getTokenId    ${preTokenId}    ${result3['result']}

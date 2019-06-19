@@ -38,7 +38,7 @@ Create token of vote contract
     ...    ${721ContractId}    ${ccList}
     ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
     ${jsonRes}    To Json    ${jsonRes}
-	sleep    3
+    sleep    3
     [Return]    ${jsonRes['result']}
 
 Calculate gain of recieverAdd
@@ -52,7 +52,7 @@ Request getbalance after create token
     ${PTN2}    ${result2}    normalGetBalance    ${geneAdd}
     sleep    5
     ${queryResult}    ccqueryById    ${721ContractId}    getTokenInfo    ${preTokenId}
-	sleep    1
+    sleep    1
     ${tokenCommonId}    ${countList}    jsonLoads    ${queryResult['result']}    AssetID    TokenIDs
     : FOR    ${num}    IN RANGE    len(${countList})
     \    ${voteToken}    Get From Dictionary    ${result2['result']}    ${tokenCommonId}-${countList[${num}]}
