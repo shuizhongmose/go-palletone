@@ -76,11 +76,11 @@ matrix:
           ./deposit_test.sh 5;
           fi
 
-        - if [ $IS_RUN_TESTCONTRACTCASES == 'true' ];then
-          cd ../contract/testcases;
-          chmod +x ./test_start.sh;
-          ./test_start.sh;
-          fi
+        #- if [ $IS_RUN_TESTCONTRACTCASES == 'true' ];then
+        #  cd ../contract/testcases;
+        #  chmod +x ./test_start.sh;
+        #  ./test_start.sh;
+        #  fi
           
         # into bdd path, all testcases is here
         - cd ${BASE_DIR}/bdd
