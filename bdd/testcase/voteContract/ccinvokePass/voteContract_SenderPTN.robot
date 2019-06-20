@@ -50,7 +50,7 @@ Calculate gain of recieverAdd
     sleep    3
     ${invokeGain}    Evaluate    int(${PTNAmount})+int(${PTNPoundage})
     ${GAIN}    countRecieverPTN    ${invokeGain}
-    sleep    4
+    sleep    2
     [Return]    ${GAIN}
 
 Request getbalance after create token

@@ -28,7 +28,7 @@ Get genesis address
 
 Request getbalance before create token
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
-    sleep    6
+    sleep    5
     [Return]    ${PTN1}    ${result1}
 
 Create token of vote contract
@@ -38,7 +38,7 @@ Create token of vote contract
     ...    ${721ContractId}    ${ccList}
     ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
     ${jsonRes}    To Json    ${jsonRes}
-    sleep    3
+    sleep    4
     [Return]    ${jsonRes['result']}
 
 Calculate gain of recieverAdd

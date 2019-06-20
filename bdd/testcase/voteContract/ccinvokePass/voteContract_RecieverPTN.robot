@@ -45,12 +45,12 @@ Calculate gain of recieverAdd
     sleep    3
     ${gain1}    countRecieverPTN    ${PTNAmount}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')+decimal.Decimal('${gain1}')    decimal
-    sleep    4
+    sleep    2
     [Return]    ${PTNGAIN}
 
 Request getbalance after create token
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
-    sleep    4
+    sleep    5
     [Return]    ${PTN2}    ${result2}
 
 Assert gain of reciever
