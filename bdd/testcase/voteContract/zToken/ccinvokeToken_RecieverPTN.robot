@@ -26,12 +26,8 @@ Get genesis address
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
-<<<<<<< HEAD
     sleep    5
     ${key}    getTokenIdByNum    ${voteId}    ${result1['result']}    2
-=======
-    ${key}    getTokenId    ${voteId}    ${result1['result']}
->>>>>>> master
     sleep    2
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
     sleep    5
