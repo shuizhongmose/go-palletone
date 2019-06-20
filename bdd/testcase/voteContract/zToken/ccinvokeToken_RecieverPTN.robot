@@ -26,12 +26,17 @@ Get genesis address
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
+<<<<<<< HEAD
     sleep    5
     ${key}    getTokenIdByNum    ${voteId}    ${result1['result']}    2
+=======
+    ${key}    getTokenId    ${voteId}    ${result1['result']}
+>>>>>>> master
     sleep    2
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
     sleep    5
     ${PTN2P}    voteExist    PTN    ${result2}
+    sleep    2
     [Return]    ${PTN2P}    ${key}
 
 Create token of vote contract
@@ -45,7 +50,12 @@ Create token of vote contract
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN2P}
+<<<<<<< HEAD
     ${GAIN}    countRecieverPTN    int(${votePTN})
+=======
+	sleep    4
+    ${GAIN}    countRecieverPTN    int(${PTNAmount})
+>>>>>>> master
     ${PTN2'}    Evaluate    decimal.Decimal('${PTN2P}')+decimal.Decimal('${GAIN}')    decimal
     sleep    3
     [Return]    ${PTN2'}
