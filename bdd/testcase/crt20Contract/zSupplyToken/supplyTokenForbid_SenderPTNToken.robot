@@ -10,8 +10,8 @@ Resource          ../../utilKwd/behaveKwd.txt
 ${preTokenId}     QA058
 
 *** Test Cases ***
-Feature: Vote Contract- Create token
-    [Documentation]    Scenario: Verify Sender's PTN
+Scenario: 20Contract- Supply token
+    [Documentation]    Verify Sender's PTN
     Given CcinvokePass normal
     ${PTN1}    ${key}    ${coinToken1}    And Request getbalance before create token    ${geneAdd}
     ${ret}    When Create token of vote contract    ${geneAdd}

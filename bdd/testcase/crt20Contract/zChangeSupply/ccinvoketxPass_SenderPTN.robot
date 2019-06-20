@@ -10,7 +10,7 @@ Resource          ../../utilKwd/behaveKwd.txt
 ${preTokenId}     QA056
 
 *** Test Cases ***
-Scenario: Change Supply Token
+Scenario: 20Contract - Change Supply Token
     [Documentation]    Verify SupplyAdd And Transfer Token
     Given Send PTN to recieverAdd
     And Request ccinvokePass and transferToken
