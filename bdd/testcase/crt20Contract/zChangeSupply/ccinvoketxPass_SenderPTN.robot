@@ -46,7 +46,7 @@ Request ccinvokePass and transferToken
     ...    ${evidence}    ${duration}
 
 Change supply of contract
-	sleep    4
+    sleep    4
     ${ccList}    Create List    ${changeSupplyMethod}    ${preTokenId}    ${reciever}
     ${result}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${reciever}    ${PTNAmount}    ${PTNPoundage}
     ...    ${20ContractId}    ${ccList}

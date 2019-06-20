@@ -42,6 +42,7 @@ Create token of vote contract
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN1}
+    sleep    4
     ${invokeGain}    Evaluate    int(${PTNAmount})+int(${PTNPoundage})
     ${GAIN}    countRecieverPTN    ${invokeGain}
     sleep    4

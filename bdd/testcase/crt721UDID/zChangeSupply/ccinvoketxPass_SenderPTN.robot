@@ -34,7 +34,7 @@ Send the new address PTN
     ${ret1}    And normalCrtTrans    ${geneAdd}    ${reciever}    100000    ${PTNPoundage}
     ${ret2}    And normalSignTrans    ${ret1}    ${signType}    ${pwd}
     ${ret3}    And normalSendTrans    ${ret2}
-    sleep    3
+    
 
 CcinvokePass normal
     ${ccList}    Create List    ${crtTokenMethod}    ${note}    ${preTokenId}    ${UDIDToken}    ${721TokenAmount}
@@ -55,6 +55,7 @@ Supply token of 721 contract before change supply
     [Return]    ${jsonRes['result']}
 
 Request getbalance after supply token
+	sleep    5
     ${PTN2}    ${result2}    normalGetBalance    ${geneAdd}
     sleep    5
     #${key}    getTokenId    ${preTokenId}    ${result2['result']}
@@ -97,7 +98,7 @@ Supply token of 721 contract after change supply
 
 Request getbalance after change supply
     ${PTN3}    ${result3}    normalGetBalance    ${reciever}
-    sleep    6
+    sleep    5
     #${key}    getTokenId    ${preTokenId}    ${result3['result']}
     ${queryResult}    ccqueryById    ${721ContractId}    ${TokenInfoMethod}    ${preTokenId}
     ${tokenCommonId}    ${countList}    jsonLoads    ${queryResult['result']}    AssetID    TokenIDs
@@ -125,6 +126,7 @@ Genesis address supply token of 721 contract
     [Return]    ${jsonRes['result']}
 
 Request getbalance after genesis supply token
+	sleep    4
     ${PTN4}    ${result4}    normalGetBalance    ${geneAdd}
     sleep    4
     ${key}    getTokenId    ${preTokenId}    ${result4['result']}
@@ -134,4 +136,5 @@ Request getbalance after genesis supply token
     log    len(${countList})
     ${len}    Evaluate    len(${countList})+1
     Should Not Contain    ${result4['result']}    ${tokenCommonId}-11
+	sleep    3
     [Return]    ${PTN4}
