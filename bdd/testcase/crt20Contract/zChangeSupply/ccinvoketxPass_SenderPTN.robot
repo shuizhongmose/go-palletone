@@ -39,7 +39,7 @@ Request ccinvokePass and transferToken
     ...    ${ccList}
     sleep    5
     ${result1}    getBalance    ${geneAdd}
-    sleep    5
+    sleep    2
     ${key}    getTokenId    ${preTokenId}    ${result1}
     sleep    2
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${reciever}    2000    ${PTNPoundage}
@@ -61,7 +61,7 @@ Assert the supplyAddr
 
 Request getbalance before create token
     ${result1}    getBalance    ${reciever}
-    sleep    5
+    sleep    2
     ${key}    getTokenId    ${preTokenId}    ${result1}
     sleep    2
     ${PTN1}    Get From Dictionary    ${result1}    PTN
@@ -76,15 +76,15 @@ Request supply token
     [Return]    ${ret}
 
 Calculate gain of recieverAdd
+    sleep    5
     ${invokeGain}    Evaluate    int(${PTNAmount})+int(${PTNPoundage})
     ${tokenAmount}    countRecieverPTN    ${invokeGain}
-    sleep    3
     [Return]    ${tokenAmount}
 
 Request getbalance after create token
     [Arguments]    ${geneAdd}    ${key}    ${tokenAmount}
     ${result2}    getBalance    ${reciever}
-    sleep    5
+    sleep    2
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
     sleep    1
     ${PTN2}    Get From Dictionary    ${result2}    PTN

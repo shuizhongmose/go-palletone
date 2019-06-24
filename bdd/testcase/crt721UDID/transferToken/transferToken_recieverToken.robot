@@ -37,7 +37,7 @@ Create token of 721 contract
     [Return]    ${jsonRes['result']}
 
 Request getbalance before transfer token
-    sleep    6
+    sleep    5
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     #sleep    1
     ${queryResult}    ccqueryById    ${721ContractId}    getTokenInfo    ${preTokenId}
@@ -52,7 +52,7 @@ Request transfer token
     [Arguments]    ${key}
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${recieverAdd}    1    ${PTNPoundage}
     ...    ${evidence}    ${duration}
-    sleep    6
+    sleep    5
 
 Request getbalance after transfer token
     [Arguments]    ${key}

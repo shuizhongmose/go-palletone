@@ -22,13 +22,13 @@ Scenario: Vote Contract - Transfer Token
 *** Keywords ***
 Get genesis address
     ${geneAdd}    getGeneAdd    ${host}
-    sleep    5
+    sleep    4
     [Return]    ${geneAdd}
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
-    sleep    3
+    sleep    2
     ${key}    getTokenId    ${voteId}    ${result1['result']}
     sleep    2
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
@@ -40,23 +40,23 @@ Request getbalance before create token
     #\    log    ${keys}
     #${strResult}    Evaluate    str(${jsonRes})
     ${item1}    voteExist    ${key}    ${result2}
-    sleep    3
+    sleep    2
     [Return]    ${key}    ${item1}
 
 Request transfer token
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${evidence}    ${duration}
+    sleep    5
 
 Calculate gain of recieverAdd
     [Arguments]    ${item1}
-    sleep    6
     ${item1}    Evaluate    ${item1}+${PTNAmount}
     [Return]    ${item1}
 
 Request getbalance after create token
     [Arguments]    ${key}
     ${result2}    getBalance    ${recieverAdd}
-    sleep    4
+    sleep    2
     ${item2}    Get From Dictionary    ${result2}    ${key}
     sleep    3
     [Return]    ${item2}
@@ -64,4 +64,3 @@ Request getbalance after create token
 Assert gain of reciever
     [Arguments]    ${item1}    ${item2}
     Should Be Equal As Strings    ${item2}    ${item1}
-    sleep    3

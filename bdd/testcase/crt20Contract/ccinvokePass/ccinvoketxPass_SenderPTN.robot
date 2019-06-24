@@ -51,4 +51,3 @@ Assert gain
     [Arguments]    ${PTN1}    ${PTN2}    ${PTNGAIN}
     ${GAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${PTNGAIN}')    decimal
     Should Be Equal As Strings    ${PTN2}    ${GAIN}
-    sleep    3

@@ -44,7 +44,7 @@ Calculate gain
 
 Request getbalance after create token
     ${PTN2}    ${result}    normalGetBalance    ${recieverAdd}
-    sleep    5
+    sleep    2
     [Return]    ${PTN2}
 
 Assert gain

@@ -35,11 +35,11 @@ Create token of vote contract
     ...    ${721ContractId}    ${ccList}
     ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
     ${jsonRes}    To Json    ${jsonRes}
+    sleep    5
     [Return]    ${jsonRes['result']}
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN1}
-    sleep    5
     ${gain1}    countRecieverPTN    ${PTNAmount}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')+decimal.Decimal('${gain1}')    decimal
     sleep    2
@@ -47,7 +47,7 @@ Calculate gain of recieverAdd
 
 Request getbalance after create token
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
-    sleep    3
+    sleep    2
     [Return]    ${PTN2}    ${result2}
 
 Assert gain of reciever

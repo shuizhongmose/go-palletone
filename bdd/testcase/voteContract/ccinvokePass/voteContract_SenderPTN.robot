@@ -23,12 +23,11 @@ Get genesis address
     ${geneAdd}    getGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     personalUnlockAccount    ${geneAdd}
-    sleep    2
+    sleep    4
     [Return]    ${geneAdd}
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
-    sleep    3
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     #sleep    2
     [Return]    ${PTN1}    ${result1}
@@ -44,11 +43,11 @@ Create token of vote contract
     Should Contain    ${resp.content}['jsonrpc']    "2.0"    msg="jsonrpc:failed"
     Should Contain    ${resp.content}['id']    1    msg="id:failed"
     ${ret}    Should Match Regexp    ${resp.content}['result']    ${commonResultCode}    msg="result:does't match Result expression"
+    sleep    5
     [Return]    ${ret}
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN1}
-    sleep    6
     ${invokeGain}    Evaluate    int(${PTNAmount})+int(${PTNPoundage})
     ${GAIN}    countRecieverPTN    ${invokeGain}
     sleep    1
@@ -65,4 +64,3 @@ Assert gain of reciever
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${GAIN}')    decimal
     sleep    2
     Should Be Equal As Numbers    ${PTN2}    ${PTNGAIN}
-    sleep    3

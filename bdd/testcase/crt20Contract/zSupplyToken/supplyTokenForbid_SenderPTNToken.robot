@@ -26,13 +26,13 @@ CcinvokePass normal
     ${ccList}    Create List    ${crtTokenMethod}    ${evidence}    ${preTokenId}    ${tokenDecimal}    ${tokenAmount}
     ${ret}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${20ContractId}    ${ccList}
-    sleep    4
+    sleep    5
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     #${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     ${result1}    getBalance    ${geneAdd}
-    sleep    5
+    sleep    2
     ${key}    getTokenId    ${preTokenId}    ${result1}
     sleep    2
     ${PTN1}    Get From Dictionary    ${result1}    PTN
@@ -62,7 +62,7 @@ Calculate gain of recieverAdd
 Request getbalance after create token
     [Arguments]    ${geneAdd}    ${key}
     ${result2}    getBalance    ${geneAdd}
-    sleep    5
+    sleep    2
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
     sleep    1
     ${PTN2}    Get From Dictionary    ${result2}    PTN

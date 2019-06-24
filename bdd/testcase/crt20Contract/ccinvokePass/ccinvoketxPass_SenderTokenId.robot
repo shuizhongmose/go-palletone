@@ -57,4 +57,3 @@ Request getbalance after create token
 Assert gain
     [Arguments]    ${count}    ${key}
     Should Be Equal As Numbers    ${count}    ${key}
-    sleep    3
