@@ -136,28 +136,24 @@ matrix:
           sleep 15;
           python -m robot.run -d ${BDD_LOG_PATH}/${MEDIATOR_VOTE_DIR} .;
           fi
-    - os: linux
-      dist: xenial
-      go: 1.12.5
-      env: multiple_nodes_bdd
-      script:
-        - go build ./cmd/gptn
-        # - make gptn
-        - cp bdd/node/launchMultipleNodes.sh cmd/deployment
-        #- mkdir bdd/GasToken/node
-        #- mkdir bdd/mediator-vote/node
-        #- cp gptn bdd/GasToken/node
-        #- cp gptn bdd/mediator-vote/node
-        - cd bdd/node
-        - chmod +x gptn
-        - python init.py
-        - nohup ./gptn &
-        - sleep 15
-        - netstat -ap | grep gptn
-        - if [ $IS_RUN_DEPOSIT == 'true' ]; then
-          cd ../dct;
-          ./deposit_test.sh 5;
-          fi
+    #- os: linux
+    #  dist: xenial
+    #  go: 1.12.5
+    #  env: multiple_nodes_bdd
+    #  script:
+    #    - go build ./cmd/gptn
+    #    # - make gptn
+    #    - cp bdd/node/launchMultipleNodes.sh cmd/deployment
+    #    #- mkdir bdd/GasToken/node
+    #    #- mkdir bdd/mediator-vote/node
+    #    #- cp gptn bdd/GasToken/node
+    #    #- cp gptn bdd/mediator-vote/node
+    #    - cd bdd/node
+    #    - chmod +x gptn
+    #    - python init.py
+    #    - nohup ./gptn &
+    #    - sleep 15
+
           
       after_script:
         - killall gptn
