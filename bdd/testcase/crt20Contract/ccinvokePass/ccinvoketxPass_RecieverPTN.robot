@@ -22,8 +22,9 @@ Scenario: 20Contract - Create Token
 
 *** Keywords ***
 Request getbalance before create token
-    ${PTN1}    ${result}    normalGetBalance    ${recieverAdd}
     sleep    4
+    ${PTN1}    ${result}    normalGetBalance    ${recieverAdd}
+    sleep    1
     [Return]    ${PTN1}
 
 Request normal CcinvokePass

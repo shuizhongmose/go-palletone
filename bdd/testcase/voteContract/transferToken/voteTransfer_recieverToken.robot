@@ -22,16 +22,17 @@ Scenario: Vote Contract - Transfer Token
 *** Keywords ***
 Get genesis address
     ${geneAdd}    getGeneAdd    ${host}
+    sleep    5
     [Return]    ${geneAdd}
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
-    sleep    4
+    sleep    3
     ${key}    getTokenId    ${voteId}    ${result1['result']}
     sleep    2
     ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
-    sleep    5
+    sleep    3
     #${dicRes}    Evaluate    demjson.encode(${result2})    demjson
     #log    type(${dicRes})
     #${jsonRes}    To Json    ${dicRes}
@@ -48,18 +49,19 @@ Request transfer token
 
 Calculate gain of recieverAdd
     [Arguments]    ${item1}
-    sleep    5
+    sleep    6
     ${item1}    Evaluate    ${item1}+${PTNAmount}
     [Return]    ${item1}
 
 Request getbalance after create token
     [Arguments]    ${key}
     ${result2}    getBalance    ${recieverAdd}
-    sleep    5
-    ${item2}    Get From Dictionary    ${result2}    ${key}
     sleep    4
+    ${item2}    Get From Dictionary    ${result2}    ${key}
+    sleep    3
     [Return]    ${item2}
 
 Assert gain of reciever
     [Arguments]    ${item1}    ${item2}
     Should Be Equal As Strings    ${item2}    ${item1}
+    sleep    3
