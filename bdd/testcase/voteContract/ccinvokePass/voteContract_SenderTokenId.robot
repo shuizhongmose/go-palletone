@@ -23,13 +23,19 @@ Get genesis address
     ${geneAdd}    getGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     personalUnlockAccount    ${geneAdd}
+<<<<<<< HEAD
     sleep    4
+=======
+>>>>>>> master
     [Return]    ${geneAdd}
 
 Request getbalance before create token
     [Arguments]    ${geneAdd}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
+<<<<<<< HEAD
     sleep    2
+=======
+>>>>>>> master
     [Return]    ${PTN1}    ${result1}
 
 Create token of vote contract
@@ -50,13 +56,16 @@ Calculate gain of recieverAdd
     [Arguments]    ${PTN1}
     ${totoalGain}    Evaluate    int(${amount})+int(${tokenDecimal})
     ${GAIN}    countRecieverPTN    ${totoalGain}
-    sleep    2
     [Return]    ${GAIN}
 
 Request getbalance after create token
     [Arguments]    ${geneAdd}
+    sleep    4
     ${PTN}    ${result2}    normalGetBalance    ${geneAdd}
+<<<<<<< HEAD
     sleep    2
+=======
+>>>>>>> master
     [Return]    ${PTN}    ${result2}
 
 Assert gain of reciever

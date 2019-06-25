@@ -37,36 +37,49 @@ Request ccinvokePass and transferToken
     ...    ${geneAdd}
     normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${reciever}    ${PTNAmount}    ${PTNPoundage}    ${20ContractId}
     ...    ${ccList}
-    sleep    5
+    sleep    4
     ${result1}    getBalance    ${geneAdd}
+<<<<<<< HEAD
     sleep    2
+=======
+>>>>>>> master
     ${key}    getTokenId    ${preTokenId}    ${result1}
-    sleep    2
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${reciever}    2000    ${PTNPoundage}
     ...    ${evidence}    ${duration}
 
 Change supply of contract
-    sleep    5
+    sleep    4
     ${ccList}    Create List    ${changeSupplyMethod}    ${preTokenId}    ${reciever}
     ${result}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${reciever}    ${PTNAmount}    ${PTNPoundage}
     ...    ${20ContractId}    ${ccList}
+<<<<<<< HEAD
     sleep    6
+=======
+>>>>>>> master
     [Return]    ${result}
 
 Assert the supplyAddr
+    sleep    4
     ${queryResult}    ccqueryById    ${20ContractId}    ${TokenInfoMethod}    ${preTokenId}
+<<<<<<< HEAD
     sleep    2
+=======
+>>>>>>> master
     ${SupplyAddr}    jsonLoads    ${queryResult['result']}    SupplyAddr
     sleep    3
     Should Be Equal As Strings    ${reciever}    ${SupplyAddr}
 
 Request getbalance before create token
+    sleep    4
     ${result1}    getBalance    ${reciever}
+<<<<<<< HEAD
     sleep    3
     ${key}    getTokenId    ${preTokenId}    ${result1}
     sleep    3
+=======
+    ${key}    getTokenId    ${preTokenId}    ${result1}
+>>>>>>> master
     ${PTN1}    Get From Dictionary    ${result1}    PTN
-    sleep    1
     ${coinToken1}    Get From Dictionary    ${result1}    ${key}
     [Return]    ${PTN1}    ${key}    ${coinToken1}
 
@@ -84,12 +97,14 @@ Calculate gain of recieverAdd
 
 Request getbalance after create token
     [Arguments]    ${geneAdd}    ${key}    ${tokenAmount}
+    sleep    4
     ${result2}    getBalance    ${reciever}
+<<<<<<< HEAD
     sleep    2
+=======
+>>>>>>> master
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
-    sleep    1
     ${PTN2}    Get From Dictionary    ${result2}    PTN
-    sleep    1
     ${tokenGAIN}    Evaluate    float(${coinToken2})-float(${coinToken1})
     [Return]    ${PTN2}    ${tokenGAIN}
 
@@ -97,5 +112,4 @@ Assert gain
     [Arguments]    ${PTN1}    ${PTN2}    ${tokenGAIN}    ${tokenAmount}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${tokenAmount}')    decimal
     ${supplyTokenAmount}    Evaluate    ${supplyTokenAmount}*(10**-${tokenDecimal})
-    sleep    1
     Should Be Equal As Numbers    ${supplyTokenAmount}    ${tokenGAIN}

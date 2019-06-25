@@ -25,7 +25,6 @@ Get genesis address
     ${geneAdd}    getGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     personalUnlockAccount    ${geneAdd}
-    sleep    3
 
 Create token of 721 contract
     ${ccList}    Create List    ${crtTokenMethod}    ${note}    ${preTokenId}    ${UDIDToken}    ${721TokenAmount}
@@ -37,6 +36,7 @@ Create token of 721 contract
     [Return]    ${jsonRes['result']}
 
 Request getbalance before transfer token
+<<<<<<< HEAD
     sleep    5
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     #sleep    1
@@ -46,20 +46,33 @@ Request getbalance before transfer token
     sleep    2
     ${voteToken}    Get From Dictionary    ${result1['result']}    ${key}
     sleep    3
+=======
+    sleep    4
+    ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
+    ${queryResult}    ccqueryById    ${721ContractId}    getTokenInfo    ${preTokenId}
+    ${tokenCommonId}    ${countList}    jsonLoads    ${queryResult['result']}    AssetID    TokenIDs
+    ${key}    getTokenIdByNum    ${tokenCommonId}    ${result1['result']}    2
+    ${voteToken}    Get From Dictionary    ${result1['result']}    ${key}
+>>>>>>> master
     [Return]    ${key}    ${voteToken}
 
 Request transfer token
     [Arguments]    ${key}
     ${tokenResult}    transferToken    ${key}    ${geneAdd}    ${recieverAdd}    1    ${PTNPoundage}
     ...    ${evidence}    ${duration}
-    sleep    5
 
 Request getbalance after transfer token
     [Arguments]    ${key}
+<<<<<<< HEAD
     ${PTN1}    ${result2}    normalGetBalance    ${recieverAdd}
     #sleep    6
     ${voteToken2}    Get From Dictionary    ${result2['result']}    ${key}
     sleep    3
+=======
+    sleep    4
+    ${PTN1}    ${result2}    normalGetBalance    ${recieverAdd}
+    ${voteToken2}    Get From Dictionary    ${result2['result']}    ${key}
+>>>>>>> master
     [Return]    ${voteToken2}
 
 Assert gain
