@@ -159,8 +159,9 @@ matrix:
         - cp gptn cmd/deployment
         - cp bdd/node/start.sh bdd/node/launchMultipleNodes.sh cmd/deployment
         - cd cmd/deployment
-        - chmod +x cmd/deployment/*
+        - chmod -R +x cmd/deployment/
         - ./deploy.sh
+        - sleep 2
         - ./launchMultipleNodes.sh
       install:
         - sudo -H pip install --upgrade pip
