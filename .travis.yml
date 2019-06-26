@@ -155,9 +155,10 @@ matrix:
       go: 1.12.5
       env: multiple_nodes_bdd
       script:
-        - go build ./cmd/gptn
+        #- go build ./cmd/gptn
+        - make gptn
         - cp bdd/light/testcases/* bdd/node
-        - cp gptn bdd/node
+        - cp build/bin/gptn bdd/node
         - cd bdd/node
         - chmod -R +x *
         - ./preset.sh
