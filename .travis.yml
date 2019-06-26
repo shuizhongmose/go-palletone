@@ -153,6 +153,29 @@ matrix:
     - os: linux
       dist: xenial
       go: 1.12.5
+      env: multiple_nodes_bdd
+      script:
+        - go build ./cmd/gptn
+        - cp cmd/gptn/gptn cmd/deployment
+        - cp start.sh launchMultipleNodes.sh cmd/deployment
+        - cd cmd/deployment
+        - chmod +x start.sh
+        - chmod +x launchMultipleNodes.sh
+        - ./launchMultipleNodes.sh
+      install:
+        - sudo -H pip install --upgrade pip
+        - sudo -H pip install robotframework==2.8.5
+        - sudo -H pip install requests
+        - sudo -H pip install robotframework-requests
+        - sudo -H pip install demjson
+        - sudo -H pip install pexpect
+        - sudo -H apt-get install jq
+        - sudo -H apt-get install tcl tk expect
+        - sudo -H apt-get install lftp
+        - chmod +x bdd/upload2Ftp.sh
+    - os: linux
+      dist: xenial
+      go: 1.12.5
       env: mediator_bdd
       script:
         - go build ./cmd/gptn
@@ -192,7 +215,7 @@ before_install:
     - go get -u github.com/palletone/btc-adaptor
     - go get -u github.com/palletone/eth-adaptor
     - source ./build/goget_by_version.sh
-    - source ./gomockgen.sh
+    #- source ./gomockgen.sh
     
 addons:
   apt:
