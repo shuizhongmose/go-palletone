@@ -150,13 +150,12 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-        #- sudo -H apt-get install jq tcl tk
     - os: linux
       dist: xenial
       go: 1.12.5
       env: multiple_nodes_bdd
       script:
-        - cp start.sh launchMultipleNodes.sh cmd/deloyment/
+        - cp start.sh launchMultipleNodes.sh cmd/deployment/
         - cd cmd/deployment
         - chmod +x start.sh
         - chmod +x launchMultipleNodes.sh
