@@ -162,6 +162,7 @@ matrix:
         - chmod -R +x *
         - ./deploy.sh
         - sleep 2
+        - sed -i 's/"mediatorInterval": 3,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
         - ./launchMultipleNodes.sh
       install:
         - sudo -H pip install --upgrade pip
