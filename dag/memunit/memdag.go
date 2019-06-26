@@ -157,7 +157,7 @@ func (chain *MemDag) GetHeaderByHash(hash common.Hash) (*modules.Header, error) 
 	unit, has := chain_units[hash]
 	if has {
 		return unit.Header(), nil
-	}chain.
+	}
 	return chain.tempdbunitRep.GetHeaderByHash(hash)
 }
 func (chain *MemDag) GetHeaderByNumber(number *modules.ChainIndex) (*modules.Header, error) {
