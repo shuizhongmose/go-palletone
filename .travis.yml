@@ -11,6 +11,7 @@ env:
     - SEQENCE721_DIR=crt721Seqence
     - UDID721_DIR=crt721UDID
     - VOTECONTRACT_DIR=voteContract
+    - MULTIPLE_DIR=zMulti-node
     - DIGITAL_IDENTITY_DIR=DigitalIdentityCert
     - DEPOSIT_DIR=deposit
     - GAS_TOKEN_DIR=gasToken
@@ -28,10 +29,10 @@ env:
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
     - IS_RUN_MEDIATOR_VOTE=true
+    - IS_RUN_MULTIPLE=true
     - GO111MODULE=on
     - IS_UPLOAD=true
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'
-
 matrix:
   include:
     - os: linux
@@ -90,7 +91,6 @@ matrix:
           chmod +x ./test_start.sh;
           ./test_start.sh;
           fi
-
         # into bdd path, all testcases is here
         - cd ${BASE_DIR}/bdd
         - mkdir -p ${BDD_LOG_PATH}
@@ -156,14 +156,30 @@ matrix:
       env: multiple_nodes_bdd
       script:
         - go build ./cmd/gptn
-        - cp gptn cmd/deployment
-        - cp bdd/node/*.sh cmd/deployment
-        - cd cmd/deployment
+        - cp bdd/light/testcases/* bdd/node
+        - cp gptn bdd/node
+        - cd bdd/node
         - chmod -R +x *
-        - ./deploy.sh
+        - ./preset.sh
+        - if [ $IS_RUN_MULTIPLE == 'true' ]; then
+          python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
+          fi
+        #- sleep 2
+        #- sed -i 's/"mediatorInterval": 3,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
+      after_script:
+        - killall gptn
         - sleep 2
-        - sed -i 's/"mediatorInterval": 3,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
-        - ./launchMultipleNodes.sh
+        - cd ${BASE_DIR}
+        - zip -j ./bdd/logs/MultiNodes_log/ ./bdd/node/log/*
+        - |
+          if [ $IS_UPLOAD == 'true' ]; then
+            # uplaod all log
+            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
+            # echo ftp address
+            echo "The path of all bdd log in vsftpd is 'ftp://47.74.209.46"
+            echo "If you want to open it in explorer, you should close VPN first."
+            echo "If you want to open in windows explorer, you should open Internet Explorer and open Settings->Adanced-Enable FTP Folder view"
+          fi
       install:
         - sudo -H pip install --upgrade pip
         - sudo -H pip install robotframework==2.8.5
