@@ -151,6 +151,42 @@ matrix:
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
         #- sudo -H apt-get install jq tcl tk
+    - os: linux
+      dist: xenial
+      go: 1.12.5
+      env: multiple_nodes_bdd
+      script:
+        - cp start.sh launchMultipleNodes.sh cmd/deloyment/
+        - cd cmd/deployment
+        - chmod +x start.sh
+        - chmod +x launchMultipleNodes.sh
+        - ./launchMultipleNodes.sh
+      after_script:
+        - killall gptn
+        - sleep 2
+        - cd ${BASE_DIR}
+        - zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
+        - zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
+        - |
+          if [ $IS_UPLOAD == 'true' ]; then
+            # uplaod all log
+            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
+            # echo ftp address
+            echo "The path of all bdd log in vsftpd is 'ftp://47.74.209.46"
+            echo "If you want to open it in explorer, you should close VPN first."
+            echo "If you want to open in windows explorer, you should open Internet Explorer and open Settings->Adanced-Enable FTP Folder view"
+          fi
+      install:
+        - sudo -H pip install --upgrade pip
+        - sudo -H pip install robotframework==2.8.5
+        - sudo -H pip install requests
+        - sudo -H pip install robotframework-requests
+        - sudo -H pip install demjson
+        - sudo -H pip install pexpect
+        - sudo -H apt-get install jq
+        - sudo -H apt-get install tcl tk expect
+        - sudo -H apt-get install lftp
+        - chmod +x bdd/upload2Ftp.sh
         
     - os: linux
       dist: xenial
