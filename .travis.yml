@@ -159,7 +159,7 @@ matrix:
         - cp gptn cmd/deployment
         - cp bdd/node/start.sh bdd/node/launchMultipleNodes.sh cmd/deployment
         - cd cmd/deployment
-        - chmod -R +x cmd/deployment/
+        - chmod -R +x *
         - ./deploy.sh
         - sleep 2
         - ./launchMultipleNodes.sh
