@@ -7,8 +7,8 @@ import string
 from time import sleep
 
 class createToken(object):
-    host = 'http://192.168.0.105:8545/'
-    #host = 'http://localhost:8545/'
+    #host = 'http://192.168.0.105:8545/'
+    host = 'http://localhost:8545/'
     def __init__(self):
         self.domain = createToken.host
         self.headers = {'Content-Type':'application/json'}
