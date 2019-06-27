@@ -161,10 +161,10 @@ matrix:
         - cp build/bin/gptn bdd/node
         - cd bdd/node
         - chmod -R +x *
-        - ls -l /etc/hosts
         - cat /ect/hosts
         - sudo -H chmod +w /etc/hosts
-        - sudo -H sed -i 's/127.0.0.1      localhost/0.0.0.0      localhost/g' /etc/hosts
+        - sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
+        - sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
         - cat /etc/hosts
         #- ./preset.sh
         #- cd ${BASE_DIR}/bdd
