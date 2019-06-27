@@ -161,7 +161,10 @@ matrix:
         - cp build/bin/gptn bdd/node
         - cd bdd/node
         - chmod -R +x *
-        - sudo sed -i 's/127.0.0.1      localhost/0.0.0.0      localhost/g' /etc/hosts
+        - ls -l /etc/hosts
+        - sudo -H chmod +w /etc/hosts
+        - sudo -H sed -i 's/127.0.0.1      localhost/0.0.0.0      localhost/g' /etc/hosts
+        - ls -l /etc/hosts
         - ./preset.sh
         - cd ${BASE_DIR}/bdd
         - mkdir -p ${BDD_LOG_PATH}
