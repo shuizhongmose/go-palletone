@@ -25,11 +25,11 @@ env:
     - IS_RUN_20CONTRACT=true
     - IS_RUN_721SEQENCE=true
     - IS_RUN_721UDID=true
+    - IS_RUN_MULTIPLE=true
     - IS_RUN_DIGITAL=true
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
     - IS_RUN_MEDIATOR_VOTE=true
-    - IS_RUN_MULTIPLE=true
     - GO111MODULE=on
     - IS_UPLOAD=true
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'
@@ -162,6 +162,8 @@ matrix:
         - cd bdd/node
         - chmod -R +x *
         - ./preset.sh
+        - cd ${BASE_DIR}/bdd
+        - mkdir -p ${BDD_LOG_PATH}
         - if [ $IS_RUN_MULTIPLE == 'true' ]; then
           python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
           fi
