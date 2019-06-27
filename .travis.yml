@@ -164,11 +164,11 @@ matrix:
         - ls -l /etc/hosts
         - sudo -H chmod +w /etc/hosts
         - sudo -H sed -i 's/127.0.0.1      localhost/0.0.0.0      localhost/g' /etc/hosts
-        - ls -l /etc/hosts
-        - ./preset.sh
-        - cd ${BASE_DIR}/bdd
-        - mkdir -p ${BDD_LOG_PATH}
-        - if [ $IS_RUN_MULTIPLE == 'true' ]; then
+        - cat /etc/hosts
+        #- ./preset.sh
+        #- cd ${BASE_DIR}/bdd
+        #- mkdir -p ${BDD_LOG_PATH}
+        #- if [ $IS_RUN_MULTIPLE == 'true' ]; then
           python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
           fi
         #- sleep 2
