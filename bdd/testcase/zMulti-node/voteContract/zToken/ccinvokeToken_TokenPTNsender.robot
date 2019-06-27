@@ -23,7 +23,7 @@ Request getbalance before create token
     ${geneAdd}    getMultiNodeGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
     ${ret}    Request transfer token of vote    ${geneAdd}
-    sleep    6
+    sleep    4
     ${ReqRet}    getTxByReqId    ${ret}
     ${voteToken}    getAssetFromDict    ${ReqRet['result']}
     Set Suite Variable    ${voteToken}    ${voteToken}

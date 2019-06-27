@@ -307,6 +307,7 @@ class createToken(object):
     def getAssetFromDict(self,dict):
         dict = json.loads(dict)
         print "Asset is: " + dict['info']['payment'][1]['outputs'][0]['asset']
+        return dict['info']['payment'][1]['outputs'][0]['asset']
 
 if __name__ == '__main__':
     pass
