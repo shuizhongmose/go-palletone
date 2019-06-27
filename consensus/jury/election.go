@@ -210,6 +210,7 @@ func (p *Processor) electionEventBroadcast(event *ElectionEvent) (recved bool, i
 			if e.sigReqEd {
 				return true, p.mel[reqId].invalid, nil
 			}
+			e.sigReqEd = true
 		}
 	case ELECTION_EVENT_SIG_RESULT:
 		evt := event.Event.(*ElectionSigResultEvent)
@@ -392,33 +393,36 @@ func (p *Processor) processElectionSigRequestEvent(evt *ElectionSigRequestEvent)
 	if evt == nil {
 		return errors.New("processElectionSigRequestEvent, param is nil")
 	}
+	if !p.ptn.LocalHaveActiveMediator() {
+		return errors.New("processElectionSigRequestEvent, local no active mediator")
+	}
 	reqId := evt.ReqId
 	if !p.checkElectionSigRequestEventValid(evt) {
 		log.Debugf("[%s]processElectionSigRequestEvent, evt is invalid", shortId(reqId.String()))
 		return nil
 	}
-	//var signer common.Address
-	var account JuryAccount
-	for _, a := range p.local {
-		account.Address = a.Address
-		account.Password = a.Password
-		break //first one
+	mAddrs := p.ptn.GetLocalActiveMediators()
+	if len(mAddrs) < 1 {
+		log.Debugf("[%s]processElectionSigRequestEvent,LocalActiveMediators < 1", shortId(reqId.String()))
+		return  nil
 	}
+	mAddr := mAddrs[0] //first
 	ks := p.ptn.GetKeyStore()
-	pk, err := ks.GetPublicKey(account.Address)
+	pk, err := ks.GetPublicKey(mAddr)
 	if err != nil {
 		log.Debugf("[%s]processElectionSigRequestEvent, GetPublicKey fail", shortId(reqId.String()))
 		return nil
 	}
-	sig, err := ks.SigData(evt, account.Address)
+	sig, err := ks.SigData(evt, mAddr)
 	if err != nil {
 		log.Debugf("[%s]processElectionSigRequestEvent, SigData fail", shortId(reqId.String()))
 		return nil
 	}
-	hash := util.RlpHash(evt)
-	if !crypto.VerifySignature(pk, hash.Bytes(), sig) {
-		log.Debugf("[%s]processElectionSigRequestEvent, VerifySignature fail", shortId(reqId.String()))
-	}
+	//todo
+	//hash := util.RlpHash(evt)
+	//if !crypto.VerifySignature(pk, hash.Bytes(), sig) {
+	//	log.Debugf("[%s]processElectionSigRequestEvent, VerifySignature fail", shortId(reqId.String()))
+	//}
 	log.Debug("processElectionSigRequestEvent", "reqId", shortId(reqId.String()), "evt", evt, "PubKey", pk, "Signature", sig, "hash", hash)
 	if e, ok := p.mel[reqId]; ok {
 		e.brded = true //关闭签名广播请求
@@ -463,6 +467,7 @@ func (p *Processor) processElectionSigResultEvent(evt *ElectionSigResultEvent) e
 		return nil
 	}
 	mel.sigs = append(mel.sigs, evt.Sig)
+	log.Debugf("[%s]processElectionSigResultEvent,sig num=%d, add sig[%s], Threshold=%d", shortId(reqId.String()), len(mel.sigs), evt.Sig.String(), p.dag.ChainThreshold())
 	if len(mel.sigs) >= p.dag.ChainThreshold() {
 		event := ContractEvent{
 			CType: CONTRACT_EVENT_EXEC,
@@ -491,7 +496,7 @@ func (p *Processor) BroadcastElectionSigRequestEvent() {
 		}
 		if (len(mtx.eleInf) + len(ele.rcvEle)) >= p.electionNum {
 			se := p.selectElectionInf(mtx.eleInf, ele.rcvEle, p.electionNum)
-			mtx.eleInf = append(mtx.eleInf, se...)
+			mtx.eleInf = se
 			event := &ElectionSigRequestEvent{
 				ReqId: reqId,
 				Ele:   se,
