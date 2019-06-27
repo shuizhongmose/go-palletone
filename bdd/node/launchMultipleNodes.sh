@@ -3,7 +3,7 @@
 set timeout 30
 #/usr/bin/expect <<EOF
 
-./start.sh
+./preset.sh
 #spawn ./start.sh
 #expect "Please input the numbers of nodes you want:"
 #send "3\r"
