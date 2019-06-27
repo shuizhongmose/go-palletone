@@ -12,25 +12,24 @@ Resource          ../../../utilKwd/behaveKwd.txt
 Scenario: Vote - Ccinvoke Token
     [Documentation]    Verify Sender's PTN and VOTE value
     ${PTN1}    ${item1}    And Request getbalance before create token
-    #When Ccinvoke token of vote contract
-    #${PTN'}    ${item'}    And Calculate gain of recieverAdd    ${PTN1}    ${item1}
-    #${PTN2}    ${item2}    Request getbalance after create token
-    #Then Assert gain of reciever    ${PTN'}    ${PTN2}    ${item'}    ${item2}
+    When Ccinvoke token of vote contract
+    ${PTN'}    ${item'}    And Calculate gain of recieverAdd    ${PTN1}    ${item1}
+    ${PTN2}    ${item2}    Request getbalance after create token
+    Then Assert gain of reciever    ${PTN'}    ${PTN2}    ${item'}    ${item2}
 
 *** Keywords ***
 Request getbalance before create token
     #    [Arguments]    ${geneAdd}    ${voteToken}
     ${geneAdd}    getMultiNodeGeneAdd    ${host}
     Set Suite Variable    ${geneAdd}    ${geneAdd}
-    sleep    4
     ${ret}    Request transfer token of vote    ${geneAdd}
-    ${ReqRet}    getTxByReqId    a6058f6a9709eb02d03bac2dc99ad7ed394f61f726a0e9f3785555ecbec5a91d
-    ${voteToken}    getAssetFromDict    ${ReqRet}
+    sleep    4
+    ${ReqRet}    getTxByReqId    ${ret}
+    ${voteToken}    getAssetFromDict    ${ReqRet['result']}
+    Set Suite Variable    ${voteToken}    ${voteToken}
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}    ${mutiHost1}
-    #${voteToken}    getTokenId    ${voteId}    ${result1['result']}
-    #Set Suite Variable    ${voteToken}    ${voteToken}
-    #${item1}    Get From Dictionary    ${result1['result']}    ${voteToken}
-    #[Return]    ${PTN1}    ${voteToken}
+    ${item1}    Get From Dictionary    ${result1['result']}    ${voteToken}
+    [Return]    ${PTN1}    ${item1}
 
 Ccinvoke token of vote contract
     #[Arguments]    ${geneAdd}
@@ -40,7 +39,6 @@ Ccinvoke token of vote contract
     ${resp}    setPostRequest    ${host}    ${invokeTokenMethod}    ${ccList}
     log    ${resp.content}
     sleep    4
-    [Return]    ${resp.content['result']}
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN1}    ${item1}
