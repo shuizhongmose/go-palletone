@@ -162,8 +162,6 @@ matrix:
         - cd bdd/node
         - chmod -R +x *
         - sudo -H chmod +w /etc/hosts
-        #- sudo -H sed -i 's/127.0.0.1/0.0.0.0/g' /etc/hosts
-        #- sudo -H source /etc/hosts
         - sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
         - sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
         - cat /etc/hosts
@@ -174,12 +172,11 @@ matrix:
         - if [ $IS_RUN_MULTIPLE == 'true' ]; then
           python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
           fi
-        #- sed -i 's/"mediatorInterval": 3,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
       after_script:
         - killall gptn
         - sleep 2
         - cd ${BASE_DIR}
-        - zip -j ./bdd/logs/MultiNodes_log/ ./bdd/node/log/*
+        - zip -j ./bdd/logs/zMulti-node.zip ./bdd/logs/*
         - |
           if [ $IS_UPLOAD == 'true' ]; then
             # uplaod all log
@@ -200,7 +197,6 @@ matrix:
         - sudo -H apt-get install tcl tk expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-       
     - os: linux
       dist: xenial
       go: 1.12.5
@@ -237,7 +233,6 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-        
 before_install:
     - go get -u github.com/palletone/adaptor
     - go get -u github.com/palletone/btc-adaptor

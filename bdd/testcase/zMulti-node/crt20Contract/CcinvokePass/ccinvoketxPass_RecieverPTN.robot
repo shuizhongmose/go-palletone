@@ -22,7 +22,6 @@ Scenario: 20Contract - Create Token
 
 *** Keywords ***
 Request getbalance before create token
-    sleep    4
     ${PTN1}    ${result}    normalGetBalance    ${recieverAdd}    ${mutiHost1}
     [Return]    ${PTN1}
 
@@ -40,7 +39,7 @@ Calculate gain
     [Return]    ${PTNGAIN}
 
 Request getbalance after create token
-    sleep    5
+    sleep    6
     ${PTN2}    ${result}    normalGetBalance    ${recieverAdd}    ${mutiHost1}
     [Return]    ${PTN2}
 
