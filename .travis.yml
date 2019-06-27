@@ -170,8 +170,8 @@ matrix:
         #- cd ${BASE_DIR}/bdd
         #- mkdir -p ${BDD_LOG_PATH}
         #- if [ $IS_RUN_MULTIPLE == 'true' ]; then
-          python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
-          fi
+        #  python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node;
+        #  fi
         #- sleep 2
         #- sed -i 's/"mediatorInterval": 3,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
       after_script:
