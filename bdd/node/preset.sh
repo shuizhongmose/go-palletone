@@ -56,7 +56,6 @@ sed -i '/^SyncMode/c'$newSyncMode'' node_test7/ptn-config.toml
 
 sleep 1
 sed -i 's/"mediatorInterval": 5,/"mediatorInterval": 2,/g' node1/ptn-genesis.json
-
 ./start.sh
 
 sleep 1
