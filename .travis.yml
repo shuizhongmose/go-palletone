@@ -44,29 +44,29 @@ matrix:
         - go build ./cmd/gptn
         - make gptn
         - $GOPATH/bin/goveralls -service=travis-ci
-    - os: linux
-      dist: xenial
-      go: 1.11.x
-      env: UT
-      script:
-         - go build ./cmd/gptn
-         - make gptn
-         - go test ./...
-    - os: linux
-      dist: xenial
-      go: 1.12.x
-      env: UT
-      script:
-         - go build ./cmd/gptn
-         - make gptn
-         - go test ./...
-    - os: osx
-      go: 1.12.x
-      env: UT
-      script:
-         - go build ./cmd/gptn
-         - make gptn
-         - go test ./...
+    #- os: linux
+    #  dist: xenial
+    #  go: 1.11.x
+    #  env: UT
+    #  script:
+    #     - go build ./cmd/gptn
+    #     - make gptn
+    #     - go test ./...
+    #- os: linux
+    #  dist: xenial
+    #  go: 1.12.x
+    #  env: UT
+    #  script:
+    #     - go build ./cmd/gptn
+    #     - make gptn
+    #     - go test ./...
+    #- os: osx
+    #  go: 1.12.x
+    #  env: UT
+    #  script:
+    #     - go build ./cmd/gptn
+    #     - make gptn
+    #     - go test ./...
     - os: linux
       dist: xenial
       go: 1.12.5
@@ -79,6 +79,7 @@ matrix:
         - cd bdd/node
         - chmod +x gptn
         - python init.py
+        - sed -i 's/"mediatorInterval": 5,/"mediatorInterval": 2,/g' ptn-genesis.json
         - nohup ./gptn &
         - sleep 15
         - netstat -ap | grep gptn
@@ -157,7 +158,7 @@ matrix:
       script:
         #- go build ./cmd/gptn
         - make gptn
-        - cp bdd/light/testcases/* bdd/node
+        - cp bdd/light/testcases/!(preset.sh) bdd/node
         - cp build/bin/gptn bdd/node
         - cd bdd/node
         - chmod -R +x *
