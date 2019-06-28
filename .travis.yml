@@ -44,29 +44,29 @@ matrix:
         - go build ./cmd/gptn
         - make gptn
         - $GOPATH/bin/goveralls -service=travis-ci
-    # - os: linux
-    #   dist: xenial
-    #   go: 1.11.x
-    #   env: UT
-    #   script:
-    #     - go build ./cmd/gptn
-    #     - make gptn
-    #     - go test ./...
-    # - os: linux
-    #   dist: xenial
-    #   go: 1.12.x
-    #   env: UT
-    #   script:
-    #     - go build ./cmd/gptn
-    #     - make gptn
-    #     - go test ./...
-    # - os: osx
-    #   go: 1.12.x
-    #   env: UT
-    #   script:
-    #     - go build ./cmd/gptn
-    #     - make gptn
-    #     - go test ./...
+     - os: linux
+       dist: xenial
+       go: 1.11.x
+       env: UT
+       script:
+         - go build ./cmd/gptn
+         - make gptn
+         - go test ./...
+     - os: linux
+       dist: xenial
+       go: 1.12.x
+       env: UT
+       script:
+         - go build ./cmd/gptn
+         - make gptn
+         - go test ./...
+     - os: osx
+       go: 1.12.x
+       env: UT
+       script:
+         - go build ./cmd/gptn
+         - make gptn
+         - go test ./...
     - os: linux
       dist: xenial
       go: 1.12.5
