@@ -34,12 +34,13 @@ Request normal CcinvokePass
 
 Calculate gain
     [Arguments]    ${PTN1}
+    sleep    4
     ${gain1}    countRecieverPTN    ${PTNAmount}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')+decimal.Decimal('${gain1}')    decimal
     [Return]    ${PTNGAIN}
 
 Request getbalance after create token
-    sleep    6
+    sleep    4
     ${PTN2}    ${result}    normalGetBalance    ${recieverAdd}    ${mutiHost1}
     [Return]    ${PTN2}
 
