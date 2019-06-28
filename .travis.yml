@@ -167,6 +167,7 @@ matrix:
         - sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
         - ./launchMultipleNodes.sh
         - netstat -ap | grep gptn
+        - grep "mediatorInterval" node1/ptn-genesis.json
         - cd ${BASE_DIR}/bdd
         - mkdir -p ${BDD_LOG_PATH}
         - if [ $IS_RUN_MULTIPLE == 'true' ]; then
