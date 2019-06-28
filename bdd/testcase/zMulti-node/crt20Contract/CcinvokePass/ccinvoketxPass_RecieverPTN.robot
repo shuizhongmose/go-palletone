@@ -1,5 +1,5 @@
 *** Settings ***
-Suite Setup       getlistAccounts
+Suite Setup       getMultiNodeGeneAdd    ${host}
 Default Tags      normal
 Library           ../../../utilFunc/createToken.py
 Resource          ../../../utilKwd/utilVariables.txt
@@ -9,7 +9,6 @@ Resource          ../../../utilKwd/behaveKwd.txt
 
 *** Variables ***
 ${preTokenId}     QA101
-#${gain}          2000
 
 *** Test Cases ***
 Scenario: 20Contract - Create Token
@@ -27,8 +26,8 @@ Request getbalance before create token
 
 Request normal CcinvokePass
     ${ccList}    Create List    ${crtTokenMethod}    ${evidence}    ${preTokenId}    ${tokenDecimal}    ${tokenAmount}
-    ...    ${listAccounts[0]}
-    ${ret}    normalCcinvokePass    ${commonResultCode}    ${listAccounts[0]}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
+    ...    ${geneAdd}
+    ${ret}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${20ContractId}    ${ccList}
     [Return]    ${ret}
 
