@@ -28,10 +28,9 @@ Request send transaction
     [Arguments]    ${ret}
     ${sendList}    Create List    ${ret}
     ${resp}    setPostRequest    ${host}    ptn_sendRawTransaction    ${sendList}
-    log    ${resp}
+    log    ${resp.content}
     Should Contain    ${resp.content}['jsonrpc']    "2.0"    msg="jsonrpc:failed"
     Should Contain    ${resp.content}['id']    1    msg="id:failed"
-    #Should Match Regexp    ${resp.content}['result']    ${sendResult}    msg="result:does't match expression"
     [Return]    ${resp}
 
 Request transfer token
