@@ -19,86 +19,89 @@ import (
 )
 
 const (
-	ListForCashback   = "ListForCashback"
-	ListForForfeiture = "ListForForfeiture"
-
 	ListForApplyBecomeMediator = "ListForApplyBecomeMediator"
 	ListForAgreeBecomeMediator = "ListForAgreeBecomeMediator"
-	ListForApplyQuitMediator   = "ListForApplyQuitMediator"
-	DepositAmountForJury       = "DepositAmountForJury"
-	DepositAmountForDeveloper  = "DepositAmountForDeveloper"
-	DepositPeriod              = "DepositPeriod"
-	Developer                  = "Developer"
-	Jury                       = "Jury"
-	Mediator                   = "Mediator"
-	Ok                         = "ok"
-	No                         = "no"
-	DTimeDuration              = 1800
-	//获取Mediator候选列表
-	GetListForMediatorCandidate = "GetListForMediatorCandidate"
-	//查看是否在候选列表中
-	IsInMediatorCandidateList       = "IsInMediatorCandidateList"
-	GetQuitMediatorApplyList        = "GetQuitMediatorApplyList"
-	GetAgreeForBecomeMediatorList   = "GetAgreeForBecomeMediatorList"
-	GetBecomeMediatorApplyList      = "GetBecomeMediatorApplyList"
-	GetListForDeveloperCandidate    = "GetListForDeveloperCandidate"
-	GetListForJuryCandidate         = "GetListForJuryCandidate"
-	GetListForForfeitureApplication = "GetListForForfeitureApplication"
-	GetListForCashbackApplication   = "GetListForCashbackApplication"
-	HandleForForfeitureApplication  = "HandleForForfeitureApplication"
-	ApplyForForfeitureDeposit       = "ApplyForForfeitureDeposit"
-	HandleForDeveloperApplyCashback = "HandleForDeveloperApplyCashback"
-	DeveloperApplyCashback          = "DeveloperApplyCashback"
-	HandleForJuryApplyCashback      = "HandleForJuryApplyCashback"
-	JuryApplyCashback               = "JuryApplyCashback"
-	HandleForMediatorApplyCashback  = "HandleForMediatorApplyCashback"
-	DeveloperPayToDepositContract   = "DeveloperPayToDepositContract"
-	JuryPayToDepositContract        = "JuryPayToDepositContract"
-	HandleForApplyQuitMediator      = "HandleForApplyQuitMediator"
-	HandleForApplyBecomeMediator    = "HandleForApplyBecomeMediator"
-	IsInMediatorQuitList            = "IsInMediatorQuitList"
-	IsInCashbackList                = "IsInCashbackList"
-	IsInJuryCandidateList           = "IsInJuryCandidateList"
-	IsInDeveloperCandidateList      = "IsInDeveloperCandidateList"
-	GetDeposit                      = "GetNodeBalance"
-	NormalNodePledgeVote            = "normalNodePledgeVote"
-	NormalNodeChangeVote            = "normalNodeChangeVote"
-	NormalNodeExtractVote           = "normalNodeExtractVote"
-	NormalNodeList                  = "normalNodeList"
-	ExtractPtnList                  = "extractPtnList"
-	HandleExtractVote               = "handleExtractVote"
-	HandleEachDayAward              = "handleEachDayAward"
-	AllPledgeVotes                  = "allPledgeVotes"
+	ListForQuit                = "ListForQuit"
+	ListForForfeiture          = "ListForForfeiture"
 
+	JuryApplyQuit      = "JuryApplyQuit"
+	DeveloperApplyQuit = "DeveloperApplyQuit"
+
+	Developer = "Developer"
+	Jury      = "Jury"
+	Mediator  = "Mediator"
+
+	Ok = "ok"
+	No = "no"
+
+	//获取候选列表
+	GetListForMediatorCandidate  = "GetListForMediatorCandidate"
+	GetListForJuryCandidate      = "GetListForJuryCandidate"
+	GetListForDeveloperCandidate = "GetListForDeveloperCandidate"
+	//查看是否在候选列表中
+	IsInMediatorCandidateList  = "IsInMediatorCandidateList"
+	IsInJuryCandidateList      = "IsInJuryCandidateList"
+	IsInDeveloperCandidateList = "IsInDeveloperCandidateList"
+	//  是否在相应列表中
+	IsInBecomeList     = "IsInBecomeList"
+	IsInAgressList     = "IsInAgressList"
+	IsInQuitList       = "IsInQuitList"
+	IsInForfeitureList = "IsInForfeitureList"
+	//获取列表
+	GetBecomeMediatorApplyList      = "GetBecomeMediatorApplyList"
+	GetAgreeForBecomeMediatorList   = "GetAgreeForBecomeMediatorList"
+	GetQuitApplyList                = "GetQuitApplyList"
+	GetListForForfeitureApplication = "GetListForForfeitureApplication"
+	//申请
+	ApplyForForfeitureDeposit     = "ApplyForForfeitureDeposit"
+	DeveloperPayToDepositContract = "DeveloperPayToDepositContract"
+	JuryPayToDepositContract      = "JuryPayToDepositContract"
+	//基金会处理
+	HandleForForfeitureApplication = "HandleForForfeitureApplication"
+	HandleForApplyQuitMediator     = "HandleForApplyQuitMediator"
+	HandleForApplyBecomeMediator   = "HandleForApplyBecomeMediator"
+	HandleForApplyQuitJury         = "HandleForApplyQuitJury"
+	HandleForApplyQuitDev          = "HandleForApplyQuitDev"
+
+	GetDeposit = "GetNodeBalance"
+
+	//  质押相关
+	PledgeDeposit           = "PledgeDeposit"
+	PledgeWithdraw          = "PledgeWithdraw"
+	QueryPledgeStatusByAddr = "QueryPledgeStatusByAddr"
+	QueryAllPledgeHistory   = "QueryAllPledgeHistory"
+	HandlePledgeReward      = "HandlePledgeReward"
+	AllPledgeVotes          = "allPledgeVotes"
+	QueryPledgeList         = "QueryPledgeList"
+
+	//  mediator状态
 	Apply    = "applying"
 	Agree    = "approved"
 	Quitting = "quitting"
 	Quited   = "quited"
+
 	//  时间格式
 	//  Layout1 = "2006-01-02 15"
 	//  Layout2 = "2006-01-02 15:04"
 	//  Layout3 = "2006-01-02 15:04:05"
 	//  目前使用 time.Now().UTC().Format(Layout) 返回字符串
-	Layout1 = "2006-01-02 15"
 	Layout2 = "2006-01-02 15:04:05"
 )
 
-//申请提保证金
-type Cashback struct {
-	//CashbackAddress string               `json:"cashback_address"` //请求地址
-	CashbackTokens *modules.AmountAsset `json:"cashback_tokens"` //请求数量
-	Role           string               `json:"role"`            //请求角色
-	CashbackTime   string               `json:"cashback_time"`   //请求时间
+//申请退出
+type QuitNode struct {
+	//Address string `json:"address"` //请求地址
+	Role string `json:"role"` //请求角色
+	Time string `json:"time"` //请求时间
 }
 
 //申请没收保证金
 type Forfeiture struct {
-	ApplyAddress      string               `json:"apply_address"`      //谁发起的
-	ForfeitureAddress string               `json:"forfeiture_address"` //没收节点地址
-	ApplyTokens       *modules.AmountAsset `json:"apply_tokens"`       //没收数量
-	ForfeitureRole    string               `json:"forfeiture_role"`    //没收角色
-	Extra             string               `json:"extra"`              //备注
-	ApplyTime         string               `json:"apply_time"`         //请求时间
+	ApplyAddress      string `json:"apply_address"`      //谁发起的
+	ForfeitureAddress string `json:"forfeiture_address"` //没收节点地址
+	ForfeitureRole    string `json:"forfeiture_role"`    //没收角色
+	Extra             string `json:"extra"`              //备注
+	ApplyTime         string `json:"apply_time"`         //请求时间
 }
 
 //交易的内容
@@ -108,20 +111,9 @@ type PayValue struct {
 	//PayExtra  string        `json:"pay_extra"`  //额外内容
 }
 
-//节点状态数据库保存值
-//type DepositBalance struct {
-//	TotalAmount      uint64        `json:"total_amount"`      //保证金总量
-//	LastModifyTime   int64         `json:"last_modify_time"`  //最后一次改变，主要来计算币龄收益
-//	EnterTime        string        `json:"enter_time"`        //这是加入列表时的时间
-//	PayValues        []*PayValue   `json:"pay_values"`        //交付的历史记录
-//	CashbackValues   []*Cashback   `json:"cashback_values"`   //退款的历史记录
-//	ForfeitureValues []*Forfeiture `json:"forfeiture_values"` //被没收的历史记录
-//}
-
 type DepositBalance struct {
-	Balance        uint64 `json:"balance"`          //  保证金余额
-	EnterTime      string `json:"enter_time"`       //  交保证金的时间
-	LastModifyTime string `json:"last_modify_time"` //  计算币龄时间
+	Balance   uint64 `json:"balance"`    //  保证金余额
+	EnterTime string `json:"enter_time"` //  交保证金的时间
 }
 
 type MediatorDeposit struct {
@@ -134,8 +126,7 @@ type MediatorDeposit struct {
 
 func NewMediatorDeposit() *MediatorDeposit {
 	return &MediatorDeposit{
-		ApplyEnterTime: TimeStr(),
-		Status:         Quited,
+		Status: Quited,
 	}
 }
 
@@ -144,7 +135,7 @@ type NorNodBal struct {
 	MediatorAddr string               `json:"mediator_address"`
 }
 
-type extractPtn struct {
-	Time   string               `json:"time"`   //提取质押时间
-	Amount *modules.AmountAsset `json:"amount"` //提取质押数量
+type Member struct {
+	Key   string `json:"key"`
+	Value []byte `json;"value"`
 }

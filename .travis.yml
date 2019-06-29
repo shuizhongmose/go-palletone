@@ -167,8 +167,7 @@ matrix:
         - sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
         - ./launchMultipleNodes.sh
         - netstat -ap | grep gptn
-        - grep "mediatorInterval" node1/ptn-genesis.json
-        #- grep "mediator_interval" node1/ptn-genesis.json
+        - grep "mediator_interval" node1/ptn-genesis.json
         - cd ${BASE_DIR}/bdd
         - mkdir -p ${BDD_LOG_PATH}
         - if [ $IS_RUN_MULTIPLE == 'true' ]; then
@@ -183,6 +182,12 @@ matrix:
           if [ $IS_UPLOAD == 'true' ]; then
             # uplaod all log
             ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
+        - cd ${BASE_DIR}/bdd
+        - source ./targz_node.sh
+        - |
+          if [ $IS_UPLOAD == 'true' ]; then
+            # uplaod all log
+            ./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
             # echo ftp address
             echo "The path of all bdd log in vsftpd is 'ftp://47.74.209.46"
             echo "If you want to open it in explorer, you should close VPN first."
@@ -245,11 +250,6 @@ before_install:
 addons:
   apt:
     update: true
-
-# deploy:
-#   skip_cleanup: true
-#    provider:
-#    all_branches: true
 
 notifications:
   email:

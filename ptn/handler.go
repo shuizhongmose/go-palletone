@@ -147,6 +147,9 @@ type ProtocolManager struct {
 
 	activeMediatorsUpdatedCh  chan modules.ActiveMediatorsUpdatedEvent
 	activeMediatorsUpdatedSub event.Subscription
+
+	toGroupSignCh  chan modules.ToGroupSignEvent
+	toGroupSignSub event.Subscription
 }
 
 // NewProtocolManager returns a new PalletOne sub protocol manager. The PalletOne sub protocol manages peers capable
@@ -264,12 +267,11 @@ func (pm *ProtocolManager) newFetcher() *fetcher.Fetcher {
 	validatorFn := func(unit *modules.Unit) error {
 		//return dagerrors.ErrFutureBlock
 		hash := unit.Hash()
-		log.Debugf("Importing propagated block insert DAG Enter ValidateUnitExceptGroupSig, unit: %s", hash.String())
-		defer log.Debugf("Importing propagated block insert DAG End ValidateUnitExceptGroupSig, unit: %s", hash.String())
-		verr := pm.dag.ValidateUnitExceptGroupSig(unit)
+		verr := pm.dag.ValidateUnitExceptPayment(unit)
 		if verr != nil && !validator.IsOrphanError(verr) {
 			return verr
 		}
+		log.Debugf("Importing propagated block insert DAG End ValidateUnitExceptGroupSig, unit: %s,validated: %v", hash.String(), verr)
 		return dagerrors.ErrFutureBlock
 	}
 	heighter := func(assetId modules.AssetId) uint64 {
@@ -401,13 +403,17 @@ func (pm *ProtocolManager) Start(srvr *p2p.Server, maxPeers int, syncCh chan boo
 	pm.activeMediatorsUpdatedSub = pm.dag.SubscribeActiveMediatorsUpdatedEvent(pm.activeMediatorsUpdatedCh)
 	go pm.activeMediatorsUpdatedEventRecvLoop()
 
+	pm.toGroupSignCh = make(chan modules.ToGroupSignEvent)
+	pm.toGroupSignSub = pm.dag.SubscribeToGroupSignEvent(pm.toGroupSignCh)
+	go pm.toGroupSignEventRecvLoop()
+
 	if pm.consEngine != nil {
 		pm.ceCh = make(chan core.ConsensusEvent, txChanSize)
 		pm.ceSub = pm.consEngine.SubscribeCeEvent(pm.ceCh)
 		go pm.ceBroadcastLoop()
 	}
 	if runtime.GOOS == "linux" {
-		go pm.dockerLoop()
+		//go pm.dockerLoop()
 	}
 }
 
@@ -420,6 +426,7 @@ func (pm *ProtocolManager) Stop() {
 	pm.vssDealSub.Unsubscribe()
 	pm.vssResponseSub.Unsubscribe()
 	pm.activeMediatorsUpdatedSub.Unsubscribe()
+	pm.toGroupSignSub.Unsubscribe()
 	pm.contractSub.Unsubscribe()
 	pm.txSub.Unsubscribe() // quits txBroadcastLoop
 	//pm.ceSub.Unsubscribe()
@@ -472,7 +479,7 @@ func (pm *ProtocolManager) LocalHandle(p *peer) error {
 		log.Info("ProtocolManager", "handler DiscTooManyPeers:", p2p.DiscTooManyPeers)
 		return p2p.DiscTooManyPeers
 	}
-	log.Debug("PalletOne peer connected", "name", p.Name())
+	log.Debug("PalletOne peer connected", "name", p.id)
 	// @分区后需要用token获取
 	//head := pm.dag.CurrentHeader(pm.mainAssetId)
 	var (
@@ -483,7 +490,7 @@ func (pm *ProtocolManager) LocalHandle(p *peer) error {
 		number = head.Number
 		hash = head.Hash()
 	}
-
+	log.Debug("ProtocolManager LocalHandle pre Handshake", "index", number.Index)
 	// Execute the PalletOne handshake
 	if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash); err != nil {
 		log.Debug("PalletOne handshake failed", "err", err)
@@ -575,12 +582,7 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 		// Transactions arrived, make sure we have a valid and fresh chain to handle them
 		return pm.TxMsg(msg, p)
 
-		// append by Albert·Gou
-	case msg.Code == NewProducedUnitMsg:
-		// Retrieve and decode the propagated new produced unit
-		return pm.NewProducedUnitMsg(msg, p)
-
-		// append by Albert·Gou
+	// append by Albert·Gou
 	case msg.Code == SigShareMsg:
 		return pm.SigShareMsg(msg, p)
 
@@ -717,7 +719,7 @@ type NodeInfo struct {
 
 // NodeInfo retrieves some protocol metadata about the running host node.
 func (self *ProtocolManager) NodeInfo(genesisHash common.Hash) *NodeInfo {
-	unit := self.dag.CurrentUnit(self.mainAssetId)
+	unit := self.dag.GetCurrentUnit(self.mainAssetId)
 	var (
 		index = uint64(0)
 		hash  = common.Hash{}
