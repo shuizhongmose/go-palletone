@@ -34,7 +34,7 @@ Send the new address PTN
     ${ret1}    And normalCrtTrans    ${geneAdd}    ${reciever}    100000    ${PTNPoundage}
     ${ret2}    And normalSignTrans    ${ret1}    ${signType}    ${pwd}
     ${ret3}    And normalSendTrans    ${ret2}
-
+    sleep    4
 
 CcinvokePass normal
     ${ccList}    Create List    ${crtTokenMethod}    ${note}    ${preTokenId}    ${SeqenceToken}    ${721TokenAmount}
@@ -44,6 +44,7 @@ CcinvokePass normal
     ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
     ${jsonRes}    To Json    ${jsonRes}
     [Return]    ${jsonRes['result']}
+....sleep    4
 
 Supply token of 721 contract before change supply
     ${ccList}    Create List    ${supplyTokenMethod}    ${preTokenId}    ${721TokenAmount}    ${721MetaAfter}
@@ -70,7 +71,6 @@ Change supply address to new address
     ${ccList}    Create List    ${changeSupplyMethod}    ${preTokenId}    ${reciever}
     ${resp}    Request CcinvokePass    ${commonResultCode}    ${geneAdd}    ${geneAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${721ContractId}    ${ccList}
-    
 
 Request getbalance before supply token
     sleep    4
