@@ -40,6 +40,7 @@ Request getbalance before transfer token
     ${PTN1}    ${result1}    normalGetBalance    ${geneAdd}
     ${queryResult}    ccqueryById    ${721ContractId}    getTokenInfo    ${preTokenId}
     ${tokenCommonId}    ${countList}    jsonLoads    ${queryResult['result']}    AssetID    TokenIDs
+    log    ${result1['result']}
     ${key}    getTokenIdByNum    ${tokenCommonId}    ${result1['result']}    2
     ${voteToken}    Get From Dictionary    ${result1['result']}    ${key}
     [Return]    ${key}    ${voteToken}
