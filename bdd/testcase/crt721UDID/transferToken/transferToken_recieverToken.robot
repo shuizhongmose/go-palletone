@@ -53,7 +53,7 @@ Request transfer token
 Request getbalance after transfer token
     [Arguments]    ${key}
     sleep    4
-    ${PTN1}    ${result2}    normalGetBalance    ${recieverAdd}
+    ${PTN2}    ${result2}    normalGetBalance    ${recieverAdd}
     ${voteToken2}    Get From Dictionary    ${result2['result']}    ${key}
     [Return]    ${voteToken2}
 
