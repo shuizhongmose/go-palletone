@@ -35,13 +35,13 @@ const (
 	No = "no"
 
 	//获取候选列表
-	GetListForMediatorCandidate  = "GetListForMediatorCandidate"
-	GetListForJuryCandidate      = "GetListForJuryCandidate"
-	GetListForDeveloperCandidate = "GetListForDeveloperCandidate"
+	GetListForMediatorCandidate = "GetListForMediatorCandidate"
+	GetListForJuryCandidate     = "GetListForJuryCandidate"
+	GetListForDeveloper         = "GetListForDeveloper"
 	//查看是否在候选列表中
-	IsInMediatorCandidateList  = "IsInMediatorCandidateList"
-	IsInJuryCandidateList      = "IsInJuryCandidateList"
-	IsInDeveloperCandidateList = "IsInDeveloperCandidateList"
+	IsInMediatorCandidateList = "IsInMediatorCandidateList"
+	IsInJuryCandidateList     = "IsInJuryCandidateList"
+	IsInDeveloperList         = "IsInDeveloperList"
 	//  是否在相应列表中
 	IsInBecomeList     = "IsInBecomeList"
 	IsInAgressList     = "IsInAgressList"
@@ -97,11 +97,11 @@ type QuitNode struct {
 
 //申请没收保证金
 type Forfeiture struct {
-	ApplyAddress      string `json:"apply_address"`      //谁发起的
-	ForfeitureAddress string `json:"forfeiture_address"` //没收节点地址
-	ForfeitureRole    string `json:"forfeiture_role"`    //没收角色
-	Extra             string `json:"extra"`              //备注
-	ApplyTime         string `json:"apply_time"`         //请求时间
+	ApplyAddress string `json:"apply_address"` //谁发起的
+	//ForfeitureAddress string `json:"forfeiture_address"` //没收节点地址
+	ForfeitureRole string `json:"forfeiture_role"` //没收角色
+	Extra          string `json:"extra"`           //备注
+	ApplyTime      string `json:"apply_time"`      //请求时间
 }
 
 //交易的内容

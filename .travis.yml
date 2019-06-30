@@ -43,7 +43,8 @@ matrix:
         - go get github.com/mattn/goveralls
         - go build ./cmd/gptn
         - make gptn
-        - $GOPATH/bin/goveralls -service=travis-ci
+        - go test ./...
+        # - $GOPATH/bin/goveralls -service=travis-ci
     #- os: linux
     #  dist: xenial
     #  go: 1.11.x
