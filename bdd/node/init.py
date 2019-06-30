@@ -30,8 +30,6 @@ child.expect(pexpect.EOF)
 EOFLog = child.before
 print EOFLog
 
-
-
 '''
 child = pexpect.spawn(command="./gptn --exec 'personal.listAccounts' attach palletone/gptn.ipc")
 child.expect(pexpect.EOF)
