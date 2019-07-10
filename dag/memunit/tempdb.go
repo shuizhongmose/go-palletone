@@ -58,6 +58,20 @@ func (db *Tempdb) Clear() {
 	db.kv = make(map[string][]byte)
 	db.deleted = make(map[string]bool)
 }
+func (db *Tempdb) Clone() *Tempdb {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+
+	newdb, _ := NewTempdb(db.db)
+
+	for k, v := range db.kv {
+		newdb.kv[k] = v
+	}
+	for k, v := range db.deleted {
+		newdb.deleted[k] = v
+	}
+	return newdb
+}
 
 type KeyValue struct {
 	Key, Value []byte

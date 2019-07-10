@@ -30,8 +30,9 @@ import (
 
 type Validator interface {
 	//验证一个交易是否是合法交易
-	//isCoinbase
-	//isFullTx这个交易是完整的可打包的交易，还是陪审团没处理或者正在处理中的交易
+	//Coinbase不能调用这个函数进行验证
+	//isFullTx这个交易是完整的可打包的交易，还是陪审团没处理或者正在处理中的交易,
+	//验证通过会返回该交易的手续费分配情况
 	ValidateTx(tx *modules.Transaction, isFullTx bool) ([]*modules.Addition, ValidationCode, error)
 	//验证一个Unit中的所有交易是否是合法交易
 	//ValidateTransactions(txs modules.Transactions) error

@@ -123,12 +123,23 @@ func (validate *Validate) validateMediatorSchedule(header *modules.Header) Valid
 
 //不基于数据库，进行Unit最基本的验证
 func ValidateUnitBasic(unit *modules.Unit) error {
-	return NewValidateError(validateUnitBasic(unit))
+	header := unit.UnitHeader
+	code := validateHeaderBasic(header)
+	if code != TxValidationCode_VALID {
+		return NewValidateError(code)
+	}
+	//validate tx root
+	root := core.DeriveSha(unit.Txs)
+	if root != unit.UnitHeader.TxRoot {
+		log.Debugf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
+		return NewValidateError(UNIT_STATE_INVALID_HEADER_TXROOT)
+	}
+
+	return nil
 }
 
-//不基于数据库，进行Unit最基本的验证
-func validateUnitBasic(unit *modules.Unit) ValidationCode {
-	header := unit.UnitHeader
+//不基于数据库，进行Header最基本的验证
+func validateHeaderBasic(header *modules.Header) ValidationCode {
 	if header == nil {
 		log.Info("header is nil.")
 		return UNIT_STATE_INVALID_HEADER
@@ -160,13 +171,6 @@ func validateUnitBasic(unit *modules.Unit) ValidationCode {
 		sigState := validateUnitSignature(header)
 		return sigState
 	}
-	//validate tx root
-	root := core.DeriveSha(unit.Txs)
-	if root != unit.UnitHeader.TxRoot {
-		log.Debugf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
-		return UNIT_STATE_INVALID_HEADER_TXROOT
-	}
-
 	return TxValidationCode_VALID
 }
 
@@ -216,44 +220,10 @@ func (validate *Validate) ValidateUnitExceptGroupSig(unit *modules.Unit) Validat
 }
 
 func (validate *Validate) validateHeaderExceptGroupSig(header *modules.Header) ValidationCode {
-	if header == nil {
-		log.Info("header is nil.")
-		return UNIT_STATE_INVALID_HEADER
+	code := validateHeaderBasic(header)
+	if code != TxValidationCode_VALID {
+		return code
 	}
-
-	if len(header.ParentsHash) == 0 {
-		log.Info("the header's parentHash is null.")
-		return UNIT_STATE_INVALID_HEADER
-	}
-
-	//  check header's extra data
-	if uint64(len(header.Extra)) > configure.MaximumExtraDataSize {
-		msg := fmt.Sprintf("extra-data too long: %d > %d", len(header.Extra), configure.MaximumExtraDataSize)
-		log.Info(msg)
-		return UNIT_STATE_INVALID_EXTRA_DATA
-	}
-
-	// Only check txroot when has unit body
-	//if header.TxRoot == (common.Hash{}) {
-	//	log.Info("the header's txroot is null.")
-	//	return UNIT_STATE_INVALID_HEADER_TXROOT
-	//}
-
-	// check creation_time
-	if header.Time <= modules.UNIT_CREATION_DATE_INITIAL_UINT64 {
-		return UNIT_STATE_INVALID_HEADER_TIME
-	}
-
-	// check header's number
-	if header.Number == nil {
-		return UNIT_STATE_INVALID_HEADER_NUMBER
-	}
-	var thisUnitIsNotTransmitted bool
-	if thisUnitIsNotTransmitted {
-		sigState := validateUnitSignature(header)
-		return sigState
-	}
-
 	//Is orphan?
 	parent := header.ParentsHash[0]
 	if validate.dagquery != nil {

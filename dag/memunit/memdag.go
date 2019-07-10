@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/btcsuite/btcwallet/chain"
 	"github.com/coocood/freecache"
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/event"
@@ -49,7 +50,7 @@ type MemDag struct {
 	threshold          int
 	orphanUnits        sync.Map
 	orphanUnitsParants sync.Map
-	chainUnits         sync.Map
+	chainUnits         sync.Map //Key:UnitHash,Value:UnitTempDb
 	tempdbunitRep      map[common.Hash]common2.IUnitRepository
 	tempUtxoRep        map[common.Hash]common2.IUtxoRepository
 	tempStateRep       map[common.Hash]common2.IStateRepository
@@ -466,7 +467,7 @@ func (chain *MemDag) addUnit(unit *modules.Unit, txpool txspool.ITxPool) error {
 	parentHash := unit.ParentHash()[0]
 	uHash := unit.Hash()
 	height := unit.NumberU64()
-	if _, ok := chain.getChainUnits()[parentHash]; ok || parentHash == chain.stableUnitHash {
+	if parentUnitTempdb, ok := chain.getChainUnits()[parentHash]; ok || parentHash == chain.stableUnitHash {
 		//add unit to chain
 		log.Debugf("chain[%p] Add unit[%s] to chainUnits", chain, uHash.String())
 		//add at the end of main chain unit
@@ -665,20 +666,20 @@ func (chain *MemDag) removeLowOrphanUnit(lessThan uint64, txpool txspool.ITxPool
 		}
 	}
 }
-func (chain *MemDag) getChainUnits() map[common.Hash]*modules.Unit {
-	units := make(map[common.Hash]*modules.Unit)
+func (chain *MemDag) getChainUnits() map[common.Hash]*UnitTempDb {
+	units := make(map[common.Hash]*UnitTempDb)
 	chain.chainUnits.Range(func(k, v interface{}) bool {
 		hash := k.(common.Hash)
-		u := v.(*modules.Unit)
+		u := v.(*UnitTempDb)
 		units[hash] = u
 		return true
 	})
 	return units
 }
-func (chain *MemDag) getChainUnit(hash common.Hash) (*modules.Unit, error) {
+func (chain *MemDag) getChainUnit(hash common.Hash) (*UnitTempDb, error) {
 	inter, ok := chain.chainUnits.Load(hash)
 	if ok {
-		return inter.(*modules.Unit), nil
+		return inter.(*UnitTempDb), nil
 	}
 	return nil, errors.ErrNotFound
 }
