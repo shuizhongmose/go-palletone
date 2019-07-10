@@ -34,24 +34,51 @@ type UnitTempDb struct {
 	UtxoRep   common.IUtxoRepository
 	StateRep  common.IStateRepository
 	PropRep   common.IPropRepository
+	UnitProduceRep common.IUnitProduceRepository
 	Validator validator.Validator
 	Unit      *modules.Unit
 }
 
-func NewUnitTempDb(db ptndb.Database, newestUnit *modules.Unit, cache palletcache.ICache) *UnitTempDb {
+func NewUnitTempDb(db ptndb.Database, unit *modules.Unit, cache palletcache.ICache,saveHeaderOnly    bool) (*UnitTempDb,error) {
 	tempdb, _ := NewTempdb(db)
 	trep := common.NewUnitRepository4Db(tempdb)
 	tutxoRep := common.NewUtxoRepository4Db(tempdb)
 	tstateRep := common.NewStateRepository4Db(tempdb)
 	tpropRep := common.NewPropRepository4Db(tempdb)
-	v := validator.NewValidate(trep, tutxoRep, tstateRep, tpropRep, cache)
+	tunitProduceRep := common.NewUnitProduceRepository(trep, tpropRep, tstateRep)
+	val := validator.NewValidate(trep, tutxoRep, tstateRep, tpropRep, cache)
+	//先验证这个Unit在当前db下是有效的
+	validateCode := validator.TxValidationCode_VALID
+	if saveHeaderOnly {
+		validateCode = val.ValidateHeader(unit.UnitHeader)
+	} else {
+		validateCode = val.ValidateUnitExceptGroupSig(unit)
+	}
+	if validateCode != validator.TxValidationCode_VALID {
+		return nil,validator.NewValidateError(validateCode)
+	}
+	if saveHeaderOnly {
+		err:=trep.SaveNewestHeader(unit.Header())
+		if err!=nil{
+			return nil,err
+		}
+	} else {
+		err:=tunitProduceRep.PushUnit(unit)
+		if err!=nil{
+			return nil,err
+		}
+	}
 	return &UnitTempDb{
 		Tempdb:    tempdb,
 		UnitRep:   trep,
 		UtxoRep:   tutxoRep,
 		StateRep:  tstateRep,
 		PropRep:   tpropRep,
-		Validator: v,
-		Unit:      newestUnit,
-	}
+		UnitProduceRep:tunitProduceRep,
+		Validator: val,
+		Unit:      unit,
+	},nil
+}
+func (tdb *UnitTempDb) SetParentDb(db ptndb.Database){
+	tdb.Tempdb.db=db
 }

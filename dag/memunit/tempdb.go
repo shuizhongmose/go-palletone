@@ -48,15 +48,31 @@ func (db *Tempdb) Clear() {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	//for k := range db.kv {
-	//	delete(db.kv, k)
-	//}
-	//for k := range db.deleted {
-	//	delete(db.deleted, k)
-	//}
+
 
 	db.kv = make(map[string][]byte)
 	db.deleted = make(map[string]bool)
+}
+//将临时数据应用到父数据库中
+func (db *Tempdb) PushData2ParentDb() error{
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	batch:=db.db.NewBatch()
+	for k,v := range db.kv {
+		batch.Put([]byte(k),v)
+	}
+	for k := range db.deleted {
+		batch.Delete([]byte(k))
+	}
+	log.Debugf("Merge db[%s] data to it's parent db[%s],write count:%d,delete:%d",reflect.TypeOf(db).String(),reflect.TypeOf(db.db).String(),len(db.kv),len(db.deleted))
+	err:=batch.Write()
+	if err!=nil{
+		log.Errorf("Merge tempdb to parent db fail, error:%s",err.Error())
+		return err
+	}
+	db.kv = make(map[string][]byte)
+	db.deleted = make(map[string]bool)
+	return nil
 }
 func (db *Tempdb) Clone() *Tempdb {
 	db.lock.Lock()

@@ -44,10 +44,12 @@ import (
 	"github.com/palletone/go-palletone/dag/storage"
 	"github.com/palletone/go-palletone/dag/txspool"
 	"github.com/palletone/go-palletone/tokenengine"
+	"github.com/palletone/go-palletone/dag/palletcache"
+	"github.com/coocood/freecache"
 )
 
 type Dag struct {
-	//Cache       palletcache.ICache
+	Cache       palletcache.ICache
 	Db          ptndb.Database
 	currentUnit atomic.Value
 
@@ -243,7 +245,7 @@ func (d *Dag) FastSyncCommitHead(hash common.Hash) error {
 // wrong.
 // After insertion is done, all accumulated events will be fired.
 // reference : Eth InsertChain
-func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error) {
+func (dag *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error) {
 
 	count := int(0)
 	for i, u := range units {
@@ -267,12 +269,17 @@ func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error
 		log.Debugf("Start InsertDag unit(%v) #%v parent(%v) @%v signed by %v", u.UnitHash.TerminalString(),
 			u.NumberU64(), u.ParentHash()[0].TerminalString(), timestamp.Format("2006-01-02 15:04:05"),
 			u.Author().Str())
-
-		if err := d.Memdag.AddUnit(u, txpool); err != nil {
+		a,b,c,d,e,err := dag.Memdag.AddUnit(u, txpool)
+		if  err != nil {
 			//return count, err
 			log.Errorf("Memdag addUnit[%s] error:%s", u.UnitHash.String(), err.Error())
 			return count, nil
 		}
+		dag.unstableUnitRep=a
+		dag.unstableUtxoRep=b
+		dag.unstableStateRep=c
+		dag.unstablePropRep=d
+		dag.unstableUnitProduceRep =e
 		log.Debugf("InsertDag[%s] #%d spent time:%s", u.UnitHash.String(), u.NumberU64(), time.Since(t1))
 		count += 1
 	}
@@ -386,67 +393,6 @@ func (d *Dag) InsertHeaderDag(headers []*modules.Header) (int, error) {
 	return len(headers), nil
 }
 
-//VerifyHeader checks whether a header conforms to the consensus rules of the stock
-//Ethereum ethash engine.go
-//func (d *Dag) VerifyHeader(header *modules.Header) error {
-//	// step1. check unit signature, should be compare to mediator list
-//	unitState := validator.NewValidateError(d.validate.ValidateHeader(header))
-//	if unitState != nil {
-//		log.Errorf("Validate unit header error, errno=%s", unitState.Error())
-//		return unitState
-//	}
-//
-//	// step2. check extra data
-//	// Ensure that the header's extra-data section is of a reasonable size
-//	if uint64(len(header.Extra)) > uint64(32) {
-//		return fmt.Errorf("extra-data too long: %d > %d", len(header.Extra), configure.MaximumExtraDataSize)
-//	}
-//
-//	return nil
-//}
-
-/**
-获取account address下面的token信息
-To get account token list and tokens's information
-*/
-//func (d *Dag) WalletTokens(addr common.Address) (map[string]*modules.AccountToken, error) {
-//	return d.unstableUtxoRep.GetAccountTokens(addr)
-//}
-//
-//func (d *Dag) WalletBalance(address common.Address, assetid []byte, uniqueid []byte, chainid uint64) (uint64, error) {
-//	newAssetid := modules.AssetId{}
-//	newUnitqueid := modules.AssetId{}
-//
-//	if len(assetid) != cap(newAssetid) {
-//		return 0, fmt.Errorf("Assetid lenth is wrong")
-//	}
-//	if len(uniqueid) != cap(newUnitqueid) {
-//		return 0, fmt.Errorf("Uniqueid lenth is wrong")
-//	}
-//	if chainid == 0 {
-//		return 0, fmt.Errorf("Chainid is invalid")
-//	}
-//
-//	newAssetid.SetBytes(assetid)
-//	newUnitqueid.SetBytes(uniqueid)
-//
-//	asset := modules.Asset{
-//		AssetId:  newAssetid,
-//		UniqueId: newUnitqueid,
-//	}
-//
-//	return d.unstableUtxoRep.WalletBalance(address, asset), nil
-//}
-
-// Utxos : return mem utxos
-//func (d *Dag) Utxos() map[common.Hash]map[modules.OutPoint]*modules.Utxo {
-//	// result := d.utxos_cache1
-//	// utxos := make(Utxos, 0)
-//	// d.utxos_cache1.Range(func(key, v interface{}) bool {
-//	// 	utxos[key] = v
-//	// })
-//	return d.utxos_cache
-//}
 
 func (d *Dag) refreshPartitionMemDag() {
 	db := d.Db
@@ -464,7 +410,7 @@ func (d *Dag) refreshPartitionMemDag() {
 		if !ok {
 			d.initDataForMainChainHeader(mainChain)
 			log.Debugf("Init main chain mem dag for:%s", mainChain.GasToken.String())
-			pmemdag := memunit.NewMemDag(mainChain.GasToken, threshold, true, db, unitRep, propRep, d.stableStateRep)
+			pmemdag := memunit.NewMemDag(mainChain.GasToken, threshold, true, db, unitRep,d.stableUtxoRep, d.stableStateRep, propRep,d.Cache)
 			//pmemdag.SetUnstableRepositories(d.unstableUnitRep, d.unstableUtxoRep, d.unstableStateRep, d.unstablePropRep, d.unstableUnitProduceRep)
 			d.PartitionMemDag[mainChain.GasToken] = pmemdag
 		} else {
@@ -488,7 +434,7 @@ func (d *Dag) refreshPartitionMemDag() {
 			threshold := int(partition.StableThreshold)
 			d.initDataForPartition(partition)
 			log.Debugf("Init partition mem dag for:%s", ptoken.String())
-			pmemdag := memunit.NewMemDag(ptoken, threshold, true, db, unitRep, propRep, d.stableStateRep)
+			pmemdag := memunit.NewMemDag(ptoken, threshold, true, db, unitRep,d.stableUtxoRep, d.stableStateRep, propRep,d.Cache)
 			//pmemdag.SetUnstableRepositories(d.unstableUnitRep, d.unstableUtxoRep, d.unstableStateRep, d.unstablePropRep, d.unstableUnitProduceRep)
 			partitionMemdag[ptoken] = pmemdag
 		}
@@ -504,7 +450,7 @@ func (d *Dag) refreshPartitionMemDag() {
 		if !ok {
 			d.initDataForPartition(partition)
 			log.Debugf("Init partition mem dag for:%s", ptoken.String())
-			pmemdag := memunit.NewMemDag(ptoken, threshold, true, db, unitRep, propRep, d.stableStateRep)
+			pmemdag := memunit.NewMemDag(ptoken, threshold, true, db, unitRep,d.stableUtxoRep, d.stableStateRep, propRep,d.Cache)
 			//pmemdag.SetUnstableRepositories(d.unstableUnitRep, d.unstableUtxoRep, d.unstableStateRep, d.unstablePropRep, d.unstableUnitProduceRep)
 			d.PartitionMemDag[ptoken] = pmemdag
 		} else {
@@ -532,7 +478,7 @@ func (d *Dag) initDataForMainChainHeader(mainChain *modules.MainChain) {
 }
 func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 	mutex := new(sync.RWMutex)
-
+cache:=freecache.NewCache(50 * 1024 * 1024)
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
 	stateDb := storage.NewStateDb(db)
@@ -548,7 +494,7 @@ func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 	//hash, idx, _ := stablePropRep.GetLastStableUnit(modules.PTNCOIN)
 	gasToken := dagconfig.DagConfig.GetGasToken()
 	threshold, _ := propRep.GetChainThreshold()
-	unstableChain := memunit.NewMemDag(gasToken, threshold, light /*false*/, db, unitRep, propRep, stateRep)
+	unstableChain := memunit.NewMemDag(gasToken, threshold, light /*false*/, db, unitRep,utxoRep, stateRep,propRep,cache )
 	tunitRep, tutxoRep, tstateRep, tpropRep, tUnitProduceRep := unstableChain.GetUnstableRepositories()
 	//validate := validator.NewValidate(tunitRep, tutxoRep, tstateRep, tpropRep)
 	//partitionMemdag := make(map[modules.AssetId]memunit.IMemDag)
@@ -557,7 +503,7 @@ func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 	//}
 
 	dag := &Dag{
-		//Cache:            freecache.NewCache(200 * 1024 * 1024),
+		Cache:            cache,
 		Db:                     db,
 		unstableUnitRep:        tunitRep,
 		unstableUtxoRep:        tutxoRep,
@@ -694,7 +640,7 @@ func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
 
 func NewDagForTest(db ptndb.Database) (*Dag, error) {
 	mutex := new(sync.RWMutex)
-	//logger := log.New("Dag")
+	cache:=  freecache.NewCache(1 * 1024 * 1024)
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
 	stateDb := storage.NewStateDb(db)
@@ -708,11 +654,11 @@ func NewDagForTest(db ptndb.Database) (*Dag, error) {
 
 	threshold, _ := propRep.GetChainThreshold()
 	//validate := validator.NewValidate(dagDb, utxoRep, stateDb, propRep)
-	unstableChain := memunit.NewMemDag(modules.PTNCOIN, threshold, false, db, unitRep, propRep, stateRep)
+	unstableChain := memunit.NewMemDag(modules.PTNCOIN, threshold, false, db, unitRep,utxoRep, stateRep,propRep,cache )
 	tunitRep, tutxoRep, tstateRep, tpropRep, tUnitProduceRep := unstableChain.GetUnstableRepositories()
 
 	dag := &Dag{
-		//Cache:            freecache.NewCache(200 * 1024 * 1024),
+		Cache:         cache ,
 		Db:                   db,
 		stableUnitRep:        unitRep,
 		stableUtxoRep:        utxoRep,
@@ -888,20 +834,27 @@ func (d *Dag) CreateUnit(mAddr common.Address, txpool txspool.ITxPool, t time.Ti
 	return d.unstableUnitRep.CreateUnit(mAddr, txpool, t)
 }
 
-func (d *Dag) saveHeader(header *modules.Header) error {
+func (dag *Dag) saveHeader(header *modules.Header) error {
 	if header == nil {
 		return errors.ErrNullPoint
 	}
 	unit := &modules.Unit{UnitHeader: header}
 	asset := header.Number.AssetID
-	memdag, err := d.getMemDag(asset)
+	memdag, err := dag.getMemDag(asset)
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-	if err := memdag.AddUnit(unit, nil); err != nil {
+	a,b,c,d,e,err := memdag.AddUnit(unit, nil)
+	if  err != nil {
 		return fmt.Errorf("Save MemDag, occurred error: %s", err.Error())
 	}
+	dag.unstableUnitRep=a
+	dag.unstableUtxoRep=b
+	dag.unstableStateRep=c
+	dag.unstablePropRep=d
+	dag.unstableUnitProduceRep =e
+
 	return nil
 }
 
@@ -940,7 +893,7 @@ func (d *Dag) SaveUnit(unit *modules.Unit, txpool txspool.ITxPool, isGenesis boo
 		return nil
 	}
 
-	if err := d.Memdag.AddUnit(unit, txpool); err != nil {
+	if _,_,_,_,_,err := d.Memdag.AddUnit(unit, txpool); err != nil {
 		return fmt.Errorf("Save MemDag, occurred error: %s", err.Error())
 	} else {
 		log.Debug("=============    save_memdag_unit     =================", "save_memdag_unit_hex", unit.Hash().String(), "index", unit.UnitHeader.Index())

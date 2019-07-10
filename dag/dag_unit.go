@@ -72,8 +72,18 @@ func (dag *Dag) GenerateUnit(when time.Time, producer common.Address, groupPubKe
 		sign_unit.UnitHeader.ParentsHash[0].String(), sign_unit.Txs.Len(), time.Since(t0).String())
 
 	//3.将新单元添加到MemDag中
-	dag.Memdag.AddUnit(sign_unit, txpool)
 
+	a,b,c,d,e,err := dag.Memdag.AddUnit(sign_unit, txpool)
+	if  err != nil {
+		//return count, err
+		log.Errorf("Memdag addUnit[%s] error:%s", sign_unit.UnitHash.String(), err.Error())
+		return  nil
+	}
+	dag.unstableUnitRep=a
+	dag.unstableUtxoRep=b
+	dag.unstableStateRep=c
+	dag.unstablePropRep=d
+	dag.unstableUnitProduceRep =e
 	//4.PostChainEvents
 	//TODO add PostChainEvents
 	go func() {
