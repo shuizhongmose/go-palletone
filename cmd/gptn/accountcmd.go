@@ -465,7 +465,8 @@ func accountDumpKey(ctx *cli.Context) error {
 	fmt.Printf("Your private key hex is : {%x}, WIF is {%s}\n", prvKey, wif)
 	//pK, _ := crypto.ToECDSA(prvKey)
 	pubBytes, _ := crypto.MyCryptoLib.PrivateKeyToPubKey(prvKey)
-	fmt.Printf("Compressed public key hex is {%x}", pubBytes)
+	fmt.Printf("Compressed public key hex is {%x}\n", pubBytes)
+	fmt.Printf("Address hex is {%s}", account.Address.Hex())
 	return nil
 }
 
