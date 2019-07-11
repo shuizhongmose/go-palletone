@@ -458,6 +458,7 @@ func (chain *MemDag) AddUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 
 	if err != nil {
 		log.Warnf("Add unit[%s] fail, error:%s", unitHash.String(), err.Error())
+		return nil, nil, nil, nil, nil, err
 	} else {
 		// 进行下一个unit的群签名
 		log.Debugf("send toGroupSign event")
