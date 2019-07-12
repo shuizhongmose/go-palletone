@@ -129,14 +129,14 @@ matrix:
       after_script:
         - killall gptn
         - sleep 2
-        - cd ${BASE_DIR}
-        - rm ./bdd/node/gptn
-        - tar -czvf ./bdd/logs/oneNode.tar.gz ./node
-        - zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
+        - cd ${BASE_DIR}/bdd
+        - rm ./node/gptn
+        - tar -czvf ./logs/oneNode.tar.gz ./node
+        - zip -j ./logs/gasToken_log.zip ./GasToken/node/log/*
         - |
           if [ $IS_UPLOAD == 'true' ]; then
             # uplaod all log
-            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
+            ./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
             # echo ftp address
             echo "The path of all bdd log in vsftpd is 'ftp://47.74.209.46"
             echo "If you want to open it in explorer, you should close VPN first."
