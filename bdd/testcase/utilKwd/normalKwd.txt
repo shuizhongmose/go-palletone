@@ -2,7 +2,7 @@
 Request create transaction
     [Arguments]    ${senderAddr}    ${recieverAddr}    ${senderPTN}    ${Poundage}
     ${transList}    Create List    ${senderAddr}    ${recieverAddr}    ${senderPTN}    ${Poundage}
-    ${resp}    setPostRequest    ${host}     wallet_CreateRawTransaction    ${transList}
+    ${resp}    setPostRequest    ${host}     ptn_cmdCreateTransaction    ${transList}
     ${jsonRes}    resultToJson    ${resp}
     #${ret}    Should Match Regexp    ${jsonRes['result']}    ${result_code}    msg="result:does't match Result expression"
     [Return]    ${jsonRes}
@@ -10,7 +10,7 @@ Request create transaction
 Request sign transaction
     [Arguments]    ${crtRet}    ${signType}    ${pwd}
     ${transList}    Create List    ${crtRet}    ${signType}    ${pwd}
-    ${resp}    setPostRequest    ${host}    wallet_signRawTransaction    ${transList}
+    ${resp}    setPostRequest    ${host}    ptn_signRawTransaction    ${transList}
     ${jsonRes}    resultToJson    ${resp}
     #Should Contain    ${resp.content}['jsonrpc']    2.0    msg="jsonrpc:failed"
     #Should Contain    ${resp.content}['id']    1    msg="id:failed"
@@ -19,7 +19,7 @@ Request sign transaction
 Request send transaction
     [Arguments]    ${ret}
     ${sendList}    Create List    ${ret}
-    ${resp}    setPostRequest    ${host}    wallet_sendRawTransaction    ${sendList}
+    ${resp}    setPostRequest    ${host}    ptn_sendRawTransaction    ${sendList}
     ${jsonRes}    resultToJson    ${resp}
     #Should Match Regexp    ${resp.content}['result']    ${sendResult}    msg="result:does't match expression"
     Should Match Regexp    ${jsonRes['result']}    ${sendResult}    msg="result:does't match expression"
