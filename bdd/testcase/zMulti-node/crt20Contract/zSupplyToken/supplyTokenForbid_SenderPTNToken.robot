@@ -41,11 +41,8 @@ Create token of vote contract
     ${ccList}    Create List    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}    ${20ContractId}
     ...    ${ccTokenList}    ${pwd}    ${duration}    ${EMPTY}
     ${resp}    setPostRequest    ${host}    ${invokePsMethod}    ${ccList}
-    log    ${resp.content}
-    Should Contain    ${resp.content}['jsonrpc']    "2.0"    msg="jsonrpc:failed"
-    Should Contain    ${resp.content}['id']    1    msg="id:failed"
-    ${ret}    Should Match Regexp    ${resp.content}['result']    ${commonResultCode}    msg="result:does't match Result expression"
-    [Return]    ${ret}
+    ${jsonRes}    resultToJson    ${resp}
+    [Return]    ${jsonRes}
 
 Calculate gain of recieverAdd
     ${invokeGain}    Evaluate    int(${PTNAmount})+int(${PTNPoundage})

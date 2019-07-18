@@ -69,7 +69,9 @@ Assert gain of reciever
     Should Be Equal As Numbers    ${coinToken1}    ${coinToken2}
     ${result}    getTxByReqId    ${ret}
     ${jsonRes}    Evaluate    demjson.encode(${result})    demjson
-    #${jsonRes}    To Json    ${jsonRes}
+
+resultToJson
+    ${result}
     #${TYPE}    Evaluate    str(type(${jsonRes['result']}))
     #log    ${result['item']}
     ${error_code}    Should Match Regexp    ${result}['result']    "error_code":500

@@ -50,12 +50,12 @@ Calculate gain of recieverAdd
     [Return]    ${GAIN}
 
 Request getbalance after create token
-    [Arguments]    ${geneAdd}    ${key}    ${GAIN}
+    [Arguments]    ${geneAdd}    ${key}    ${coinToken1}
     sleep    4
     ${result2}    getBalance    ${geneAdd}
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
     ${PTN2}    Get From Dictionary    ${result2}    PTN
-    ${tokenGAIN}    Evaluate    float(${coinToken2})-float(${coinToken1})
+    ${tokenGAIN}    Evaluate    int(${coinToken2})-int(${coinToken1})
     [Return]    ${PTN2}    ${tokenGAIN}
 
 Assert gain of reciever
