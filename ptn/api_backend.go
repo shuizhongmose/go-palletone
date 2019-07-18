@@ -541,7 +541,6 @@ func (b *PtnApiBackend) GetAllUtxos() ([]*ptnjson.UtxoJson, error) {
 		result = append(result, ujson)
 	}
 	return result, nil
-
 }
 
 func (b *PtnApiBackend) GetAddrTxHistory(addr string) ([]*ptnjson.TxHistoryJson, error) {
@@ -585,9 +584,10 @@ func (b *PtnApiBackend) ContractInvoke(deployId []byte, txid string, args [][]by
 }
 
 func (b *PtnApiBackend) ContractQuery(contractId []byte, txid string, args [][]byte, timeout time.Duration) (rspPayload []byte, err error) {
-	channelId := "palletone"
-	rsp, err := b.ptn.contract.Invoke(rwset.RwM, channelId, contractId, txid, args, timeout)
+	rsp, err := b.ptn.contract.Invoke(rwset.RwM, rwset.ChainId, contractId, txid, args, timeout)
+	rwset.RwM.CloseTxSimulator(rwset.ChainId, txid)
 	rwset.RwM.Close()
+
 	if err != nil {
 		log.Debugf(" err!=nil =====>ContractQuery:contractId[%s]txid[%s]", hex.EncodeToString(contractId), txid)
 		return nil, err
