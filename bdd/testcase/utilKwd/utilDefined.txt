@@ -70,6 +70,13 @@ preTransToken
 
 countRecieverPTN
     [Arguments]    ${Amount}
+    ${quantity}    evaluate    ${Amount}
+    ${quantity}    evaluate    decimal.Decimal('${quantity}')    decimal
+    [Return]    ${quantity}
+
+
+countDecimalFormatPTN
+    [Arguments]    ${Amount}
     ${quantity}    evaluate    ${Amount}*0.00000001
     ${quantity}    evaluate    decimal.Decimal('${quantity}')    decimal
     [Return]    ${quantity}
