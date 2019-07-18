@@ -41,6 +41,15 @@ getGeneAdd
     #${log}    evaluate    str(${resp.content}['result'][0])
     [Return]    ${jsonRes['result'][0]}
 
+resultToJson
+    [Arguments]    ${resp}
+    log    ${resp.content}
+    ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
+    ${jsonRes}    To Json    ${jsonRes}
+    Should Contain    ${jsonRes['jsonrpc']}    2.0    msg="jsonrpc:failed"
+    Should Contain    str(${jsonRes['id']})    1    msg="id:failed"
+    [Return]    ${jsonRes}
+
 getMultiNodeGeneAdd
     [Arguments]    ${host}
     ${list}    Create List    ${EMPTY}
@@ -70,10 +79,9 @@ preTransToken
 
 countRecieverPTN
     [Arguments]    ${Amount}
-    ${quantity}    evaluate    ${Amount}
-    ${quantity}    evaluate    decimal.Decimal('${quantity}')    decimal
-    [Return]    ${quantity}
-
+    #${quantity}    evaluate    ${Amount}
+    #${quantity}    evaluate    decimal.Decimal('${Amount}')    decimal
+    [Return]    ${Amount}
 
 countDecimalFormatPTN
     [Arguments]    ${Amount}
