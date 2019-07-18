@@ -8,8 +8,8 @@ normalCrtTrans
 normalSignTrans
     [Arguments]    ${crtRet}    ${signType}    ${pwd}
     ${resp}    Request sign transaction    ${crtRet}    ${signType}    ${pwd}
-    ${hex}    Should Match Regexp    ${resp.content}['result']['hex']    ${result_hex}    msg="hex:does't match Result expression"
-    ${txid}    Should Match Regexp    ${resp.content}['result']['txid']    ${result_txid}    msg="txid:does't match Result expression"
+    ${hex}    Should Match Regexp    ${resp['hex']}    ${result_hex}    msg="hex:does't match Result expression"
+    ${txid}    Should Match Regexp    ${resp['txid']}    ${result_txid}    msg="txid:does't match Result expression"
     [Return]    ${hex}
 
 normalSendTrans

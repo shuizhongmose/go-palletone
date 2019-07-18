@@ -7,7 +7,7 @@ Resource          ../../utilKwd/utilDefined.txt
 Resource          ../../utilKwd/behaveKwd.txt
 
 *** Variables ***
-${preTokenId}     QA057
+${preTokenId}     QA157
 
 *** Test Cases ***
 Scenario: 20Contract- Supply token
@@ -55,7 +55,7 @@ Request getbalance after create token
     ${result2}    getBalance    ${geneAdd}
     ${coinToken2}    Get From Dictionary    ${result2}    ${key}
     ${PTN2}    Get From Dictionary    ${result2}    PTN
-    ${tokenGAIN}    Evaluate    int(${coinToken2})-int(${coinToken1})
+    ${tokenGAIN}    Evaluate    ${coinToken2}-${coinToken1}
     [Return]    ${PTN2}    ${tokenGAIN}
 
 Assert gain of reciever

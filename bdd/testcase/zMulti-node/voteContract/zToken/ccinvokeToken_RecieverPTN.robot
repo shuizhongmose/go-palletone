@@ -43,7 +43,7 @@ Create token of vote contract
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN2P}
-    ${GAIN}    countRecieverPTN    int(${PTNAmount})
+    ${GAIN}    countRecieverPTN    ${PTNAmount}
     ${PTN2'}    Evaluate    decimal.Decimal('${PTN2P}')+decimal.Decimal('${GAIN}')    decimal
     [Return]    ${PTN2'}
 
