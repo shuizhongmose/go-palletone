@@ -112,10 +112,11 @@ func (g *Genesis) GetTokenAmount() uint64 {
 	return uint64(amount)
 }
 
+// mediator基本信息
 type MediatorInfoBase struct {
-	AddStr     string `json:"account"`
-	InitPubKey string `json:"initPubKey"`
-	Node       string `json:"node"`
+	AddStr     string `json:"account"`    // mediator账户地址
+	InitPubKey string `json:"initPubKey"` // mediator的初始群签名公钥
+	Node       string `json:"node"`       // mediator节点信息，包括ip和端口等
 }
 
 func NewMediatorInfoBase() *MediatorInfoBase {
@@ -152,11 +153,13 @@ func (mib *MediatorInfoBase) Validate() error {
 
 type InitialMediator struct {
 	*MediatorInfoBase
+	*MediatorApplyInfo
 }
 
 func NewInitialMediator() *InitialMediator {
 	return &InitialMediator{
-		MediatorInfoBase: NewMediatorInfoBase(),
+		MediatorInfoBase:  NewMediatorInfoBase(),
+		MediatorApplyInfo: NewMediatorApplyInfo(),
 	}
 }
 

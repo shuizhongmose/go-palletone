@@ -23,10 +23,10 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcutil/base58"
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/pairing/bn256"
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/p2p/discover"
+	"go.dedis.ch/kyber/v3"
+	"go.dedis.ch/kyber/v3/pairing/bn256"
 )
 
 var Suite = bn256.NewSuiteG2()
@@ -46,10 +46,11 @@ type Mediator struct {
 	*MediatorInfoExpand
 }
 
+// mediator扩展信息
 type MediatorInfoExpand struct {
-	TotalMissed          uint64 `json:"totalMissed"`
-	LastConfirmedUnitNum uint32 `json:"lastConfirmedUnitNum"`
-	TotalVotes           uint64 `json:"totalVotes"`
+	TotalMissed          uint64 `json:"totalMissed"`          // 当前mediator未能按照调度生产区块的总个数
+	LastConfirmedUnitNum uint32 `json:"lastConfirmedUnitNum"` // 当前mediator最新生产的区块编号
+	TotalVotes           uint64 `json:"totalVotes"`           // 当前mediator的总共得票数量
 }
 
 func NewMediatorInfoExpand() *MediatorInfoExpand {
@@ -67,14 +68,14 @@ func NewMediator() *Mediator {
 	}
 }
 
-//申请成为Mediator
+// Mediator申请信息
 type MediatorApplyInfo struct {
 	ApplyInfo string `json:"applyInfo"` //  申请信息
 }
 
 func NewMediatorApplyInfo() *MediatorApplyInfo {
 	return &MediatorApplyInfo{
-		ApplyInfo: "",
+		ApplyInfo: "某节点; www.abc.com",
 	}
 }
 

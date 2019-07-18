@@ -139,11 +139,15 @@ func (d *Dag) GetMediator(add common.Address) *core.Mediator {
 //}
 
 func (dag *Dag) GetSlotAtTime(when time.Time) uint32 {
-	return dag.unstablePropRep.GetSlotAtTime(when)
+	_, _, _, rep, _ := dag.Memdag.GetUnstableRepositories()
+	return rep.GetSlotAtTime(when)
+	//return dag.unstablePropRep.GetSlotAtTime(when)
 }
 
 func (dag *Dag) GetNewestUnitTimestamp(token modules.AssetId) (int64, error) {
-	return dag.unstablePropRep.GetNewestUnitTimestamp(token)
+	_, _, _, rep, _ := dag.Memdag.GetUnstableRepositories()
+	return rep.GetNewestUnitTimestamp(token)
+	//return dag.unstablePropRep.GetNewestUnitTimestamp(token)
 }
 
 func (dag *Dag) GetSlotTime(slotNum uint32) time.Time {
@@ -156,13 +160,17 @@ func (dag *Dag) GetScheduledMediator(slotNum uint32) common.Address {
 
 func (dag *Dag) HeadUnitTime() int64 {
 	gasToken := dagconfig.DagConfig.GetGasToken()
-	t, _ := dag.unstablePropRep.GetNewestUnitTimestamp(gasToken)
+	//t, _ := dag.unstablePropRep.GetNewestUnitTimestamp(gasToken)
+	_, _, _, rep, _ := dag.Memdag.GetUnstableRepositories()
+	t, _ := rep.GetNewestUnitTimestamp(gasToken)
 	return t
 }
 
 func (dag *Dag) HeadUnitNum() uint64 {
 	gasToken := dagconfig.DagConfig.GetGasToken()
-	_, idx, _ := dag.unstablePropRep.GetNewestUnit(gasToken)
+	//_, idx, _ := dag.unstablePropRep.GetNewestUnit(gasToken)
+	_, _, _, rep, _ := dag.Memdag.GetUnstableRepositories()
+	_, idx, _ := rep.GetNewestUnit(gasToken)
 	return idx.Index
 }
 
@@ -172,7 +180,9 @@ func (dag *Dag) LastMaintenanceTime() int64 {
 
 func (dag *Dag) HeadUnitHash() common.Hash {
 	gasToken := dagconfig.DagConfig.GetGasToken()
-	hash, _, _ := dag.unstablePropRep.GetNewestUnit(gasToken)
+	_, _, _, rep, _ := dag.Memdag.GetUnstableRepositories()
+	hash, _, _ := rep.GetNewestUnit(gasToken)
+	//hash, _, _ := dag.unstablePropRep.GetNewestUnit(gasToken)
 	return hash
 }
 
@@ -199,33 +209,6 @@ func (dag *Dag) GetChainParameters() *core.ChainParameters {
 func (dag *Dag) GetImmutableChainParameters() *core.ImmutableChainParameters {
 	return &dag.GetGlobalProp().ImmutableParameters
 }
-
-//func (d *Dag) GetConfig(name string) ([]byte, error) {
-//	chainParameters := *d.GetChainParameters()
-//	vv := reflect.ValueOf(chainParameters)
-//	//tt := reflect.TypeOf(chainParameters)
-//	//for i := 0; i < tt.NumField(); i++ {
-//	//	if tt.Field(i).Name == name {
-//	//		return []byte(vv.Field(i).String()), nil
-//	//	}
-//	//}
-//
-//	vn := vv.FieldByName(name)
-//	if vn.IsValid() {
-//		return []byte(vn.String()), nil
-//	}
-//
-//	return nil, fmt.Errorf("no such field: %v", name)
-//}
-
-//func (d *Dag) GetConfig(name string) ([]byte, *modules.StateVersion, error) {
-//	return d.unstableStateRep.GetConfig(name)
-//}
-
-//func (d *Dag) GetAllConfig() (map[string]*modules.ContractStateValue, error) {
-//	return d.unstableStateRep.GetAllConfig()
-//
-//}
 
 func (dag *Dag) GetUnitByHash(hash common.Hash) (*modules.Unit, error) {
 	unit, err := dag.unstableUnitRep.GetUnit(hash)
@@ -263,24 +246,34 @@ func (d *Dag) GetMediatorInfo(address common.Address) *modules.MediatorInfo {
 	return mi
 }
 
-func (d *Dag) JuryCount() int {
+func (d *Dag) JuryCount() uint {
 	return 20 //todo test
 
 	juryList, err := d.unstableStateRep.GetJuryCandidateList()
 	if err != nil {
-		return len(juryList)
+		return uint(len(juryList))
 	}
 	return 0
 }
 
 func (d *Dag) GetActiveJuries() []common.Address {
-	return nil
+	return nil //todo
 
 	//return d.unstableStateRep.GetJuryCandidateList()
 }
 
 func (d *Dag) IsActiveJury(addr common.Address) bool {
-	return true //todo for test
+	return true //todo
 
-	//return d.unstableStateRep.IsJury(addr)
+	return d.unstableStateRep.IsJury(addr)
+}
+
+func (d *Dag) GetContractDevelopers() ([]common.Address, error) {
+	return d.unstableStateRep.GetContractDeveloperList()
+}
+
+func (d *Dag) IsContractDeveloper(addr common.Address) bool {
+	return true //todo
+
+	return d.unstableStateRep.IsContractDeveloper(addr)
 }

@@ -111,18 +111,6 @@ func (mr *MockIDagMockRecorder) CurrentUnit(token interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentUnit", reflect.TypeOf((*MockIDag)(nil).CurrentUnit), token)
 }
 
-// VerifyHeader mocks base method
-func (m *MockIDag) VerifyHeader(header *modules.Header) error {
-	ret := m.ctrl.Call(m, "VerifyHeader", header)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// VerifyHeader indicates an expected call of VerifyHeader
-func (mr *MockIDagMockRecorder) VerifyHeader(header interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyHeader", reflect.TypeOf((*MockIDag)(nil).VerifyHeader), header)
-}
-
 // GetCurrentUnit mocks base method
 func (m *MockIDag) GetCurrentUnit(assetId modules.AssetId) *modules.Unit {
 	ret := m.ctrl.Call(m, "GetCurrentUnit", assetId)
@@ -528,6 +516,19 @@ func (mr *MockIDagMockRecorder) GetUtxoView(tx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUtxoView", reflect.TypeOf((*MockIDag)(nil).GetUtxoView), tx)
 }
 
+// IsUtxoSpent mocks base method
+func (m *MockIDag) IsUtxoSpent(outpoint *modules.OutPoint) (bool, error) {
+	ret := m.ctrl.Call(m, "IsUtxoSpent", outpoint)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsUtxoSpent indicates an expected call of IsUtxoSpent
+func (mr *MockIDagMockRecorder) IsUtxoSpent(outpoint interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsUtxoSpent", reflect.TypeOf((*MockIDag)(nil).IsUtxoSpent), outpoint)
+}
+
 // SubscribeChainHeadEvent mocks base method
 func (m *MockIDag) SubscribeChainHeadEvent(ch chan<- modules.ChainHeadEvent) event.Subscription {
 	ret := m.ctrl.Call(m, "SubscribeChainHeadEvent", ch)
@@ -586,6 +587,19 @@ func (m *MockIDag) GetUtxoEntry(outpoint *modules.OutPoint) (*modules.Utxo, erro
 // GetUtxoEntry indicates an expected call of GetUtxoEntry
 func (mr *MockIDagMockRecorder) GetUtxoEntry(outpoint interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUtxoEntry", reflect.TypeOf((*MockIDag)(nil).GetUtxoEntry), outpoint)
+}
+
+// GetStxoEntry mocks base method
+func (m *MockIDag) GetStxoEntry(outpoint *modules.OutPoint) (*modules.Stxo, error) {
+	ret := m.ctrl.Call(m, "GetStxoEntry", outpoint)
+	ret0, _ := ret[0].(*modules.Stxo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStxoEntry indicates an expected call of GetStxoEntry
+func (mr *MockIDagMockRecorder) GetStxoEntry(outpoint interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStxoEntry", reflect.TypeOf((*MockIDag)(nil).GetStxoEntry), outpoint)
 }
 
 // GetAddrOutpoints mocks base method
@@ -1118,30 +1132,6 @@ func (mr *MockIDagMockRecorder) GetIrreversibleUnitNum(id interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIrreversibleUnitNum", reflect.TypeOf((*MockIDag)(nil).GetIrreversibleUnitNum), id)
 }
 
-// ValidateUnitExceptGroupSig mocks base method
-func (m *MockIDag) ValidateUnitExceptGroupSig(unit *modules.Unit) error {
-	ret := m.ctrl.Call(m, "ValidateUnitExceptGroupSig", unit)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ValidateUnitExceptGroupSig indicates an expected call of ValidateUnitExceptGroupSig
-func (mr *MockIDagMockRecorder) ValidateUnitExceptGroupSig(unit interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUnitExceptGroupSig", reflect.TypeOf((*MockIDag)(nil).ValidateUnitExceptGroupSig), unit)
-}
-
-// ValidateUnitExceptPayment mocks base method
-func (m *MockIDag) ValidateUnitExceptPayment(unit *modules.Unit) error {
-	ret := m.ctrl.Call(m, "ValidateUnitExceptPayment", unit)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ValidateUnitExceptPayment indicates an expected call of ValidateUnitExceptPayment
-func (mr *MockIDagMockRecorder) ValidateUnitExceptPayment(unit interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUnitExceptPayment", reflect.TypeOf((*MockIDag)(nil).ValidateUnitExceptPayment), unit)
-}
-
 // SaveChaincode mocks base method
 func (m *MockIDag) SaveChaincode(contractId common.Address, cc *list.CCInfo) error {
 	ret := m.ctrl.Call(m, "SaveChaincode", contractId, cc)
@@ -1438,4 +1428,17 @@ func (m *MockIDag) QueryProofOfExistenceByReference(ref []byte) ([]*modules.Proo
 // QueryProofOfExistenceByReference indicates an expected call of QueryProofOfExistenceByReference
 func (mr *MockIDagMockRecorder) QueryProofOfExistenceByReference(ref interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryProofOfExistenceByReference", reflect.TypeOf((*MockIDag)(nil).QueryProofOfExistenceByReference), ref)
+}
+
+// GetAssetReference mocks base method
+func (m *MockIDag) GetAssetReference(asset []byte) ([]*modules.ProofOfExistence, error) {
+	ret := m.ctrl.Call(m, "GetAssetReference", asset)
+	ret0, _ := ret[0].([]*modules.ProofOfExistence)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAssetReference indicates an expected call of GetAssetReference
+func (mr *MockIDagMockRecorder) GetAssetReference(asset interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAssetReference", reflect.TypeOf((*MockIDag)(nil).GetAssetReference), asset)
 }

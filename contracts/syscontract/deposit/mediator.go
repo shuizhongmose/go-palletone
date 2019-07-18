@@ -90,6 +90,7 @@ func applyBecomeMediator(stub shim.ChaincodeStubInterface, args []string) pb.Res
 	md := NewMediatorDeposit()
 	md.ApplyEnterTime = getTiem(stub)
 	md.Status = Apply
+	md.Role = Mediator
 	err = SaveMediatorDeposit(stub, invokeAddr.Str(), md)
 	if err != nil {
 		log.Error("SaveMedInfo err:", "error", err)
