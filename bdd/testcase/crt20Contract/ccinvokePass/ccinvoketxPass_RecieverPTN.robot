@@ -50,7 +50,7 @@ Assert gain
 Request send transaction
     [Arguments]    ${ret}
     ${sendList}    Create List    ${ret}
-    ${resp}    setPostRequest    ${host}    ptn_sendRawTransaction    ${sendList}
+    ${resp}    setPostRequest    ${host}    wallet_sendRawTransaction    ${sendList}
     ${jsonRes}    resultToJson    ${resp}
     #Should Match Regexp    ${resp.content}['result']    ${sendResult}    msg="result:does't match expression"
     [Return]    ${jsonRes}
