@@ -2,7 +2,7 @@
 Request create transaction
     [Arguments]    ${senderAddr}    ${recieverAddr}    ${senderPTN}    ${Poundage}
     ${transList}    Create List    ${senderAddr}    ${recieverAddr}    ${senderPTN}    ${Poundage}
-    ${resp}    setPostRequest    ${host}     wallet_cmdCreateTransaction    ${transList}
+    ${resp}    setPostRequest    ${host}     wallet_createRawTransaction    ${transList}
     ${jsonRes}    resultToJson    ${resp}
     #${ret}    Should Match Regexp    ${jsonRes['result']}    ${result_code}    msg="result:does't match Result expression"
     [Return]    ${jsonRes}
