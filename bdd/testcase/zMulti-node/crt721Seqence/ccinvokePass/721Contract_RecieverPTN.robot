@@ -30,9 +30,11 @@ Request getbalance before create token
 Create token of vote contract
     ${ccList}    Create List    ${crtTokenMethod}    ${note}    ${preTokenId}    ${SeqenceToken}    ${721TokenAmount}
     ...    ${721MetaBefore}    ${geneAdd}
-    ${resp}    normalCcinvokePass    ${commonResultCode}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
+    ${resp}    Request CcinvokePass    ${commonResultCode}    ${geneAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${721ContractId}    ${ccList}
-    [Return]    ${resp}
+    ${jsonRes}    Evaluate    demjson.encode(${resp.content})    demjson
+    ${jsonRes}    To Json    ${jsonRes}
+    [Return]    ${jsonRes['result']}
 
 Calculate gain of recieverAdd
     [Arguments]    ${PTN1}
