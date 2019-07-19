@@ -96,7 +96,7 @@ Request transfer token of vote
     #Should Contain    ${resp.content}['jsonrpc']    "2.0"    msg="jsonrpc:failed"
     #Should Contain    ${resp.content}['id']    1    msg="id:failed"
     #${ret}    Should Match Regexp    ${resp.content}['result']    ${commonResultCode}    msg="result:does't match Result expression"
-    [Return]   str(${jsonRes['result']})
+    [Return]   ${jsonRes['result']}
 
 Request CcinvokePass
     [Arguments]    ${commonResultCode}    ${senderAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}    ${ContractId}
