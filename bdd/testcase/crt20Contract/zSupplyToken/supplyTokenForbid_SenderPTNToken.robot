@@ -7,7 +7,7 @@ Resource          ../../utilKwd/utilDefined.txt
 Resource          ../../utilKwd/behaveKwd.txt
 
 *** Variables ***
-${preTokenId}     QA158
+${preTokenId}     QA258
 
 *** Test Cases ***
 Scenario: 20Contract- Supply token
@@ -63,7 +63,7 @@ Assert gain of reciever
     Should Be Equal As Numbers    ${PTN2}    ${PTNGAIN}
     Should Be Equal As Numbers    ${coinToken1}    ${coinToken2}
     ${result}    getTxByReqId    ${ret}
-    #${jsonRes}    resultToJson    ${result}
+    #${jsonRes}    resultToJson    ${result['result']}
     #${error_code}    Should Match Regexp    ${jsonRes['result']}    "error_code":500
     #${error_code}    Should Match Regexp    ${jsonRes['result']}    Not the supply address
     #Should Be Equal As Strings    ${jsonRes['result']['info']['contract_invoke']['error_message'] }    Chaincode Error:{\"Error\":\"Not the supply address\"}

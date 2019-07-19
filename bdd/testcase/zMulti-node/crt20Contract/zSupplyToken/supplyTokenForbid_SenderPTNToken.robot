@@ -17,7 +17,7 @@ Feature: Vote Contract- Create token
     ${ret}    When Create token of vote contract
     ${GAIN}    And Calculate gain of recieverAdd
     ${PTN2}    ${coinToken2}    And Request getbalance after create token    ${geneAdd}    ${key}
-    Then Assert gain of reciever    ${PTN1}    ${PTN2}    ${GAIN}    ${coinToken1}    ${coinToken2}
+    Then Assert gain of reciever    ${PTN1}    ${PTN2}    ${GAIN}    ${coinToken1}    ${coinToken2}    ${ret}
 
 *** Keywords ***
 CcinvokePass normal
@@ -58,15 +58,12 @@ Request getbalance after create token
     [Return]    ${PTN2}    ${coinToken2}
 
 Assert gain of reciever
-    [Arguments]    ${PTN1}    ${PTN2}    ${GAIN}    ${coinToken1}    ${coinToken2}
+    [Arguments]    ${PTN1}    ${PTN2}    ${GAIN}    ${coinToken1}    ${coinToken2}    ${ret}
     ${PTNGAIN}    Evaluate    decimal.Decimal('${PTN1}')-decimal.Decimal('${GAIN}')    decimal
     Should Be Equal As Numbers    ${PTN2}    ${PTNGAIN}
     Should Be Equal As Numbers    ${coinToken1}    ${coinToken2}
     ${result}    getTxByReqId    ${ret}
-    ${jsonRes}    Evaluate    demjson.encode(${result})    demjson
-    #${jsonRes}    To Json    ${jsonRes}
-    #${TYPE}    Evaluate    str(type(${jsonRes['result']}))
-    #log    ${result['item']}
-    ${error_code}    Should Match Regexp    ${result}['result']    "error_code":500
-    ${error_code}    Should Match Regexp    ${result}['result']    Not the supply address
+    #${jsonRes}    resultToJson    ${result}
+    #${error_code}    Should Match Regexp    ${jsonRes['result']}    "error_code":500
+    #${error_code}    Should Match Regexp    ${jsonRes['result']}    Not the supply address
     #Should Be Equal As Strings    ${jsonRes['result']['info']['contract_invoke']['error_message'] }    Chaincode Error:{\"Error\":\"Not the supply address\"}
