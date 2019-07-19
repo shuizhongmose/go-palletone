@@ -175,8 +175,8 @@ func (s *PrivateWalletAPI) buildRawTransferTx(tokenId, from, to string, amount, 
 		return nil, nil, fmt.Errorf("Select utxo err")
 	}
 	log.DebugDynamic(func() string {
-		data, _ := json.Marshal(utxosToken)
-		return fmt.Sprintf("Find utxo for token:%s, utxos:%s", tokenId, string(data))
+
+		return fmt.Sprintf("Find utxo for token:%s, utxos:%d", tokenId, len(utxosToken))
 	})
 	tokenAmount := ptnjson.JsonAmt2AssetAmt(tokenAsset, amount)
 	pay2, usedUtxo2, err := createPayment(fromAddr, toAddr, tokenAmount, 0, utxosToken)
