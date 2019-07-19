@@ -7,7 +7,7 @@ Resource          ../../utilKwd/utilDefined.txt
 Resource          ../../utilKwd/behaveKwd.txt
 
 *** Variables ***
-${preTokenId}     QA157
+${preTokenId}     QA057
 
 *** Test Cases ***
 Scenario: 20Contract- Supply token
@@ -16,7 +16,7 @@ Scenario: 20Contract- Supply token
     ${PTN1}    ${key}    ${coinToken1}    And Request getbalance before create token
     ${ret}    When Create token of vote contract    ${geneAdd}
     ${GAIN}    And Calculate gain of recieverAdd
-    ${PTN2}    ${tokenGAIN}    And Request getbalance after create token    ${geneAdd}    ${key}    ${GAIN}
+    ${PTN2}    ${tokenGAIN}    And Request getbalance after create token    ${geneAdd}    ${key}    ${coinToken1}
     Then Assert gain of reciever    ${PTN1}    ${PTN2}    ${tokenGAIN}    ${GAIN}
 
 *** Keywords ***
