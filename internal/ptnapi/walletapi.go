@@ -1183,8 +1183,11 @@ func (s *PrivateWalletAPI) TransferToken(ctx context.Context, asset string, from
 	if err != nil {
 		return common.Hash{}, err
 	}
-	txJson, _ := json.Marshal(rawTx)
-	log.DebugDynamic(func() string { return "SignedTx:" + string(txJson) })
+
+	log.DebugDynamic(func() string {
+		txJson, _ := json.Marshal(rawTx)
+		return "SignedTx:" + string(txJson)
+	})
 	//4.
 	return submitTransaction(ctx, s.b, rawTx)
 }
