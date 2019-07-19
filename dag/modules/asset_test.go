@@ -114,3 +114,12 @@ func TestAsset721(t *testing.T) {
 	assert.Equal(t, t111, t222)
 
 }
+func TestStringToAsset(t *testing.T) {
+	str := "QA084+0AWAGYM0VX443QPNRBA-9e3525cc-cc60-467e-95a0-983a446ab94f"
+	str2 := "QA084+0AWAGYM0VX443QPNRBA-078368e2-5f1d-43ea-8187-4e34c92ac434"
+	asset, err := StringToAsset(str)
+	assert.Nil(t, err)
+	t.Log(asset.String())
+	asset2, _ := StringToAsset(str2)
+	assert.False(t, asset.Equal(asset2))
+}
