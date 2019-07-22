@@ -50,5 +50,5 @@ normalCcqueryById
 
 normalVoteTransfer
     [Arguments]    ${geneAdd}
-    ${res}    Request transfer token of vote
-    [Return]    ${res}
+    ${jsonRes}    Request transfer token of vote
+    [Return]    ${jsonRes}

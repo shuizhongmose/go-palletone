@@ -106,5 +106,4 @@ Request CcinvokePass
     ...    ${ccList}    ${pwd}    ${duration}    ${EMPTY}
     ${resp}    setPostRequest    ${host}    ${invokePsMethod}    ${ccinvokeList}
     ${jsonRes}    resultToJson    ${resp}
-    #${ret}    Should Match Regexp    ${jsonRes}    ${commonResultCode}    msg="result:does't match Result expression"
     [Return]    ${jsonRes}
