@@ -176,6 +176,13 @@ func (s *PrivateWalletAPI) buildRawTransferTx(tokenId, from, to string, amount, 
 	if err != nil {
 		return nil, nil, fmt.Errorf("Select utxo err")
 	}
+	log.DebugDynamic(func() string {
+		str := ""
+		for k, v := range utxosToken {
+			str += k.String() + v.Asset.String() + ";"
+		}
+		return fmt.Sprintf("Find utxo for token:%s, utxos:%d,%s", tokenId, len(utxosToken), str)
+	})
 	tokenAmount := ptnjson.JsonAmt2AssetAmt(tokenAsset, amount)
 	pay2, usedUtxo2, err := createPayment(fromAddr, toAddr, tokenAmount, 0, utxosToken)
 	if err != nil {
@@ -1223,8 +1230,11 @@ func (s *PrivateWalletAPI) TransferToken(ctx context.Context, asset string, from
 	if err != nil {
 		return common.Hash{}, err
 	}
-	txJson, _ := json.Marshal(rawTx)
-	log.DebugDynamic(func() string { return "SignedTx:" + string(txJson) })
+
+	log.DebugDynamic(func() string {
+		txJson, _ := json.Marshal(rawTx)
+		return "SignedTx:" + string(txJson)
+	})
 	//4.
 	return submitTransaction(ctx, s.b, rawTx)
 }
