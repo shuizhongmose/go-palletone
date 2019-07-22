@@ -7,31 +7,30 @@ normalCrtTrans
 
 normalSignTrans
     [Arguments]    ${crtRet}    ${signType}    ${pwd}
-    ${resp}    Request sign transaction    ${crtRet}    ${signType}    ${pwd}
-    ${hex}    Should Match Regexp    ${resp['hex']}    ${result_hex}    msg="hex:does't match Result expression"
-    ${txid}    Should Match Regexp    ${resp['txid']}    ${result_txid}    msg="txid:does't match Result expression"
+    ${jsonRes}    Request sign transaction    ${crtRet}    ${signType}    ${pwd}
+    ${hex}    Should Match Regexp    ${jsonRes['hex']}    ${result_hex}    msg="hex:does't match Result expression"
+    ${txid}    Should Match Regexp    ${jsonRes['txid']}    ${result_txid}    msg="txid:does't match Result expression"
     [Return]    ${hex}
 
 normalSendTrans
     [Arguments]    ${hex}
-    ${resp}    Request send transaction    ${hex}
-    ${ret}    Should Match Regexp    ${resp['result']}    ${sendResult}    msg="result:does't match Result expression"
+    ${jsonRes}    Request send transaction    ${hex}
+    ${ret}    Should Match Regexp    ${jsonRes['result']}    ${sendResult}    msg="result:does't match Result expression"
     [Return]    ${ret}
 
 normalCcinvokePass
     [Arguments]    ${commonResultCode}    ${senderAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}    ${ContractId}
     ...    ${ccList}
-    ${resp}    Request CcinvokePass    ${commonResultCode}    ${senderAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
+    ${jsonRes}    Request CcinvokePass    ${commonResultCode}    ${senderAdd}    ${recieverAdd}    ${PTNAmount}    ${PTNPoundage}
     ...    ${ContractId}    ${ccList}
-    #Should Contain    ${jsonRes['jsonrpc']}    2.0    msg="jsonrpc:failed"
-    #Should Contain    str(${jsonRes['id']})    1    msg="id:failed"
-    ${ret}    Should Match Regexp    ${resp['result']}    ${commonResultCode}    msg="result:does't match Result expression"
+    ${ret}    Should Match Regexp    ${jsonRes['result']}    ${commonResultCode}    msg="result:does't match Result expression"
     [Return]    ${ret}
 
 normalTransferToken
-    [Arguments]    ${result_code}
-    ${resultCrt}    Given I_set_TransferToken_params_to_Normal    ${preTokenId}
-    [Return]    ${resultCrt}
+    [Arguments]    ${result_code}    ${preTokenId}
+    ${jsonRes}    Request transfer token
+    ${ret}    Should Match Regexp    ${jsonRes['result']}    ${result_code}    msg="result:does't match Result expression"
+    [Return]    ${ret}
 
 normalGetTxByReqId
     [Arguments]    ${result_code}
@@ -46,8 +45,8 @@ normalGetBalance
 
 normalCcqueryById
     [Arguments]    ${contractId}    ${methodType}    ${preTokenId}
-    ${resp}    Request Ccquery    ${contractId}    ${methodType}    ${preTokenId}
-    [Return]    ${resp['result']}
+    ${jsonRes}    Request Ccquery    ${contractId}    ${methodType}    ${preTokenId}
+    [Return]    ${jsonRes['result']}
 
 normalVoteTransfer
     [Arguments]    ${geneAdd}

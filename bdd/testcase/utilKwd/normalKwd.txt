@@ -35,7 +35,6 @@ Request transfer token
     ...    description    1    ${6000000}
     ${resp}    setPostRequest    ${host}    wallet_transferToken    ${ccList}
     ${jsonRes}    resultToJson    ${resp}
-    #${ret}    Should Match Regexp    ${resp.content}['result']    ${result_code}    msg="result:does't match Result expression"
     [Return]    ${jsonRes}
 
 Request getOneTokenInfo
