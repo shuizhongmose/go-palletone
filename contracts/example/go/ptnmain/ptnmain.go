@@ -22,14 +22,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 
 	"github.com/palletone/go-palletone/common/log"
 	"github.com/palletone/go-palletone/contracts/shim"
 	pb "github.com/palletone/go-palletone/core/vmContractPub/protos/peer"
 	"github.com/palletone/go-palletone/dag/errors"
 	"github.com/palletone/go-palletone/dag/modules"
-	"math/big"
 )
 
 type PTNMain struct {
@@ -77,8 +78,8 @@ func _setOwner(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error("need 1 args (PTNAddr)")
 	}
 	_, err := getOwner(stub)
-	if err != nil {
-		return shim.Error(err.Error())
+	if err == nil {
+		return shim.Error("Owner has been set")
 	}
 	err = stub.PutState(symbolsOwner, []byte(args[0]))
 	if err != nil {
@@ -135,9 +136,10 @@ func getMapAddr(stub shim.ChaincodeStubInterface) (string, error) {
 
 func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	//params check
-	if len(args) < 2 {
+	if len(args) < 1 {
 		return shim.Error("need 1  args (transferTxID)")
 	}
+	log.Debugf("1")
 
 	//
 	txID := args[0]
@@ -148,14 +150,17 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if len(result) != 0 {
 		return shim.Error("The tx has been payout")
 	}
+	log.Debugf("2")
 
 	//get sender receiver amount
 	txResult, err := GetErc20Tx(args[0], stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	log.Debugf("3")
+
 	//check contract address, must be ptn erc20 contract address
-	if txResult.ContractAddr != PTN_ERC20Addr {
+	if strings.ToLower(txResult.ContractAddr) != PTN_ERC20Addr {
 		return shim.Error("The tx is't PTN contract")
 	}
 	//checke receiver, must be ptnmap contract address
@@ -163,7 +168,10 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if txResult.To != mapAddr {
+	log.Debugf("4")
+
+	if strings.ToLower(txResult.To) != mapAddr {
+		log.Debugf("strings.ToLower(txResult.To): %s, mapAddr: %s ", strings.ToLower(txResult.To), mapAddr)
 		return shim.Error("Not send token to the Map contract")
 	}
 	//check token amount
@@ -174,6 +182,8 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if amt == 0 {
 		return shim.Error("Amount is 0")
 	}
+	log.Debugf("5")
+
 	//check confirms
 	curHeight, err := getHight(stub)
 	if curHeight == 0 || err != nil {
@@ -183,12 +193,15 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if curHeight-blockNum < 1 {
 		return shim.Error("Need more confirms")
 	}
+	log.Debugf("6")
 
 	//query ptnmap contract for get ptnAddr
 	ptnAddr, err := getPTNHex(mapAddr, txResult.From, stub)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	log.Debugf("7")
+
 	//get addrPTN
 	//ptnAddr := common.HexToAddress(ptnHex).String()
 	//ptnAddr := "P" + base58.CheckEncode(common.FromHex(ptnHex), 0)
@@ -200,6 +213,7 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if err != nil {
 		return shim.Error("write symbolsPayout failed: " + err.Error())
 	}
+	log.Debugf("8")
 
 	//payout
 	asset := modules.NewPTNAsset()
@@ -208,6 +222,8 @@ func _payoutPTN(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	if err != nil {
 		return shim.Error("PayOutToken failed: " + err.Error())
 	}
+	log.Debugf("9")
+
 	return shim.Success([]byte("Success"))
 }
 
@@ -304,7 +320,12 @@ func getPTNHex(mapAddr, sender string, stub shim.ChaincodeStubInterface) (string
 	queryContract.ContractAddr = mapAddr
 	queryContract.ContractABI = PTNMapABI
 	queryContract.Method = "getptnhex"
-	queryContract.ParamsArray = append(queryContract.ParamsArray, sender)
+	//senderAddr := adaptoreth.HexToAddress(sender)
+	//queryContract.ParamsArray = append(queryContract.ParamsArray, senderAddr)
+	params := []string{"0x588eb98f8814aedb056d549c0bafd5ef4963069c"}
+	reqBytesParams, _ := json.Marshal(params)
+	queryContract.Params = string(reqBytesParams)
+
 	reqBytes, err := json.Marshal(queryContract)
 	if err != nil {
 		return "", err
