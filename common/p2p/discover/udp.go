@@ -34,6 +34,7 @@ import (
 
 const Version = 10
 
+//
 // Errors
 var (
 	errPacketTooSmall   = errors.New("too small")
