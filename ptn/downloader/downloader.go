@@ -66,6 +66,7 @@ var (
 	fsMinFullBlocks        = 64              // Number of blocks to retrieve fully even in fast sync
 )
 
+
 var (
 	errBusy                    = errors.New("busy")
 	errUnknownPeer             = errors.New("peer is unknown or unhealthy")
