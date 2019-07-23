@@ -59,7 +59,7 @@ sleep 1
 sed -i 's/"mediator_interval": 3,/"mediator_interval": 2,/g' node1/ptn-genesis.json
 sed -i 's/"maintenance_skip_slots": 1,/"maintenance_skip_slots": 0,/g' node1/ptn-genesis.json
 ./start.sh
-sleep 20
+sleep 1
 numcommand=`ps -ef|grep gptn |wc -l`
 num=`echo $numcommand | sed -n '$p'| awk '{print $NF}'`
 
