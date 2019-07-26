@@ -86,11 +86,11 @@ matrix:
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
 
-before_install:
-  - go get -u github.com/palletone/adaptor
-  - go get -u github.com/palletone/btc-adaptor
-  - go get -u github.com/palletone/eth-adaptor
-  - source ./build/goget_by_version.sh
+#before_install:
+#  - go get -u github.com/palletone/adaptor
+#  - go get -u github.com/palletone/btc-adaptor
+#  - go get -u github.com/palletone/eth-adaptor
+#  - source ./build/goget_by_version.sh
   #- source ./gomockgen.sh
 
 addons:
