@@ -47,7 +47,7 @@ type CAGetCertChain struct {
 
 func CertInfo2Cainfo(certinfo CertINfo) client.CaGenInfo {
 	return client.CaGenInfo{
-		EnrolmentId: certinfo.Address,
+		EnrolmentID: certinfo.Address,
 		Name:        certinfo.Name,
 		Data:        certinfo.Data,
 		ECert:       certinfo.ECert,
@@ -70,10 +70,9 @@ func GenCert(certinfo CertINfo) ([]byte, error) {
 
 func RevokeCert(certinfo CertINfo, reason string) ([]byte, error) {
 	cainfo := CertInfo2Cainfo(certinfo)
-	crlPem, err := cainfo.Revoke(cainfo.EnrolmentId,reason)
+	crlPem, err := cainfo.Revoke(cainfo.EnrolmentID, reason)
 	if err != nil {
 		return nil, err
 	}
 	return crlPem, nil
 }
-
