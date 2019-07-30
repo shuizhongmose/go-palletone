@@ -506,7 +506,11 @@ func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 	idxDb := storage.NewIndexDb(db)
 	propDb := storage.NewPropertyDb(db)
 
-	checkDbMigration(db, stateDb)
+	err := checkDbMigration(db, stateDb)
+	if err != nil {
+		return nil, err
+	}
+
 	utxoRep := dagcommon.NewUtxoRepository(utxoDb, idxDb, stateDb, propDb)
 	unitRep := dagcommon.NewUnitRepository(dagDb, idxDb, utxoDb, stateDb, propDb)
 	propRep := dagcommon.NewPropRepository(propDb)
@@ -550,8 +554,8 @@ func checkDbMigration(db ptndb.Database, stateDb storage.IStateDb) error {
 	t := time.Now()
 	old_vertion, err := stateDb.GetDataVersion()
 	if err != nil {
-		log.Warn("Don't have database version, initial it as 1.0.0-beta")
-		old_vertion = &modules.DataVersion{Version: "1.0.0-beta"}
+		log.Warn("Don't have database version, Ignore data migration")
+		return nil
 	}
 	log.Debugf("the database version is:%s", old_vertion.Version)
 
