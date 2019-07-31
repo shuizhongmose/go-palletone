@@ -1135,6 +1135,11 @@ func (net *Network) handlePing(n *Node, pkt *ingressPacket) {
 	ping := pkt.data.(*ping)
 	n.TCP = ping.From.TCP
 	t := net.topictab.getTicket(n, ping.Topics)
+	log.Debug("Discv5 ping", "Version", ping.Version)
+	if ping.Version != Version {
+		log.Debug("Bad discv5 ping", "Version", ping.Version)
+		return
+	}
 
 	pong := &pong{
 		To:         makeEndpoint(n.addr(), n.TCP), // TODO: maybe use known TCP port from DB
