@@ -164,6 +164,7 @@ func GetCorsConfig(config Config) Config {
 	corsconfig.StaticNodes = []*discover.Node{}
 	corsconfig.TrustedNodes = []*discover.Node{}
 	corsconfig.NoDiscovery = true
+	corsconfig.BootstrapNodesV5 = []*discv5.Node{}
 	corsconfig.ListenAddr = config.CorsListenAddr
 	return corsconfig
 }

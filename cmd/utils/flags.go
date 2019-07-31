@@ -832,7 +832,7 @@ func SetP2PConfig(ctx *cli.Context, cfg *p2p.Config) {
 		cfg.MaxPeers = 0
 		cfg.ListenAddr = ":0"
 		cfg.NoDiscovery = true
-		//cfg.DiscoveryV5 = false
+		cfg.DiscoveryV5 = false
 	}
 }
 
