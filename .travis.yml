@@ -43,7 +43,7 @@ matrix:
         - brew install expect
         - chmod +x ./bdd/macUpload2Ftp.sh
       script:
-        - go build ./cmd/gptn
+        - go build  -tags "mainnet" ./cmd/gptn
         - make gptn
         - go test ./...
         - tar czvf gptn-mac.tar.gz ./gptn
