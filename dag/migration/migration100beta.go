@@ -135,12 +135,10 @@ func (m *Migration100_101) ExecuteUpgrade() error {
 }
 
 func (m *Migration100_101) upgradeMediatorInfo() error {
-	statedb := storage.NewStateDb(m.statedb)
-	oldMediators := statedb.GetPrefix(constants.MEDIATOR_INFO_PREFIX)
-
-	for key, value := range oldMediators {
+	oldMediatorsIterator := m.statedb.NewIteratorWithPrefix(constants.MEDIATOR_INFO_PREFIX)
+	for oldMediatorsIterator.Next() {
 		oldMediator := &OldMediatorInfo{}
-		err := rlp.DecodeBytes(value, oldMediator)
+		err := rlp.DecodeBytes(oldMediatorsIterator.Value(), oldMediator)
 		if err != nil {
 			log.Debugf(err.Error())
 			return err
@@ -152,7 +150,7 @@ func (m *Migration100_101) upgradeMediatorInfo() error {
 			MediatorInfoExpand: oldMediator.MediatorInfoExpand,
 		}
 
-		err = storage.StoreToRlpBytes(m.statedb, []byte(key), newMediator)
+		err = storage.StoreToRlpBytes(m.statedb, oldMediatorsIterator.Key(), newMediator)
 		if err != nil {
 			log.Debugf(err.Error())
 			return err
