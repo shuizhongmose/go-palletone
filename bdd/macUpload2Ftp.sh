@@ -11,7 +11,7 @@ send "${ftppwd}\r"
 expect "successful"
 send "cd ${folder}\r"
 expect "changed"
-send "put ./gptn-mac.tar.gz ./go-palletone_mainnet_v1.0.0_macOS-amd64.tar.gz\r"  
+send "put ./gptn-mac.tar.gz ./go-palletone_mainnet_v1.0.1_macOS-amd64.tar.gz\r"  
 expect "Ok"
 send "bye\r"
 interact
