@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/palletone/go-palletone/common"
+	"github.com/palletone/go-palletone/common/log"
 	"github.com/palletone/go-palletone/contracts/shim"
 	pb "github.com/palletone/go-palletone/core/vmContractPub/protos/peer"
 	"github.com/palletone/go-palletone/dag/modules"
@@ -471,14 +472,17 @@ func (t *SimpleChaincode) test_UseCert(stub shim.ChaincodeStubInterface, args []
 	if v != true {
 		return shim.Error("Certificate used is invalid.")
 	}
+	log.Debug("1111111111")
 	certBytes, err := stub.GetRequesterCert()
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	log.Debug("22222222222")
 	b, e := json.Marshal(certBytes)
 	if e != nil {
 		return shim.Error(e.Error())
 	}
+	log.Debug("3333333333333")
 	return shim.Success(b)
 }
 
