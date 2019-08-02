@@ -78,7 +78,34 @@ func developerPayToDepositContract(stub shim.ChaincodeStubInterface, args []stri
 		}
 		return shim.Success(nil)
 	} else {
-		return shim.Error("Only once")
+		//  追缴逻辑
+		if balance.Role != Developer {
+			return shim.Error("not developer")
+		}
+		all := balance.Balance + invokeTokens.Amount
+		if all != cp.DepositAmountForDeveloper {
+			return shim.Error("Too many or too little.")
+		}
+		b, err := isInCandidate(stub, invokeAddr.String(), modules.DeveloperList)
+		if err != nil {
+			log.Debugf("isInCandidate error: %s", err.Error())
+			return shim.Error(err.Error())
+		}
+		if !b {
+			//  加入jury候选列表
+			err = addCandaditeList(stub, invokeAddr, modules.DeveloperList)
+			if err != nil {
+				log.Error("addCandidateListAndPutStateForMediator err: ", "error", err)
+				return shim.Error(err.Error())
+			}
+		}
+		balance.Balance = all
+		err = SaveNodeBalance(stub, invokeAddr.String(), balance)
+		if err != nil {
+			log.Error("save node balance err: ", "error", err)
+			return shim.Error(err.Error())
+		}
+		return shim.Success(nil)
 	}
 }
 
@@ -107,13 +134,18 @@ func handleDev(stub shim.ChaincodeStubInterface, quitAddr common.Address) error 
 		return err
 	}
 	//  退还保证金
-	cp, err := stub.GetSystemConfig()
+	//cp, err := stub.GetSystemConfig()
+	//if err != nil {
+	//	return err
+	//}
+	//  获取该节点保证金数量
+	b, err := GetNodeBalance(stub, quitAddr.String())
 	if err != nil {
 		return err
 	}
 	//  调用从合约把token转到请求地址
 	gasToken := dagconfig.DagConfig.GetGasToken().ToAsset()
-	err = stub.PayOutToken(quitAddr.String(), modules.NewAmountAsset(cp.DepositAmountForDeveloper, gasToken), 0)
+	err = stub.PayOutToken(quitAddr.String(), modules.NewAmountAsset(b.Balance, gasToken), 0)
 	if err != nil {
 		log.Error("stub.PayOutToken err:", "error", err)
 		return err

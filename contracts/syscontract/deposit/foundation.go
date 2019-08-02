@@ -315,13 +315,13 @@ func handleJuryForfeitureDeposit(stub shim.ChaincodeStubInterface, foundationA s
 	}
 
 	//  退还保证金
-	cp, err := stub.GetSystemConfig()
-	if err != nil {
-		return err
-	}
+	//cp, err := stub.GetSystemConfig()
+	//if err != nil {
+	//	return err
+	//}
 	//  调用从合约把token转到请求地址
 	gasToken := dagconfig.DagConfig.GetGasToken().ToAsset()
-	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(cp.DepositAmountForJury, gasToken), 0)
+	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(node.Balance, gasToken), 0)
 	if err != nil {
 		log.Error("stub.PayOutToken err:", "error", err)
 		return err
@@ -347,13 +347,13 @@ func handleDevForfeitureDeposit(stub shim.ChaincodeStubInterface, foundationA st
 		return err
 	}
 	//  退还保证金
-	cp, err := stub.GetSystemConfig()
-	if err != nil {
-		return err
-	}
+	//cp, err := stub.GetSystemConfig()
+	//if err != nil {
+	//	return err
+	//}
 	//  调用从合约把token转到请求地址
 	gasToken := dagconfig.DagConfig.GetGasToken().ToAsset()
-	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(cp.DepositAmountForDeveloper, gasToken), 0)
+	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(node.Balance, gasToken), 0)
 	if err != nil {
 		log.Error("stub.PayOutToken err:", "error", err)
 		return err
@@ -375,14 +375,14 @@ func handleMediatorForfeitureDeposit(stub shim.ChaincodeStubInterface, foundatio
 	if md == nil {
 		return fmt.Errorf("node is nil")
 	}
-	cp, err := stub.GetSystemConfig()
-	if err != nil {
-		//log.Error("strconv.ParseUint err:", "error", err)
-		return err
-	}
+	//cp, err := stub.GetSystemConfig()
+	//if err != nil {
+	//	//log.Error("strconv.ParseUint err:", "error", err)
+	//	return err
+	//}
 	//  调用从合约把token转到请求地址
 	gasToken := dagconfig.DagConfig.GetGasToken().ToAsset()
-	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(cp.DepositAmountForMediator, gasToken), 0)
+	err = stub.PayOutToken(foundationA, modules.NewAmountAsset(md.Balance, gasToken), 0)
 	if err != nil {
 		log.Error("stub.PayOutToken err:", "error", err)
 		return err
@@ -457,4 +457,39 @@ func handleRemoveNormalNode(stub shim.ChaincodeStubInterface, args []string) pb.
 		return shim.Error(err.Error())
 	}
 	return shim.Success(nil)
+}
+
+func handleNodeInList(stub shim.ChaincodeStubInterface, args []string, role string) pb.Response {
+	if len(args) > 0 {
+		if !isFoundationInvoke(stub) {
+			log.Debugf("please use foundation address")
+			return shim.Error("please use foundation address")
+		}
+		//
+		list := ""
+		switch role {
+		case Mediator:
+			list = modules.MediatorList
+		case Jury:
+			list = modules.JuryList
+		case Developer:
+			list = modules.DeveloperList
+		}
+		for _, a := range args {
+			// 判断地址是否合法
+			_, err := common.StringToAddress(a)
+			if err != nil {
+				log.Debugf("string to address error: %s", err.Error())
+				return shim.Error(err.Error())
+			}
+			//  从候选列表中移除
+			err = moveCandidate(list, a, stub)
+			if err != nil {
+				log.Debugf("move list error: %s", err.Error())
+				return shim.Error(err.Error())
+			}
+		}
+		return shim.Success(nil)
+	}
+	return shim.Error("invoke err")
 }

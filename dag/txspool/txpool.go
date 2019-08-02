@@ -177,7 +177,7 @@ type TxPool struct {
 	outputs         sync.Map          // 缓存 交易的outputs
 	sequenTxs       *modules.SequeueTxPoolTxs
 
-	mu             *sync.RWMutex
+	mu             sync.RWMutex
 	wg             sync.WaitGroup // for shutdown sync
 	quit           chan struct{}  // used for exit
 	nextExpireScan time.Time
@@ -224,7 +224,7 @@ func NewTxPool(config TxPoolConfig, unit dags) *TxPool { // chainconfig *params.
 		outputs:        sync.Map{},
 		cache:          freecache.NewCache(20 * 1024 * 1024),
 	}
-	pool.mu = new(sync.RWMutex)
+	pool.mu = sync.RWMutex{}
 	pool.priority_sorted = newTxPrioritiedList(&pool.all)
 	pool.txValidator = validator.NewValidate(unit, pool, unit, unit, pool.cache)
 	// If local transactions and journaling is enabled, load from disk
@@ -245,6 +245,8 @@ func NewTxPool(config TxPoolConfig, unit dags) *TxPool { // chainconfig *params.
 
 	return pool
 }
+
+// return a utxo by the outpoint in txpool
 func (pool *TxPool) GetUtxoEntry(outpoint *modules.OutPoint) (*modules.Utxo, error) {
 	if inter, ok := pool.outputs.Load(*outpoint); ok {
 		utxo := inter.(*modules.Utxo)
@@ -252,6 +254,8 @@ func (pool *TxPool) GetUtxoEntry(outpoint *modules.OutPoint) (*modules.Utxo, err
 	}
 	return pool.unit.GetUtxoEntry(outpoint)
 }
+
+// return a stxo by the outpoint in txpool
 func (pool *TxPool) GetStxoEntry(outpoint *modules.OutPoint) (*modules.Stxo, error) {
 	return pool.unit.GetStxoEntry(outpoint)
 }
@@ -279,10 +283,7 @@ func (pool *TxPool) loop() {
 	orphanExpireScan := time.NewTicker(orphanExpireScanInterval)
 	defer orphanExpireScan.Stop()
 
-	// Track the previous head headers for transaction reorgs
 	// TODO 分区后 按token类型 loop 交易池。
-	//gasToken := dagconfig.DagConfig.GetGasToken()
-	//head := pool.unit.CurrentUnit(gasToken)
 	// Keep waiting for and reacting to the various events
 	for {
 		select {
@@ -320,7 +321,6 @@ func (pool *TxPool) loop() {
 			log.Info("txspool are quit now", "time", time.Now().String())
 			return
 		}
-
 	}
 }
 
@@ -767,13 +767,19 @@ func (pool *TxPool) addSequenTx(p_tx *modules.TxPoolTransaction) error {
 	// Don't accept the transaction if it already in the pool .
 	hash := p_tx.Tx.Hash()
 	if has, _ := pool.unit.IsTransactionExist(hash); has {
-		return fmt.Errorf("the transactionx: %s has been packaged.", hash.String())
+		//return fmt.Errorf("the transactionx: %s has been packaged.", hash.String())
+		log.Infof("the transactionx: %s has been packaged.", hash.String())
+		return nil
 	}
 	if _, has := pool.all.Load(hash); has {
-		return fmt.Errorf("known transaction: %#x", hash)
+		//return fmt.Errorf("known transaction: %#x", hash)
+		log.Infof("know sequen transaction: %s", hash.String())
+		return nil
 	}
 	if pool.isOrphanInPool(hash) {
-		return fmt.Errorf("know orphanTx: %#x", hash)
+		//return fmt.Errorf("know orphanTx: %#x", hash)
+		log.Infof("know sequen orphan transaction: %s", hash.String())
+		return nil
 	}
 	// If the transaction fails basic validation, discard it
 	if addition, _, err := pool.validateTx(p_tx, false); err != nil {
