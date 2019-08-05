@@ -21,6 +21,7 @@
 package validator
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -162,6 +163,13 @@ func validateUnitBasic(unit *modules.Unit) ValidationCode {
 	}
 	//validate tx root
 	root := core.DeriveSha(unit.Txs)
+	for i, t := range unit.Txs {
+		txbytes, err := json.Marshal(t)
+		if err != nil {
+			log.Error("", "marshal error", err.Error())
+		}
+		log.Debugf("<<<<<< validateUnitBasic, tx[%d]: %s", i, string(txbytes))
+	}
 	if root != unit.UnitHeader.TxRoot {
 		log.Debugf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
 		return UNIT_STATE_INVALID_HEADER_TXROOT
