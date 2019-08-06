@@ -563,7 +563,7 @@ func (tx *Transaction) GetResultRawTx() *Transaction {
 
 	txCopy := tx.Clone()
 	result := &Transaction{}
-	result.CertId = tx.CertId
+	//result.CertId = tx.CertId
 	isResultMsg := false
 	for _, msg := range txCopy.TxMessages {
 		if msg.App.IsRequest() {
@@ -580,6 +580,7 @@ func (tx *Transaction) GetResultRawTx() *Transaction {
 		}
 		result.TxMessages = append(result.TxMessages, msg)
 	}
+	log.Debugf("+++++ GetResultRawTx tx certid: %s", string(result.CertId))
 	return result
 }
 
