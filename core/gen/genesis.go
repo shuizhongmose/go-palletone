@@ -211,6 +211,7 @@ func GenContractTransction(orgTx *modules.Transaction, msgs []*modules.Message) 
 		tx.AddMessage(msgs[i])
 	}
 	tx.CertId = orgTx.CertId
+	tx.Illegal = orgTx.Illegal
 	return tx, nil
 }
 
