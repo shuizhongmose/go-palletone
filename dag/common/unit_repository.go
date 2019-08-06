@@ -500,12 +500,6 @@ func (rep *UnitRepository) CreateUnit(mAddr common.Address, txpool txspool.ITxPo
 	*/
 
 	// step8. transactions merkle root
-	for i, t := range txs {
-		txbytes, err := json.Marshal(t)
-		if err != nil {
-			log.Error("", "marshal error", err.Error())
-		}
-	}
 	root := core.DeriveSha(txs)
 	// step9. generate genesis unit header
 	header.TxsIllegal = illegalTxs
