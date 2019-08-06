@@ -475,11 +475,11 @@ func (t *SimpleChaincode) test_UseCert(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	_, e := json.Marshal(certBytes)
+	b, e := json.Marshal(certBytes)
 	if e != nil {
 		return shim.Error(e.Error())
 	}
-	return shim.Success([]byte("check cert success"))
+	return shim.Success(b)
 }
 
 type JuryMsgAddr struct {
