@@ -580,7 +580,10 @@ func (tx *Transaction) GetResultRawTx() *Transaction {
 		}
 		result.TxMessages = append(result.TxMessages, msg)
 	}
-	log.Debugf("+++++ GetResultRawTx tx certid: %s", string(result.CertId))
+	result.CertId = txCopy.CertId
+	certid := big.Int{}
+	certid.SetBytes(result.CertId)
+	log.Debugf("+++++ GetResultRawTx tx certid: %s", certid.String())
 	return result
 }
 

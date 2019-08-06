@@ -141,9 +141,7 @@ Test send and recv jury by contract
 
 User use cert to invoke contract
     ${args}=    Create List    testUseCert
-    ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    100    1    ${gContractId}
-    ...    ${args}    ${caCertID}
-    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    UseCert
+    ${respJson}=    invokeContract      ${caCertHolder}    ${caCertHolder}    100    1    ${gContractId}     ${args}    ${caCertID}
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
     ${contractId}=    Get From Dictionary    ${result}    ContractId

@@ -457,7 +457,9 @@ func (p *Processor) GenContractSigTransaction(signer common.Address, password st
 			return nil, fmt.Errorf("GenContractSigTransctions GetPublicKey fail, address[%s], reqId[%s]", signer.String(), reqId.String())
 		}
 		//只对合约执行后不包含Jury签名的Tx进行签名
-		log.Debugf("+++++ original tx certid: %s", string(tx.CertId))
+		certid := big.Int{}
+		certid.SetBytes(tx.CertId)
+		log.Debugf("+++++ original tx certid: %s", certid.String())
 		sig, err := GetTxSig(tx.GetResultRawTx(), ks, signer)
 		if err != nil {
 			return nil, fmt.Errorf("GenContractSigTransctions GetTxSig fail, address[%s], reqId[%s]", signer.String(), reqId.String())
