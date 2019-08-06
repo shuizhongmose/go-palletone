@@ -505,7 +505,6 @@ func (rep *UnitRepository) CreateUnit(mAddr common.Address, txpool txspool.ITxPo
 		if err != nil {
 			log.Error("", "marshal error", err.Error())
 		}
-		log.Debugf(">>>>>> CreateUnit, tx[%d]: %s", i, string(txbytes))
 	}
 	root := core.DeriveSha(txs)
 	// step9. generate genesis unit header
