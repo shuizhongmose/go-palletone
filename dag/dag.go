@@ -287,7 +287,7 @@ func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error
 
 		if a, b, c, dd, e, err := d.Memdag.AddUnit(u, txpool); err != nil {
 			//return count, err
-			log.Errorf("Memdag addUnit[%s] error:%s", u.UnitHash.String(), err.Error())
+			log.Errorf("Memdag addUnit[%s] #%d signed by %v error:%s", u.UnitHash.String(), u.NumberU64(), u.Author().Str(), err.Error())
 			return count, nil
 		} else {
 			if a != nil {
@@ -502,7 +502,6 @@ func (d *Dag) initDataForMainChainHeader(mainChain *modules.MainChain) {
 // newDag, with db , light to build a new dag
 // firstly to check db migration, is updated ptn database.
 func NewDag(db ptndb.Database, light bool) (*Dag, error) {
-	mutex := new(sync.RWMutex)
 
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
@@ -539,7 +538,6 @@ func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 		stableStateRep:         stateRep,
 		stableUnitProduceRep:   stableUnitProduceRep,
 		ChainHeadFeed:          new(event.Feed),
-		Mutex:                  *mutex,
 		Memdag:                 unstableChain,
 	}
 	dag.stableUnitRep.SubscribeSysContractStateChangeEvent(dag.AfterSysContractStateChangeEvent)
@@ -620,7 +618,6 @@ func (dag *Dag) AfterChainMaintenanceEvent(arg *modules.ChainMaintenanceEvent) {
 
 // to build a new dag when init genesis
 func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
-	mutex := new(sync.RWMutex)
 
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
@@ -643,9 +640,8 @@ func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
 		stableStateRep:       stateRep,
 		stableUnitProduceRep: statleUnitProduceRep,
 		ChainHeadFeed:        new(event.Feed),
-		Mutex:                *mutex,
+		//Mutex:                *mutex,
 	}
-
 	return dag, nil
 }
 
