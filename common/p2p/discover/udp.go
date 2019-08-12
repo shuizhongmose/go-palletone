@@ -32,8 +32,6 @@ import (
 	"github.com/palletone/go-palletone/common/p2p/netutil"
 )
 
-const Version = 4
-
 // Errors
 var (
 	errPacketTooSmall   = errors.New("too small")
@@ -70,6 +68,8 @@ type (
 		Version    uint
 		From, To   rpcEndpoint
 		Expiration uint64
+
+		Genesis []byte
 		// Ignore additional fields (for forward compatibility).
 		Rest []rlp.RawValue `rlp:"tail"`
 	}
@@ -277,6 +277,7 @@ func (t *udp) ping(toid NodeID, toaddr *net.UDPAddr) error {
 		From:       t.ourEndpoint,
 		To:         makeEndpoint(toaddr, 0), // TODO: maybe use known TCP port from DB
 		Expiration: uint64(time.Now().Add(expiration).Unix()),
+		Genesis:    GenesisHash,
 	}
 	packet, hash, err := encodePacket(t.priv, pingPacket, req)
 	if err != nil {
@@ -582,8 +583,9 @@ func (req *ping) handle(t *udp, from *net.UDPAddr, fromID NodeID, mac []byte) er
 		return errExpired
 	}
 	//Start Add by wangjiyou for discv4 in 2019-7-19
-	if req.Version != Version {
-		log.Debug("Bad discv4 ping", "Version", req.Version)
+	if req.Version != Version || !bytes.Equal(req.Genesis, GenesisHash) {
+		log.Debug("Bad discv4 ping", "Req Version", req.Version, "Version", Version, "Req Genesis", req.Genesis,
+			"Genesis", GenesisHash)
 		return errUnknownNode
 	}
 	//End Add by wangjiyou for discv4 in 2019-7-19

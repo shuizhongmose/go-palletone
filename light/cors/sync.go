@@ -115,7 +115,8 @@ func (pm *ProtocolManager) pushSync() (uint64, []*modules.Header) {
 		index = pheader.Number.Index - maxQueueDist
 	}
 
-	log.Debug("Cors ProtocolManager", "pheader.index", pheader.Number.Index, "push index", index, "pushSync fetchHeader header", pheader)
+	log.Debug("Cors ProtocolManager", "pheader.index", pheader.Number.Index,
+		"push index", index, "pushSync fetchHeader header", pheader)
 
 	number := &modules.ChainIndex{AssetID: pm.assetId, Index: index}
 	for {
@@ -207,7 +208,6 @@ func (pm *ProtocolManager) fetchHeader() (*modules.Header, error) {
 			return nil, errTimeout
 		}
 	}
-	return nil, nil
 }
 
 func (pm *ProtocolManager) PullSync() {
@@ -248,19 +248,13 @@ func (pm *ProtocolManager) pullSync(peer *peer) {
 	var hash common.Hash
 	var index uint64
 	lheader := pm.dag.CurrentHeader(modules.PTNCOIN)
-	//hash, number := peer.HeadAndNumber(modules.PTNCOIN)
-	//if lheader.Number.Index >= number.Index {
-	//	log.Debug("Cors PalletOne ProtocolManager pullSync is not need sync", "local index", lheader.Number.Index, "peer index", number.Index)
-	//	return
-	//}
 
 	if lheader != nil {
 		hash = lheader.Hash()
 		index = lheader.Number.Index
 	}
 
-	if err := pm.downloader.Synchronise(peer.id, hash, index, downloader.LightSync, modules.PTNCOIN); err != nil {
-		log.Debug("ptn sync downloader.", "Synchronise err:", err)
-		return
+	if err := pm.downloader.Synchronize(peer.id, hash, index, downloader.LightSync, modules.PTNCOIN); err != nil {
+		log.Debug("ptn sync downloader.", "Synchronize err:", err)
 	}
 }

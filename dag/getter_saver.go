@@ -70,7 +70,7 @@ func (d *Dag) GetActiveMediatorNodes() map[string]*discover.Node {
 // author Albert·Gou
 func (d *Dag) GetActiveMediatorInitPubs() []kyber.Point {
 	aSize := d.ActiveMediatorsCount()
-	pubs := make([]kyber.Point, aSize, aSize)
+	pubs := make([]kyber.Point, aSize)
 
 	meds := d.GetActiveMediators()
 	for i, add := range meds {
@@ -212,7 +212,7 @@ func (d *Dag) GetPrecedingMediatorNodes() map[string]*discover.Node {
 	nodes := make(map[string]*discover.Node)
 
 	pmds := d.GetGlobalProp().PrecedingMediators
-	for add, _ := range pmds {
+	for add := range pmds {
 		med := d.GetMediator(add)
 		node := med.Node
 		nodes[node.ID.TerminalString()] = node
@@ -234,13 +234,14 @@ func (d *Dag) GetMediatorInfo(address common.Address) *modules.MediatorInfo {
 }
 
 func (d *Dag) JuryCount() uint {
-	return 20 //todo test
+	//todo test
+	return 20
 
-	juryList, err := d.unstableStateRep.GetJuryCandidateList()
-	if err != nil {
-		return uint(len(juryList))
-	}
-	return 0
+	//juryList, err := d.unstableStateRep.GetJuryCandidateList()
+	//if err != nil {
+	//	return 0
+	//}
+	//return uint(len(juryList))
 }
 
 func (d *Dag) GetActiveJuries() []common.Address {
@@ -252,7 +253,7 @@ func (d *Dag) GetActiveJuries() []common.Address {
 func (d *Dag) IsActiveJury(addr common.Address) bool {
 	return true //todo
 
-	return d.unstableStateRep.IsJury(addr)
+	//return d.unstableStateRep.IsJury(addr)
 }
 
 func (d *Dag) GetContractDevelopers() ([]common.Address, error) {
@@ -262,5 +263,9 @@ func (d *Dag) GetContractDevelopers() ([]common.Address, error) {
 func (d *Dag) IsContractDeveloper(addr common.Address) bool {
 	return true //todo
 
-	return d.unstableStateRep.IsContractDeveloper(addr)
+	//return d.unstableStateRep.IsContractDeveloper(addr)
+}
+
+func (d *Dag) GetUnitHash(number *modules.ChainIndex) (common.Hash, error) {
+	return d.unstableUnitRep.GetHashByNumber(number)
 }

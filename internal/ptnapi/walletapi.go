@@ -269,7 +269,7 @@ func WalletCreateTransaction(c *ptnjson.CreateRawTransactionCmd) (string, error)
 		txInput := modules.NewTxIn(prevOut, []byte{})
 		pload.AddTxIn(txInput)
 	}
-	var OutputJson []walletjson.OutputJson
+	//var OutputJson []walletjson.OutputJson
 	// Add all transaction outputs to the transaction after performing
 	//	// some validity checks.
 	//	//only support mainnet
@@ -317,7 +317,7 @@ func WalletCreateTransaction(c *ptnjson.CreateRawTransactionCmd) (string, error)
 		assetId := dagconfig.DagConfig.GetGasToken()
 		txOut := modules.NewTxOut(uint64(dao), pkScript, assetId.ToAsset())
 		pload.AddTxOut(txOut)
-		OutputJson = append(OutputJson, walletjson.OutputJson{Amount: uint64(dao), Asset: assetId.String(), ToAddress: addr.String()})
+		//OutputJson = append(OutputJson, walletjson.OutputJson{Amount: uint64(dao), Asset: assetId.String(), ToAddress: addr.String()})
 	}
 	//	// Set the Locktime, if given.
 	if c.LockTime != nil {
@@ -667,8 +667,7 @@ func (s *PublicWalletAPI) CreateProofTransaction(ctx context.Context, params str
 	ks := s.b.GetKeyStore()
 	err = ks.TimedUnlock(accounts.Account{Address: addr}, password, d)
 	if err != nil {
-		errors.New("get addr by outpoint is err")
-		return common.Hash{}, err
+		return common.Hash{}, errors.New("get addr by outpoint is err")
 	}
 
 	newsign := ptnjson.NewSignRawTransactionCmd(result, &srawinputs, &keys, ptnjson.String("ALL"))
@@ -722,11 +721,11 @@ func WalletCreateProofTransaction( /*s *rpcServer*/ c *ptnjson.CreateProofTransa
 	// some validity checks.
 	//先构造PaymentPayload结构，再组装成Transaction结构
 	pload := new(modules.PaymentPayload)
-	var inputjson []walletjson.InputJson
+	//var inputjson []walletjson.InputJson
 	for _, input := range c.Inputs {
 		txHash := common.HexToHash(input.Txid)
 
-		inputjson = append(inputjson, walletjson.InputJson{TxHash: input.Txid, MessageIndex: input.MessageIndex, OutIndex: input.Vout, HashForSign: "", Signature: ""})
+		//inputjson = append(inputjson, walletjson.InputJson{TxHash: input.Txid, MessageIndex: input.MessageIndex, OutIndex: input.Vout, HashForSign: "", Signature: ""})
 		prevOut := modules.NewOutPoint(txHash, input.MessageIndex, input.Vout)
 		txInput := modules.NewTxIn(prevOut, []byte{})
 		pload.AddTxIn(txInput)
@@ -1019,9 +1018,8 @@ func (s *PublicWalletAPI) GetPtnTestCoin(ctx context.Context, from string, to st
 	ks := s.b.GetKeyStore()
 	err = ks.TimedUnlock(accounts.Account{Address: addr}, password, d)
 	if err != nil {
-		errors.New("get addr by outpoint is err")
 		//return nil, err
-		return common.Hash{}, err
+		return common.Hash{}, errors.New("get addr by outpoint is err")
 	}
 
 	newsign := ptnjson.NewSignRawTransactionCmd(result, &srawinputs, &keys, ptnjson.String("ALL"))
@@ -1113,7 +1111,7 @@ func RandFromString(value string) (decimal.Decimal, error) {
 	rd := big.NewInt(int64(r))
 	for {
 		r = rand.Int()
-		rd = big.NewInt(int64(r))
+		//rd = big.NewInt(int64(r))
 
 		rand_number = decimal.NewFromBigInt(rd, int32(exp))
 		result = rand_number.Mod(input_number)
@@ -1560,8 +1558,8 @@ func readTxs(path string) ([]string, error) {
 		line = strings.Replace(line, "\r\n", "", -1)
 		txs = append(txs, line)
 	}
-	if len(txs) > 2000 {
-		return txs[:2000], err
+	if len(txs) > 4000 {
+		return txs[2000:4000], err
 	}
 	return txs, err
 }

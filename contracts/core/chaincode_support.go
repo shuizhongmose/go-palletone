@@ -52,15 +52,15 @@ type key string
 
 const (
 	// DevModeUserRunsChaincode property allows user to run chaincode in development environment
-	DevModeUserRunsChaincode       string = "dev"
-	chaincodeStartupTimeoutDefault int    = 5000
-	peerAddressDefault             string = "0.0.0.0:7052"
+	DevModeUserRunsChaincode string = "dev"
+	//chaincodeStartupTimeoutDefault int    = 5000
+	//peerAddressDefault             string = "0.0.0.0:7052"
 
 	//TXSimulatorKey is used to attach ledger simulation context
 	TXSimulatorKey key = "txsimulatorkey"
 
 	//HistoryQueryExecutorKey is used to attach ledger history query executor context
-	HistoryQueryExecutorKey key = "historyqueryexecutorkey"
+	//HistoryQueryExecutorKey key = "historyqueryexecutorkey"
 
 	//glh
 	// Mutual TLS auth client key and cert paths in the chaincode container
@@ -266,7 +266,7 @@ func (chaincodeSupport *ChaincodeSupport) registerHandler(chaincodehandler *Hand
 	defer chaincodeSupport.runningChaincodes.Unlock()
 
 	chrte2, ok := chaincodeSupport.chaincodeHasBeenLaunched(key)
-	if ok && chrte2.handler.registered == true {
+	if ok && chrte2.handler.registered {
 		log.Debugf("duplicate registered handler(key:%s) return error", key)
 		// Duplicate, return error
 		return newDuplicateChaincodeHandlerError(chaincodehandler)
@@ -277,7 +277,7 @@ func (chaincodeSupport *ChaincodeSupport) registerHandler(chaincodehandler *Hand
 		chaincodehandler.readyNotify = chrte2.handler.readyNotify
 		chrte2.handler = chaincodehandler
 	} else {
-		if chaincodeSupport.userRunsCC == false {
+		if !chaincodeSupport.userRunsCC {
 			//this chaincode was not launched by the peer and is attempting
 			//to register. Don't allow this.
 			return errors.Errorf("peer will not accept external chaincode connection %v (except in dev mode)", chaincodehandler.ChaincodeID)
@@ -485,7 +485,7 @@ func (ccl *ccLauncherImpl) launch(ctxt context.Context, notfy chan bool) (interf
 	sir := controller.StartImageReq{CCID: ccid, Builder: ccl.builder, Args: args, Env: env, FilesToUpload: filesToUpload, PrelaunchFunc: preLaunchFunc}
 	ipcCtxt := context.WithValue(ctxt, ccintf.GetCCHandlerKey(), ccl.ccSupport)
 
-	vmtype, _ := ccl.ccSupport.getVMType(ccl.cds)
+	vmtype := ccl.ccSupport.getVMType(ccl.cds)
 	resp, err := controller.VMCProcess(ipcCtxt, vmtype, sir)
 
 	return resp, err
@@ -618,7 +618,7 @@ func (chaincodeSupport *ChaincodeSupport) Stop(context context.Context, cccid *c
 	// The line below is left for debugging. It replaces the line above to keep
 	// the chaincode container around to give you a chance to get data
 	sir := controller.StopImageReq{CCID: ccintf.CCID{ChaincodeSpec: cds.ChaincodeSpec, NetworkID: chaincodeSupport.peerNetworkID, PeerID: chaincodeSupport.peerID, ChainID: "" /*cccid.ChainID*/, Version: cccid.Version}, Timeout: 0, Dontremove: dontRmCon}
-	vmtype, _ := chaincodeSupport.getVMType(cds)
+	vmtype := chaincodeSupport.getVMType(cds)
 
 	_, err := controller.VMCProcess(context, vmtype, sir)
 	if err != nil {
@@ -639,12 +639,13 @@ func (chaincodeSupport *ChaincodeSupport) Stop(context context.Context, cccid *c
 	return err
 }
 
-func (chaincodeSupport *ChaincodeSupport) Destory(context context.Context, cccid *ccprovider.CCContext, cds *pb.ChaincodeDeploymentSpec) error {
+func (chaincodeSupport *ChaincodeSupport) Destroy(context context.Context, cccid *ccprovider.CCContext,
+	cds *pb.ChaincodeDeploymentSpec) error {
 	canName := cccid.GetCanonicalName()
 	if canName == "" {
 		return errors.New("chaincode name not set")
 	} else {
-		log.Debugf("destory : %+v", canName)
+		log.Debugf("destroy : %+v", canName)
 	}
 
 	sir := controller.DestroyImageReq{
@@ -659,11 +660,11 @@ func (chaincodeSupport *ChaincodeSupport) Destory(context context.Context, cccid
 		Force:   true,
 		NoPrune: false,
 	}
-	vmtype, _ := chaincodeSupport.getVMType(cds)
+	vmtype := chaincodeSupport.getVMType(cds)
 
 	_, err := controller.VMCProcess(context, vmtype, sir)
 	if err != nil {
-		err = errors.WithMessage(err, "error destory container")
+		err = errors.WithMessage(err, "error destroy container")
 	}
 
 	//chaincodeSupport.runningChaincodes.Lock()
@@ -822,11 +823,11 @@ func (chaincodeSupport *ChaincodeSupport) Launch(context context.Context, cccid 
 
 //getVMType - just returns a string for now. Another possibility is to use a factory method to
 //return a VM executor
-func (chaincodeSupport *ChaincodeSupport) getVMType(cds *pb.ChaincodeDeploymentSpec) (string, error) {
+func (chaincodeSupport *ChaincodeSupport) getVMType(cds *pb.ChaincodeDeploymentSpec) string {
 	if cds.ExecEnv == pb.ChaincodeDeploymentSpec_SYSTEM {
-		return controller.SYSTEM, nil
+		return controller.SYSTEM
 	}
-	return controller.DOCKER, nil
+	return controller.DOCKER
 }
 
 // HandleChaincodeStream implements ccintf.HandleChaincodeStream for all vms to call with appropriate stream
@@ -843,7 +844,6 @@ func (chaincodeSupport *ChaincodeSupport) Register(stream pb.ChaincodeSupport_Re
 func createCCMessage(contractid []byte, typ pb.ChaincodeMessage_Type, cid string, txid string, cMsg *pb.ChaincodeInput) (*pb.ChaincodeMessage, error) {
 	payload, err := proto.Marshal(cMsg)
 	if err != nil {
-		fmt.Printf(err.Error())
 		return nil, err
 	}
 	return &pb.ChaincodeMessage{Type: typ, Payload: payload, Txid: txid, ChannelId: cid, ContractId: contractid}, nil

@@ -33,6 +33,7 @@ import (
 	"github.com/palletone/go-palletone/common/rpc"
 	"github.com/palletone/go-palletone/core/accounts"
 	"github.com/palletone/go-palletone/core/accounts/keystore"
+	"github.com/palletone/go-palletone/dag/palletcache"
 	"github.com/palletone/go-palletone/dag/storage"
 	"github.com/palletone/go-palletone/internal/debug"
 	flock "github.com/prometheus/tsdb/fileutil"
@@ -90,12 +91,12 @@ type Node struct {
 	// --- RPC 相关对象 -- End
 
 	// 节点的等待终止通知的channel, node.New()时不创建，node.Start()时创建
-	stop chan struct{} // Channel to wait for termination notifications
-	lock sync.RWMutex
-
+	stop    chan struct{} // Channel to wait for termination notifications
+	lock    sync.RWMutex
+	CacheDb palletcache.ICache // global cache for use by other modules
 	//log log.ILogger
 	//for genesis 2018-8-14
-	dbpath string
+	//dbpath string
 }
 
 // New creates a new P2P node, ready for protocol registration.
@@ -407,7 +408,8 @@ func (n *Node) startHTTP(endpoint string, apis []rpc.API, modules []string, cors
 		log.Info("HTTP endpoint StartHTTPEndpoint err:", err)
 		return err
 	}
-	log.Info("HTTP endpoint opened", "url", fmt.Sprintf("http://%s", endpoint), "cors", strings.Join(cors, ","), "vhosts", strings.Join(vhosts, ","))
+	log.Info("HTTP endpoint opened", "url", fmt.Sprintf("http://%s", endpoint), "cors",
+		strings.Join(cors, ","), "vhosts", strings.Join(vhosts, ","))
 	// All listeners booted successfully
 	n.httpEndpoint = endpoint
 	n.httpListener = listener

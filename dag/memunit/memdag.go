@@ -25,7 +25,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coocood/freecache"
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/event"
 	"github.com/palletone/go-palletone/common/hexutil"
@@ -147,7 +146,22 @@ func (chain *MemDag) loopRebuildTmpDb() {
 }
 func (chain *MemDag) GetUnstableRepositories() (common2.IUnitRepository, common2.IUtxoRepository, common2.IStateRepository, common2.IPropRepository, common2.IUnitProduceRepository) {
 	last_main_hash := chain.lastMainChainUnit.Hash()
-	temp_rep, _ := chain.getChainUnit(last_main_hash)
+	temp_rep, err := chain.getChainUnit(last_main_hash)
+	if err != nil { // 重启后memdag的chainUnits还清被清空，需要重新以memdag的db构建unstable repositoreis
+		temp_inter, has := chain.tempdb.Load(last_main_hash)
+		if !has {
+			log.Errorf("the last_unit: %s , is not exist in memdag", last_main_hash.String())
+			tempdb, _ := NewTempdb(chain.db)
+			trep := common2.NewUnitRepository4Db(tempdb)
+			tutxoRep := common2.NewUtxoRepository4Db(tempdb)
+			tstateRep := common2.NewStateRepository4Db(tempdb)
+			tpropRep := common2.NewPropRepository4Db(tempdb)
+			tunitProduceRep := common2.NewUnitProduceRepository(trep, tpropRep, tstateRep)
+			return trep, tutxoRep, tstateRep, tpropRep, tunitProduceRep
+		}
+		tempdb := temp_inter.(*ChainTempDb)
+		return tempdb.UnitRep, tempdb.UtxoRep, tempdb.StateRep, tempdb.PropRep, tempdb.UnitProduceRep
+	}
 	return temp_rep.UnitRep, temp_rep.UtxoRep, temp_rep.StateRep, temp_rep.PropRep, temp_rep.UnitProduceRep
 }
 
@@ -492,7 +506,7 @@ func (chain *MemDag) addUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 			inter_temp, has := chain.tempdb.Load(parentHash)
 			if !has { // 分叉链
 				p_temp, _ := inter.(*ChainTempDb)
-				tempdb, _ = NewChainTempDb(p_temp.Tempdb, freecache.NewCache(1000*1024))
+				tempdb, _ = NewChainTempDb(p_temp.Tempdb, chain.cache)
 			} else {
 				tempdb = inter_temp.(*ChainTempDb)
 			}
@@ -544,7 +558,7 @@ func (chain *MemDag) addUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 			main_temp := new(ChainTempDb)
 			inter_main, has := chain.tempdb.Load(parentHash)
 			if !has { // 分叉
-				main_temp, _ = NewChainTempDb(chain.db, freecache.NewCache(1000*1024))
+				main_temp, _ = NewChainTempDb(chain.db, chain.cache)
 				forks := chain.getForkUnits(unit)
 				for i := 0; i < len(forks)-1; i++ {
 					main_temp, _ = main_temp.AddUnit(forks[i], chain.saveHeaderOnly)
@@ -634,7 +648,9 @@ func (chain *MemDag) delHeightUnitsAndTemp(height uint64) {
 		chain.height_hashs.Delete(h)
 	}
 	for _, hash := range to_del_hash {
-		chain.tempdb.Delete(hash)
+		if hash != chain.stableUnitHash {
+			chain.tempdb.Delete(hash)
+		}
 	}
 }
 

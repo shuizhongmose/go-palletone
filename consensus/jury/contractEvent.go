@@ -38,16 +38,20 @@ func (p *Processor) ProcessContractEvent(event *ContractEvent) error {
 	}
 	reqId := event.Tx.RequestHash()
 	if p.checkTxIsExist(event.Tx) {
-		return fmt.Errorf("[%s]ProcessContractEvent, event Tx is exist, txId:%s", shortId(reqId.String()), event.Tx.Hash().String())
+		return fmt.Errorf("[%s]ProcessContractEvent, event Tx is exist, txId:%s",
+			shortId(reqId.String()), event.Tx.Hash().String())
 	}
 	if p.checkTxReqIdIsExist(reqId) {
-		return fmt.Errorf("[%s]ProcessContractEvent, event Tx reqId is exist, txId:%s", shortId(reqId.String()), event.Tx.Hash().String())
+		return fmt.Errorf("[%s]ProcessContractEvent, event Tx reqId is exist, txId:%s",
+			shortId(reqId.String()), event.Tx.Hash().String())
 	}
 	if !p.checkTxValid(event.Tx) {
-		return fmt.Errorf("[%s]ProcessContractEvent, event Tx is invalid, txId:%s", shortId(reqId.String()), event.Tx.Hash().String())
+		return fmt.Errorf("[%s]ProcessContractEvent, event Tx is invalid, txId:%s",
+			shortId(reqId.String()), event.Tx.Hash().String())
 	}
 	if !p.checkTxAddrValid(event.Tx) {
-		return fmt.Errorf("[%s]ProcessContractEvent, event Tx addr is invalid, txId:%s", shortId(reqId.String()), event.Tx.Hash().String())
+		return fmt.Errorf("[%s]ProcessContractEvent, event Tx addr is invalid, txId:%s",
+			shortId(reqId.String()), event.Tx.Hash().String())
 	}
 	if !p.contractEventExecutable(event.CType, event.Tx, event.Ele, event.JuryCount) {
 		log.Debugf("[%s]ProcessContractEvent, contractEventExecutable is false", shortId(reqId.String()))
@@ -87,17 +91,17 @@ func (p *Processor) contractEleEvent(tx *modules.Transaction) error {
 		}
 	}
 	mtx := p.mtx[reqId]
-	eles, err := p.getContractAssignElectionList(tx)
+	eels, err := p.getContractAssignElectionList(tx)
 	if err != nil {
 		return err
 	}
-	elesLen := len(eles)
+	elesLen := len(eels)
 	if elesLen > 0 {
 		if elesLen >= p.electionNum {
-			mtx.eleInf = eles[0:p.electionNum] //todo 随机选择
+			mtx.eleInf = eels[0:p.electionNum] //todo 随机选择
 			log.Debugf("[%s]contractEleEvent election Num ok", shortId(reqId.String()))
 		} else {
-			mtx.eleInf = eles[:]
+			mtx.eleInf = eels[:]
 		}
 	}
 	if _, ok := p.mel[reqId]; !ok {
@@ -118,6 +122,9 @@ func (p *Processor) contractEleEvent(tx *modules.Transaction) error {
 }
 
 func (p *Processor) contractExecEvent(tx *modules.Transaction, ele []modules.ElectionInf) (broadcast bool, err error) {
+	if tx == nil {
+		return false, errors.New("contractExecEvent, tx is nil")
+	}
 	reqId := tx.RequestHash()
 	p.locker.Lock()
 	if p.mtx[reqId] == nil {
@@ -150,6 +157,9 @@ func (p *Processor) contractExecEvent(tx *modules.Transaction, ele []modules.Ele
 }
 
 func (p *Processor) contractSigEvent(tx *modules.Transaction, ele []modules.ElectionInf) (broadcast bool, err error) {
+	if tx == nil {
+		return false, errors.New("contractSigEvent, tx is nil")
+	}
 	p.locker.Lock()
 	defer p.locker.Unlock()
 	reqId := tx.RequestHash()
@@ -191,6 +201,9 @@ func (p *Processor) contractSigEvent(tx *modules.Transaction, ele []modules.Elec
 }
 
 func (p *Processor) contractCommitEvent(tx *modules.Transaction) (broadcast bool, err error) {
+	if tx == nil {
+		return false, errors.New("contractCommitEvent, tx is nil")
+	}
 	reqId := tx.RequestHash()
 	p.locker.Lock()
 	defer p.locker.Unlock()

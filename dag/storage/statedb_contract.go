@@ -23,7 +23,6 @@ package storage
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -123,7 +122,8 @@ func (statedb *StateDb) GetContractJury(contractId []byte) ([]modules.ElectionIn
 	}
 	return jury, nil
 }
-func (statedb *StateDb) SaveContractJury(contractId []byte, jury []modules.ElectionInf, version *modules.StateVersion) error {
+func (statedb *StateDb) SaveContractJury(contractId []byte, jury []modules.ElectionInf,
+	version *modules.StateVersion) error {
 	log.Debugf("SaveContractJury contractId %x", contractId)
 	key := append(constants.CONTRACT_JURY_PREFIX, contractId...)
 	juryb, err := rlp.EncodeToBytes(jury)
@@ -148,7 +148,8 @@ To save contract
 //	return nil
 //}
 
-func (statedb *StateDb) SaveContractStates(id []byte, wset []modules.ContractWriteSet, version *modules.StateVersion) error {
+func (statedb *StateDb) SaveContractStates(id []byte, wset []modules.ContractWriteSet,
+	version *modules.StateVersion) error {
 	batch := statedb.db.NewBatch()
 	for _, write := range wset {
 		cid := id
@@ -183,11 +184,11 @@ To get contract or contract template all fields
 func (statedb *StateDb) GetContractStatesById(id []byte) (map[string]*modules.ContractStateValue, error) {
 	key := append(constants.CONTRACT_STATE_PREFIX, id...)
 	data := getprefix(statedb.db, key)
-	if data == nil || len(data) == 0 {
-		return nil, errors.New(fmt.Sprintf("the contract %x state is null.", id))
+	if len(data) == 0 {
+		return nil, fmt.Errorf("the contract %x state is null.", id)
 	}
 	var err error
-	result := make(map[string]*modules.ContractStateValue, 0)
+	result := make(map[string]*modules.ContractStateValue)
 	for dbkey, state_version := range data {
 		state, version, err0 := splitValueAndVersion(state_version)
 		if err0 != nil {
@@ -206,14 +207,15 @@ func (statedb *StateDb) GetContractStatesById(id []byte) (map[string]*modules.Co
 获取合约全部属性 by Prefix
 To get contract or contract template all fields
 */
-func (statedb *StateDb) GetContractStatesByPrefix(id []byte, prefix string) (map[string]*modules.ContractStateValue, error) {
+func (statedb *StateDb) GetContractStatesByPrefix(id []byte,
+	prefix string) (map[string]*modules.ContractStateValue, error) {
 	key := append(constants.CONTRACT_STATE_PREFIX, id...)
 	data := getprefix(statedb.db, append(key, []byte(prefix)...))
-	if data == nil || len(data) == 0 {
-		return nil, errors.New(fmt.Sprintf("the contract %x state is null.", id))
+	if len(data) == 0 {
+		return nil, fmt.Errorf("the contract %x state is null.", id)
 	}
 	var err error
-	result := make(map[string]*modules.ContractStateValue, 0)
+	result := make(map[string]*modules.ContractStateValue)
 	for dbkey, state_version := range data {
 		state, version, err0 := splitValueAndVersion(state_version)
 		if err0 != nil {
@@ -237,7 +239,7 @@ func (statedb *StateDb) GetContractState(id []byte, field string) ([]byte, *modu
 	key := getContractStateKey(id, field)
 	log.Debugf("DB[%s] GetContractState for key:%x. field:%s ", reflect.TypeOf(statedb.db).String(), key, field)
 	data, version, err := retrieveWithVersion(statedb.db, key)
-	log.Debugf("GetContractState Result:%x,version:%s",data,version.String())
+	log.Debugf("GetContractState Result:%x,version:%s", data, version.String())
 	return data, version, err
 }
 
@@ -329,7 +331,7 @@ func (statedb *StateDb) UpdateStateByContractInvoke(invoke *modules.ContractInvo
 			if err == nil {
 				log.Debugf("Save Update Mediator(%v) Invoke Req", mua.AddStr)
 
-				addr, err := core.StrToMedAdd(mua.AddStr)
+				addr, err := mua.Validate()
 				if err == nil {
 					mi, err := statedb.RetrieveMediatorInfo(addr)
 					if err == nil {

@@ -60,6 +60,10 @@ func (h *Header) NumberU64() uint64 {
 	return h.Number.Index
 }
 
+func (h *Header) Timestamp() int64 {
+	return h.Time
+}
+
 func (h *Header) GetGroupPubKeyByte() []byte {
 	return h.GroupPubKey
 }
@@ -198,9 +202,10 @@ func CopyHeader(h *Header) *Header {
 
 	if len(h.TxsIllegal) > 0 {
 		cpy.TxsIllegal = make([]uint16, 0)
-		for _, txsI := range h.TxsIllegal {
-			cpy.TxsIllegal = append(cpy.TxsIllegal, txsI)
-		}
+		//for _, txsI := range h.TxsIllegal {
+		//	cpy.TxsIllegal = append(cpy.TxsIllegal, txsI)
+		//}
+		cpy.TxsIllegal = append(cpy.TxsIllegal, h.TxsIllegal...)
 	}
 
 	return &cpy
@@ -424,7 +429,11 @@ func (u *Unit) Size() common.StorageSize {
 
 //func (u *Unit) NumberU64() uint64 { return u.Head.Number.Uint64() }
 func (u *Unit) Number() *ChainIndex {
-	return u.UnitHeader.Number
+	return u.UnitHeader.GetNumber()
+}
+
+func (h *Header) GetNumber() *ChainIndex {
+	return h.Number
 }
 
 func (u *Unit) NumberU64() uint64 {
@@ -432,12 +441,16 @@ func (u *Unit) NumberU64() uint64 {
 }
 
 func (u *Unit) Timestamp() int64 {
-	return u.UnitHeader.Time
+	return u.UnitHeader.Timestamp()
 }
 
 // return unit's parents UnitHash
 func (u *Unit) ParentHash() []common.Hash {
-	return u.UnitHeader.ParentsHash
+	return u.UnitHeader.ParentHash()
+}
+
+func (h *Header) ParentHash() []common.Hash {
+	return h.ParentsHash
 }
 
 //func (u *Unit) SetGroupSign(sign []byte) {
@@ -447,7 +460,11 @@ func (u *Unit) ParentHash() []common.Hash {
 //}
 
 func (u *Unit) GetGroupSign() []byte {
-	return u.UnitHeader.GroupSign
+	return u.UnitHeader.GetGroupSign()
+}
+
+func (h *Header) GetGroupSign() []byte {
+	return h.GroupSign
 }
 
 type ErrUnit float64
@@ -469,7 +486,6 @@ func (e ErrUnit) Error() string {
 	default:
 		return ""
 	}
-	return ""
 }
 
 /************************** Unit Members  *****************************/

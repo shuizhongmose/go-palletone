@@ -133,7 +133,8 @@ func (vts voteTallys) Swap(i, j int) {
 	vts[i], vts[j] = vts[j], vts[i]
 }
 
-func (dag *UnitProduceRepository) SubscribeActiveMediatorsUpdatedEvent(ch chan<- modules.ActiveMediatorsUpdatedEvent) event.Subscription {
+func (dag *UnitProduceRepository) SubscribeActiveMediatorsUpdatedEvent(
+	ch chan<- modules.ActiveMediatorsUpdatedEvent) event.Subscription {
 	return dag.activeMediatorsUpdatedScope.Track(dag.activeMediatorsUpdatedFeed.Subscribe(ch))
 }
 
@@ -150,10 +151,8 @@ func (d *UnitProduceRepository) Close() {
  * @return true if we switched forks as a result of this push.
  */
 func (rep *UnitProduceRepository) PushUnit(newUnit *modules.Unit) error {
-	var err error
-
 	//更新数据库
-	err = rep.unitRep.SaveUnit(newUnit, false)
+	err := rep.unitRep.SaveUnit(newUnit, false)
 	if err != nil {
 		return err
 	}
@@ -245,8 +244,6 @@ func (rep *UnitProduceRepository) updateDynGlobalProp(unit *modules.Unit, missed
 	dgp.CurrentASlot += missedUnits + 1
 
 	rep.propRep.StoreDynGlobalProp(dgp)
-
-	return
 }
 
 func (rep *UnitProduceRepository) updateMediatorSchedule() {
@@ -261,8 +258,6 @@ func (rep *UnitProduceRepository) updateMediatorSchedule() {
 		dgp.IsShuffledSchedule = true
 		rep.propRep.StoreDynGlobalProp(dgp)
 	}
-
-	return
 }
 
 func (rep *UnitProduceRepository) updateSigningMediator(newUnit *modules.Unit) {
@@ -366,8 +361,6 @@ func (dag *UnitProduceRepository) updateChainParameters(nextUnit *modules.Unit) 
 
 	dag.UpdateSysParams(version)
 	dag.RefreshSysParameters()
-
-	return
 }
 
 // 获取通过投票修改系统参数的结果
@@ -413,9 +406,10 @@ func (dag *UnitProduceRepository) UpdateSysParams(version *modules.StateVersion)
 
 		//将基金会当前单独修改的重置为nil
 		err = dag.stateRep.SaveSysConfigContract(modules.DesiredSysParamsWithoutVote, nil, version)
-		//if err != nil {
-		//	return err
-		//}
+		if err != nil {
+			log.Errorf(err.Error())
+			//return err
+		}
 	}
 
 	//基金会发起投票的
@@ -499,7 +493,7 @@ func (dag *UnitProduceRepository) performAccountMaintenance() {
 	mediatorVoteCount, _ := dag.stateRep.GetMediatorVotedResults()
 
 	// 初始化 mediator 的投票数据
-	for mediator, _ := range mediators {
+	for mediator := range mediators {
 
 		voteTally := newVoteTally(mediator)
 		voteTally.votedCount = mediatorVoteCount[mediator.Str()]
@@ -589,7 +583,7 @@ func (d *UnitProduceRepository) getDesiredActiveMediatorCount() int {
 	if err == nil {
 		desiredActiveMediatorStr, ok := desiredSysParams[modules.DesiredActiveMediatorCount]
 		if ok {
-			desiredActiveMediator, err := strconv.ParseUint(string(desiredActiveMediatorStr), 10, 16)
+			desiredActiveMediator, err := strconv.ParseUint(desiredActiveMediatorStr, 10, 16)
 			if err == nil {
 				activeMediator = uint8(desiredActiveMediator)
 			}
@@ -599,7 +593,7 @@ func (d *UnitProduceRepository) getDesiredActiveMediatorCount() int {
 	// 获取通过投票修改的设置
 	infos := d.getSysParamsWithVote()
 	if desiredActiveMediatorStr, ok := infos[modules.DesiredActiveMediatorCount]; ok {
-		desiredActiveMediator, err := strconv.ParseUint(string(desiredActiveMediatorStr), 10, 16)
+		desiredActiveMediator, err := strconv.ParseUint(desiredActiveMediatorStr, 10, 16)
 		if err == nil {
 			activeMediator = uint8(desiredActiveMediator)
 		}
@@ -644,8 +638,6 @@ func (dag *UnitProduceRepository) updateNextMaintenanceTime(nextUnit *modules.Un
 
 	tt := time.Unix(int64(nextMaintenanceTime), 0)
 	log.Debugf("nextMaintenanceTime: %v", tt.Format("2006-01-02 15:04:05"))
-
-	return
 }
 
 func (dag *UnitProduceRepository) updateMaintenanceFlag(newMaintenanceFlag bool) {
@@ -654,8 +646,6 @@ func (dag *UnitProduceRepository) updateMaintenanceFlag(newMaintenanceFlag bool)
 	dgp := dag.GetDynGlobalProp()
 	dgp.MaintenanceFlag = newMaintenanceFlag
 	dag.propRep.StoreDynGlobalProp(dgp)
-
-	return
 }
 
 func (dag *UnitProduceRepository) HeadUnitTime() int64 {
@@ -665,20 +655,20 @@ func (dag *UnitProduceRepository) HeadUnitTime() int64 {
 }
 
 // 判断新一届mediator和上一届mediator是否有变化
-func isActiveMediatorsChanged(gp *modules.GlobalProperty) bool {
-	precedingMediators := gp.PrecedingMediators
-	activeMediators := gp.ActiveMediators
-
-	// 首先考虑活跃mediator个数是否改变
-	if len(precedingMediators) != len(activeMediators) {
-		return true
-	}
-
-	for am, _ := range activeMediators {
-		if !precedingMediators[am] {
-			return true
-		}
-	}
-
-	return false
-}
+//func isActiveMediatorsChanged(gp *modules.GlobalProperty) bool {
+//	precedingMediators := gp.PrecedingMediators
+//	activeMediators := gp.ActiveMediators
+//
+//	// 首先考虑活跃mediator个数是否改变
+//	if len(precedingMediators) != len(activeMediators) {
+//		return true
+//	}
+//
+//	for am := range activeMediators {
+//		if !precedingMediators[am] {
+//			return true
+//		}
+//	}
+//
+//	return false
+//}

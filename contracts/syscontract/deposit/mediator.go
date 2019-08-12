@@ -22,7 +22,6 @@ import (
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/log"
 	"github.com/palletone/go-palletone/contracts/shim"
-	"github.com/palletone/go-palletone/core"
 	pb "github.com/palletone/go-palletone/core/vmContractPub/protos/peer"
 	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/modules"
@@ -118,7 +117,7 @@ func applyBecomeMediator(stub shim.ChaincodeStubInterface, args []string) pb.Res
 }
 
 //mediator 交付保证金：
-func mediatorPayToDepositContract(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func mediatorPayToDepositContract(stub shim.ChaincodeStubInterface /*, args []string*/) pb.Response {
 	log.Info("starting entering mediatorPayToDepositContract func.")
 	//  判断是否是交付保证金到保证金合约地址
 	invokeTokens, err := isContainDepositContractAddr(stub)
@@ -229,7 +228,7 @@ func mediatorPayToDepositContract(stub shim.ChaincodeStubInterface, args []strin
 }
 
 //  申请退出 参数：暂时 节点地址
-func mediatorApplyQuit(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func mediatorApplyQuit(stub shim.ChaincodeStubInterface /*, args []string*/) pb.Response {
 	err := applyQuitList(Mediator, stub)
 	if err != nil {
 		log.Error("mediatorApplyQuitMediator err: ", "error", err)
@@ -278,7 +277,7 @@ func updateMediatorInfo(stub shim.ChaincodeStubInterface, args []string) pb.Resp
 		return shim.Error(errStr)
 	}
 
-	addr, err := core.StrToMedAdd(mua.AddStr)
+	addr, err := mua.Validate()
 	if err != nil {
 		errStr := fmt.Sprintf("invalid args: %v", err.Error())
 		log.Errorf(errStr)

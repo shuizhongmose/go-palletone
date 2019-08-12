@@ -63,7 +63,7 @@ type IDag interface {
 	// InsertHeaderDag inserts a batch of headers into the local chain.
 	InsertHeaderDag([]*modules.Header) (int, error)
 	HasUnit(hash common.Hash) bool
-	UnitIsConfirmedByHash(hash common.Hash) bool
+	//UnitIsConfirmedByHash(hash common.Hash) bool
 	ParentsIsConfirmByHash(hash common.Hash) bool
 	IsHeaderExist(hash common.Hash) bool
 	SaveUnit(unit *modules.Unit, txpool txspool.ITxPool, isGenesis bool) error
@@ -105,6 +105,7 @@ type IDag interface {
 	GetContractsByTpl(tplId []byte) ([]*modules.Contract, error)
 	GetUnitByNumber(number *modules.ChainIndex) (*modules.Unit, error)
 	GetUnitHashesFromHash(hash common.Hash, max uint64) []common.Hash
+	GetUnitHash(number *modules.ChainIndex) (common.Hash, error)
 
 	//Mediator
 	GetActiveMediator(add common.Address) *core.Mediator

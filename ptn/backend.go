@@ -18,12 +18,9 @@
 package ptn
 
 import (
-	"fmt"
-	"sync"
-
 	"encoding/json"
+	"fmt"
 	"github.com/palletone/go-palletone/common"
-	"github.com/palletone/go-palletone/common/bloombits"
 	"github.com/palletone/go-palletone/common/event"
 	"github.com/palletone/go-palletone/common/log"
 	"github.com/palletone/go-palletone/common/p2p"
@@ -41,12 +38,12 @@ import (
 	"github.com/palletone/go-palletone/dag"
 	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/modules"
+	"github.com/palletone/go-palletone/dag/palletcache"
 	"github.com/palletone/go-palletone/dag/storage"
 	"github.com/palletone/go-palletone/dag/txspool"
 	"github.com/palletone/go-palletone/internal/ptnapi"
 	"github.com/palletone/go-palletone/ptn/downloader"
 	"github.com/palletone/go-palletone/ptn/filters"
-	"github.com/palletone/go-palletone/ptn/indexer"
 	"github.com/palletone/go-palletone/ptnjson"
 	"github.com/palletone/go-palletone/tokenengine"
 	"github.com/shopspring/decimal"
@@ -89,10 +86,8 @@ type PalletOne struct {
 
 	contract *contracts.Contract
 
-	lock sync.RWMutex // Protects the variadic fields (e.g. gas price and etherbase)
-
-	bloomRequests chan chan *bloombits.Retrieval // Channel receiving bloom data retrieval requests
-	bloomIndexer  *indexer.ChainIndexer          // Bloom indexer operating during block imports
+	//bloomRequests chan chan *bloombits.Retrieval // Channel receiving bloom data retrieval requests
+	//bloomIndexer  *indexer.ChainIndexer          // Bloom indexer operating during block imports
 
 	// append by Albert·Gou
 	mediatorPlugin    *mp.MediatorPlugin
@@ -114,7 +109,7 @@ func (p *PalletOne) AddCorsServer(cs LesServer) *PalletOne {
 
 // New creates a new PalletOne object (including the
 // initialisation of the common PalletOne object)
-func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
+func New(ctx *node.ServiceContext, config *Config, cache palletcache.ICache) (*PalletOne, error) {
 	if !config.SyncMode.IsValid() {
 		return nil, fmt.Errorf("invalid sync mode %d", config.SyncMode)
 	}
@@ -124,7 +119,7 @@ func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
 		log.Error("PalletOne New", "CreateDB err:", err)
 		return nil, err
 	}
-	dag, err := dag.NewDag(db, false)
+	dag, err := dag.NewDag(db, cache, false)
 	if err != nil {
 		log.Error("PalletOne New", "NewDag err:", err)
 		return nil, err
@@ -142,12 +137,12 @@ func New(ctx *node.ServiceContext, config *Config) (*PalletOne, error) {
 		unitDb:         db,
 		syncCh:         make(chan bool, 1),
 	}
-	log.Info("Initialising PalletOne protocol", "versions", ProtocolVersions, "network", config.NetworkId)
+	log.Info("Initializing PalletOne protocol", "versions", ProtocolVersions, "network", config.NetworkId)
 
 	if config.TxPool.Journal != "" {
 		config.TxPool.Journal = ctx.ResolvePath(config.TxPool.Journal)
 	}
-	ptn.txPool = txspool.NewTxPool(config.TxPool, ptn.dag)
+	ptn.txPool = txspool.NewTxPool(config.TxPool, cache, ptn.dag)
 
 	//Test for P2P
 	ptn.engine = consensus.New(dag, ptn.txPool)
@@ -327,7 +322,8 @@ func (s *PalletOne) Start(srvr *p2p.Server, corss *p2p.Server) error {
 	maxPeers := srvr.MaxPeers
 	if s.config.LightServ > 0 {
 		if s.config.LightPeers >= srvr.MaxPeers {
-			return fmt.Errorf("invalid peer config: light peer count (%d) >= total peer count (%d)", s.config.LightPeers, srvr.MaxPeers)
+			return fmt.Errorf("invalid peer config: light peer count (%d) >= total peer count (%d)",
+				s.config.LightPeers, srvr.MaxPeers)
 		}
 		maxPeers -= s.config.LightPeers
 	}
@@ -431,7 +427,8 @@ func (p *PalletOne) SignAndSendTransaction(addr common.Address, tx *modules.Tran
 }
 
 // @author Albert·Gou
-func (p *PalletOne) TransferPtn(from, to string, amount decimal.Decimal, text *string) (*ptnapi.TxExecuteResult, error) {
+func (p *PalletOne) TransferPtn(from, to string, amount decimal.Decimal,
+	text *string) (*ptnapi.TxExecuteResult, error) {
 	// 参数检查
 	if from == to {
 		return nil, fmt.Errorf("please don't transfer ptn to yourself: %v", from)

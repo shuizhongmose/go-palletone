@@ -49,7 +49,7 @@ import (
 )
 
 type Dag struct {
-	//Cache       palletcache.ICache
+	Cache       palletcache.ICache
 	Db          ptndb.Database
 	currentUnit atomic.Value
 
@@ -71,12 +71,12 @@ type Dag struct {
 	Memdag          memunit.IMemDag                     // memory unit
 	PartitionMemDag map[modules.AssetId]memunit.IMemDag //其他分区的MemDag
 
-	applyLock sync.Mutex
+	//applyLock sync.Mutex
 
 	//SPV
-	rmLogsFeed    event.Feed
-	chainFeed     event.Feed
-	chainSideFeed event.Feed
+	rmLogsFeed event.Feed
+	chainFeed  event.Feed
+	//chainSideFeed event.Feed
 	chainHeadFeed event.Feed
 	logsFeed      event.Feed
 	scope         event.SubscriptionScope
@@ -151,12 +151,12 @@ func (d *Dag) IsTransactionExist(hash common.Hash) (bool, error) {
 }
 
 // return the unit confirmed is true or false
-func (d *Dag) UnitIsConfirmedByHash(hash common.Hash) bool {
-	if d.HasUnit(hash) {
-		return true
-	}
-	return false
-}
+//func (d *Dag) UnitIsConfirmedByHash(hash common.Hash) bool {
+//	if d.HasUnit(hash) {
+//		return true
+//	}
+//	return false
+//}
 
 // return the unit's parent confirmed is true or false
 func (d *Dag) ParentsIsConfirmByHash(hash common.Hash) bool {
@@ -174,7 +174,6 @@ func (d *Dag) ParentsIsConfirmByHash(hash common.Hash) bool {
 
 // return the unit by chain index
 func (d *Dag) GetUnitByNumber(number *modules.ChainIndex) (*modules.Unit, error) {
-
 	hash, err := d.unstableUnitRep.GetHashByNumber(number)
 	if err != nil {
 		log.Debug("GetUnitByNumber dagdb.GetHashByNumber err:", "error", err)
@@ -273,7 +272,7 @@ func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error
 				units[i-1].UnitHeader.Number.Index, units[i-1].UnitHash,
 				units[i].UnitHeader.Number.Index, units[i].UnitHash)
 		}
-		if i > 0 && u.ContainsParent(units[i-1].UnitHash) == false {
+		if i > 0 && !u.ContainsParent(units[i-1].UnitHash) {
 			return count, fmt.Errorf("Insert dag error: child parents are not continuous, "+
 				"parent unit number=%d, hash=%s; "+"child unit number=%d, hash=%s",
 				units[i-1].UnitHeader.Number.Index, units[i-1].UnitHash,
@@ -354,7 +353,6 @@ func (d *Dag) CurrentHeader(token modules.AssetId) *modules.Header {
 	// 从memdag 获取最新的header
 	unit := memdag.GetLastMainChainUnit()
 	return unit.Header()
-	return nil
 }
 
 // return unit's body , all transactions of unit by hash
@@ -501,7 +499,7 @@ func (d *Dag) initDataForMainChainHeader(mainChain *modules.MainChain) {
 
 // newDag, with db , light to build a new dag
 // firstly to check db migration, is updated ptn database.
-func NewDag(db ptndb.Database, light bool) (*Dag, error) {
+func NewDag(db ptndb.Database, cache palletcache.ICache, light bool) (*Dag, error) {
 
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
@@ -521,12 +519,12 @@ func NewDag(db ptndb.Database, light bool) (*Dag, error) {
 	stableUnitProduceRep := dagcommon.NewUnitProduceRepository(unitRep, propRep, stateRep)
 	gasToken := dagconfig.DagConfig.GetGasToken()
 	threshold, _ := propRep.GetChainThreshold()
-	cache := freecache.NewCache(1000 * 1024)
 	unstableChain := memunit.NewMemDag(gasToken, threshold, light /*false*/, db, unitRep, propRep, stateRep, cache)
 	tunitRep, tutxoRep, tstateRep, tpropRep, tUnitProduceRep := unstableChain.GetUnstableRepositories()
 
 	dag := &Dag{
 		Db:                     db,
+		Cache:                  cache,
 		unstableUnitRep:        tunitRep,
 		unstableUtxoRep:        tutxoRep,
 		unstableStateRep:       tstateRep,
@@ -647,8 +645,6 @@ func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
 
 // to build a dag for test
 func NewDagForTest(db ptndb.Database) (*Dag, error) {
-	mutex := new(sync.RWMutex)
-
 	dagDb := storage.NewDagDb(db)
 	utxoDb := storage.NewUtxoDb(db)
 	stateDb := storage.NewStateDb(db)
@@ -672,7 +668,6 @@ func NewDagForTest(db ptndb.Database) (*Dag, error) {
 		stablePropRep:          propRep,
 		stableUnitProduceRep:   statleUnitProduceRep,
 		ChainHeadFeed:          new(event.Feed),
-		Mutex:                  *mutex,
 		Memdag:                 unstableChain,
 		unstableUnitRep:        tunitRep,
 		unstableUtxoRep:        tutxoRep,

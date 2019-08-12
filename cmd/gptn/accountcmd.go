@@ -286,7 +286,8 @@ func accountList(ctx *cli.Context) error {
 }
 
 // tries unlocking the specified account a few times.
-func unlockAccount( /*ctx *cli.Context*/ ks *keystore.KeyStore, address string, i int, passwords []string) (accounts.Account, string) {
+func unlockAccount( /*ctx *cli.Context*/ ks *keystore.KeyStore, address string, i int,
+	passwords []string) (accounts.Account, string) {
 	account, err := utils.MakeAddress(ks, address)
 	if err != nil {
 		utils.Fatalf("Could not list accounts: %v", err)
@@ -351,24 +352,24 @@ func ambiguousAddrRecovery(ks *keystore.KeyStore, err *keystore.AmbiguousAddrErr
 		fmt.Println("  ", a.URL)
 	}
 	fmt.Println("Testing your passphrase against all of them...")
-	var match *accounts.Account
+	var match accounts.Account
 	for _, a := range err.Matches {
 		if err := ks.Unlock(a, auth); err == nil {
-			match = &a
+			match = a
 			break
 		}
 	}
-	if match == nil {
+	if match.Address.IsZero() {
 		utils.Fatalf("None of the listed files could be unlocked.")
 	}
 	fmt.Printf("Your passphrase unlocked %s\n", match.URL)
 	fmt.Println("In order to avoid this warning, you need to remove the following duplicate key files:")
 	for _, a := range err.Matches {
-		if a != *match {
+		if a != match {
 			fmt.Println("  ", a.URL)
 		}
 	}
-	return *match
+	return match
 }
 
 // accountCreate creates a new account into the keystore defined by the CLI flags.
@@ -384,7 +385,7 @@ func createAccount(ctx *cli.Context, password string) (common.Address, error) {
 
 	cfg.Node.P2P = cfg.P2P
 	utils.SetNodeConfig(ctx, &cfg.Node, configDir)
-	scryptN, scryptP, keydir, err := cfg.Node.AccountConfig()
+	scryptN, scryptP, keydir, _ := cfg.Node.AccountConfig()
 
 	address, err := keystore.StoreKey(keydir, password, scryptN, scryptP)
 	if err != nil {
@@ -539,6 +540,7 @@ type RawTransactionGenParams struct {
 	} `json:"outputs"`
 	Locktime int64 `json:"locktime"`
 }
+
 //type RawTransactionGenResult struct {
 //	Rawtx string `json:"rawtx"`
 //}
@@ -589,7 +591,7 @@ func accountCreateTx(ctx *cli.Context) error {
 		if len(outOne.Address) == 0 || outOne.Amount.LessThanOrEqual(decimal.New(0, 0)) {
 			continue
 		}
-		amounts = append(amounts, ptnjson.AddressAmt{outOne.Address, outOne.Amount})
+		amounts = append(amounts, ptnjson.AddressAmt{Address: outOne.Address, Amount: outOne.Amount})
 	}
 	if len(amounts) == 0 {
 		return nil
@@ -629,8 +631,8 @@ func accountSignTx(ctx *cli.Context) error {
 	//transaction inputs
 	var rawinputs []ptnjson.RawTxInput
 	for _, inputOne := range signTransactionParams.Inputs {
-		input := ptnjson.RawTxInput{Txid: inputOne.Txid, Vout: inputOne.Vout, MessageIndex: inputOne.MessageIndex, ScriptPubKey: inputOne.ScriptPubKey,
-			RedeemScript: inputOne.RedeemScript}
+		input := ptnjson.RawTxInput{Txid: inputOne.Txid, Vout: inputOne.Vout, MessageIndex: inputOne.MessageIndex,
+			ScriptPubKey: inputOne.ScriptPubKey, RedeemScript: inputOne.RedeemScript}
 		rawinputs = append(rawinputs, input)
 	}
 	if len(rawinputs) == 0 {
@@ -647,24 +649,7 @@ func accountSignTx(ctx *cli.Context) error {
 	if len(keys) == 0 {
 		return nil
 	}
-	//	// All returned errors (not OOM, which panics) encounted during
-	//	// bytes.Buffer writes are unexpected.
-	//send_args := ptnjson.NewSignRawTransactionCmd(signTransactionParams.RawTx, &rawinputs, &keys, nil)
-	//send_args = send_args
-	//signtxout, err := ptnapi.SignRawTransaction(send_args)
-	//if signtxout == nil {
-	//	utils.Fatalf("Invalid signature")
-	//}
-	//signtx := signtxout.(ptnjson.SignRawTransactionResult)
-	//if err != nil {
-	//	utils.Fatalf("signtx error:%s", err)
-	//}
-	//if signtx.Complete == true {
-	//	fmt.Println("Signature success")
-	//	fmt.Println(signtx.Hex)
-	//} else {
-	//	utils.Fatalf("Invalid signature")
-	//}
+
 	return nil
 }
 func accountImport(ctx *cli.Context) error {
@@ -677,7 +662,8 @@ func accountImport(ctx *cli.Context) error {
 		utils.Fatalf("Failed to load the private key: %v", err)
 	}
 	stack, _ := makeConfigNode(ctx, false)
-	passphrase := getPassPhrase("Your new account is locked with a password. Please give a password. Do not forget this password.", true, 0, utils.MakePasswordList(ctx))
+	passphrase := getPassPhrase("Your new account is locked with a password. "+
+		"Please give a password. Do not forget this password.", true, 0, utils.MakePasswordList(ctx))
 
 	ks := stack.GetKeyStore()
 	acct, err := ks.ImportECDSA(key, passphrase)

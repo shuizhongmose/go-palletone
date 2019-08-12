@@ -545,7 +545,6 @@ func markTxIllegal(dag storage.IStateDb, tx *modules.Transaction) {
 	var readSet []modules.ContractReadSet
 	var contractId []byte
 
-	valid := true
 	for _, msg := range tx.TxMessages {
 		switch msg.App {
 		case modules.APP_CONTRACT_DEPLOY:
@@ -562,7 +561,7 @@ func markTxIllegal(dag storage.IStateDb, tx *modules.Transaction) {
 			contractId = payload.ContractId
 		}
 	}
-	valid = checkReadSetValid(dag, contractId, readSet)
+	valid := checkReadSetValid(dag, contractId, readSet)
 	tx.Illegal = !valid
 
 	return
@@ -579,7 +578,6 @@ func markTxsIllegal(dag storage.IStateDb, txs []*modules.Transaction) error {
 		var readSet []modules.ContractReadSet
 		var contractId []byte
 
-		valid := true
 		for _, msg := range tx.TxMessages {
 			switch msg.App {
 			case modules.APP_CONTRACT_DEPLOY:
@@ -596,7 +594,7 @@ func markTxsIllegal(dag storage.IStateDb, txs []*modules.Transaction) error {
 				contractId = payload.ContractId
 			}
 		}
-		valid = checkReadSetValid(dag, contractId, readSet)
+		valid := checkReadSetValid(dag, contractId, readSet)
 		tx.Illegal = !valid
 	}
 	return nil
@@ -626,9 +624,7 @@ func (rep *UnitRepository) ComputeTxFeesAllocate(m common.Address, txs []*module
 		if err != nil {
 			return nil, err
 		}
-		for _, a := range allowcate {
-			ads = append(ads, a)
-		}
+		ads = append(ads, allowcate...)
 	}
 
 	return ads, nil
@@ -637,10 +633,10 @@ func (rep *UnitRepository) ComputeTxFeesAllocate(m common.Address, txs []*module
 //,Mediator奖励
 func (rep *UnitRepository) ComputeGenerateUnitReward(m common.Address, asset *modules.Asset) *modules.Addition {
 	a := &modules.Addition{
-		Addr: m,
+		Addr:   m,
+		Amount: ComputeGenerateUnitReward(),
+		Asset:  asset,
 	}
-	a.Amount = ComputeGenerateUnitReward()
-	a.Asset = asset
 	return a
 }
 
@@ -977,21 +973,21 @@ func (rep *UnitRepository) saveTx4Unit(unit *modules.Unit, txIndex int, tx *modu
 		}
 		switch msg.App {
 		case modules.APP_PAYMENT:
-			if ok := rep.savePaymentPayload(unit.Timestamp(), txHash, msg.Payload.(*modules.PaymentPayload), uint32(msgIndex)); ok != true {
+			if ok := rep.savePaymentPayload(unit.Timestamp(), txHash, msg.Payload.(*modules.PaymentPayload), uint32(msgIndex)); !ok {
 				return fmt.Errorf("Save payment payload error.")
 			}
 		case modules.APP_CONTRACT_TPL:
 			tpl := msg.Payload.(*modules.ContractTplPayload)
-			if ok := rep.saveContractTpl(unit.UnitHeader.Number, uint32(txIndex), installReq, tpl); ok != true {
+			if ok := rep.saveContractTpl(unit.UnitHeader.Number, uint32(txIndex), installReq, tpl); !ok {
 				return fmt.Errorf("Save contract template error.")
 			}
 		case modules.APP_CONTRACT_DEPLOY:
 			deploy := msg.Payload.(*modules.ContractDeployPayload)
-			if ok := rep.saveContractInitPayload(unit.UnitHeader.Number, uint32(txIndex), deploy, requester, unitTime); ok != true {
+			if ok := rep.saveContractInitPayload(unit.UnitHeader.Number, uint32(txIndex), deploy, requester, unitTime); !ok {
 				return fmt.Errorf("Save contract init payload error.")
 			}
 		case modules.APP_CONTRACT_INVOKE:
-			if ok := rep.saveContractInvokePayload(tx, unit.UnitHeader.Number, uint32(txIndex), msg, reqIndex); ok != true {
+			if ok := rep.saveContractInvokePayload(tx, unit.UnitHeader.Number, uint32(txIndex), msg, reqIndex); !ok {
 				return fmt.Errorf("save contract invode payload error")
 			}
 		case modules.APP_CONTRACT_STOP:
@@ -1021,7 +1017,7 @@ func (rep *UnitRepository) saveTx4Unit(unit *modules.Unit, txIndex int, tx *modu
 				return fmt.Errorf("save contract of signature failed.")
 			}
 		case modules.APP_DATA:
-			if ok := rep.saveDataPayload(requester, unitHash, unitHeight, unitTime, txHash, msg.Payload.(*modules.DataPayload)); ok != true {
+			if ok := rep.saveDataPayload(requester, unitHash, unitHeight, unitTime, txHash, msg.Payload.(*modules.DataPayload)); !ok {
 				return fmt.Errorf("save data payload faild.")
 			}
 		default:
@@ -1200,10 +1196,9 @@ To save contract invoke state
 */
 func (rep *UnitRepository) saveContractInvokePayload(tx *modules.Transaction, height *modules.ChainIndex,
 	txIndex uint32, msg *modules.Message, reqIndex int) bool {
-	var pl interface{}
-	pl = msg.Payload
+	pl := msg.Payload
 	payload, ok := pl.(*modules.ContractInvokePayload)
-	if ok == false {
+	if !ok {
 		return false
 	}
 
@@ -1516,7 +1511,7 @@ func (rep *UnitRepository) createCoinbasePayment(ads []*modules.Addition) (*modu
 	payload := &modules.ContractInvokePayload{}
 	payload.ContractId = contractId
 	empty, _ := rlp.EncodeToBytes([]modules.AmountAsset{})
-	for addr, _ := range rewards {
+	for addr := range rewards {
 		key := constants.RewardAddressPrefix + addr.String()
 		_, version, _ := rep.statedb.GetContractState(contractId, key)
 		rs := modules.ContractReadSet{Key: key, Version: version}

@@ -57,9 +57,8 @@ import (
 )
 
 var (
-	CommandHelpTemplate = `{{.cmd.Name}}{{if .cmd.Subcommands}} command{{end}}{{if .cmd.Flags}} [command options]{{end}} [arguments...]
-{{if .cmd.Description}}{{.cmd.Description}}
-{{end}}{{if .cmd.Subcommands}}
+	CommandHelpTemplate = `{{.cmd.Name}}{{if .cmd.Subcommands}} command{{end}}{{if .cmd.Flags}} 
+[command options]{{end}} [arguments...] {{if .cmd.Description}}{{.cmd.Description}} {{end}}{{if .cmd.Subcommands}}
 SUBCOMMANDS:
 	{{range .cmd.Subcommands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
 	{{end}}{{end}}{{if .categorizedFlags}}
@@ -70,7 +69,8 @@ SUBCOMMANDS:
 )
 
 func init() {
-	cli.AppHelpTemplate = `{{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} [command options]{{end}} [arguments...]
+	cli.AppHelpTemplate = `{{.Name}} {{if .Flags}}[global options] {{end}}command{{if .Flags}} 
+	[command options]{{end}} [arguments...]
 
 VERSION:
    {{.Version}}
@@ -358,8 +358,9 @@ var (
 		Value: "",
 	}
 	RPCVirtualHostsFlag = cli.StringFlag{
-		Name:  "rpcvhosts",
-		Usage: "Comma separated list of virtual hostnames from which to accept requests (server enforced). Accepts '*' wildcard.",
+		Name: "rpcvhosts",
+		Usage: "Comma separated list of virtual hostnames from which to accept requests (server enforced). " +
+			"Accepts '*' wildcard.",
 		Value: strings.Join(node.DefaultConfig.HTTPVirtualHosts, ","),
 	}
 	RPCApiFlag = cli.StringFlag{
@@ -501,6 +502,12 @@ var (
 	//		Usage: "Dag dbname",
 	//		Value: ptn.DefaultConfig.Dag.DbName,
 	//	}
+	DagValue3Flag = cli.IntFlag{
+		Name:  "dag.dbcache",
+		Usage: "Dag dbcache",
+		Value: ptn.DefaultConfig.Dag.DbCache,
+	}
+
 	LogOutputPathFlag = cli.StringFlag{
 		Name:  "log.path",
 		Usage: "Log path",
@@ -749,7 +756,7 @@ func MakePasswordList(ctx *cli.Context) []string {
 		Fatalf("Failed to read password file: %v", err)
 	}
 	lines := strings.Split(string(text), "\n")
-	// Sanitise DOS line endings.
+	// Sanitize DOS line endings.
 	for i := range lines {
 		lines[i] = strings.TrimRight(lines[i], "\n")
 	}
@@ -815,7 +822,7 @@ func SetP2PConfig(ctx *cli.Context, cfg *p2p.Config) {
 
 // SetNodeConfig applies node-related command line flags to the config.
 // 检查命令行中有没有 node 相关的配置，如果有的话覆盖掉cfg中的配置。
-func SetNodeConfig(ctx *cli.Context, cfg *node.Config, configDir string) (dataDir string) {
+func SetNodeConfig(ctx *cli.Context, cfg *node.Config, configDir string) string {
 	// setIPC(ctx, cfg)
 	// setHTTP(ctx, cfg)
 	// setWS(ctx, cfg)
@@ -835,7 +842,7 @@ func SetNodeConfig(ctx *cli.Context, cfg *node.Config, configDir string) (dataDi
 		path := filepath.Join(configDir, cfg.DataDir)
 		cfg.DataDir = common.GetAbsPath(path)
 	}
-	dataDir = cfg.DataDir
+	dataDir := cfg.DataDir
 
 	if ctx.GlobalIsSet(KeyStoreDirFlag.Name) {
 		cfg.KeyStoreDir = ctx.GlobalString(KeyStoreDirFlag.Name)
@@ -858,7 +865,7 @@ func SetNodeConfig(ctx *cli.Context, cfg *node.Config, configDir string) (dataDi
 	// 	cfg.NoUSB = ctx.GlobalBool(NoUSBFlag.Name)
 	// }
 
-	return
+	return dataDir
 }
 
 /*
@@ -959,7 +966,9 @@ func SetDagConfig(ctx *cli.Context, cfg *dagconfig.Config, dataDir string) {
 	//	if ctx.GlobalIsSet(DagValue2Flag.Name) {
 	//		cfg.DbName = ctx.GlobalString(DagValue2Flag.Name)
 	//	}
-
+	if ctx.GlobalIsSet(DagValue3Flag.Name) {
+		cfg.DbCache = ctx.GlobalInt(DagValue3Flag.Name)
+	}
 	// 重新计算为绝对路径
 	if !filepath.IsAbs(cfg.DbPath) {
 		path := filepath.Join(dataDir, cfg.DbPath)
@@ -1183,11 +1192,11 @@ func RegisterPtnService(stack *node.Node, cfg *ptn.Config) {
 	var err error
 	if cfg.SyncMode == downloader.LightSync {
 		err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
-			return light.New(ctx, cfg, configure.LPSProtocol)
+			return light.New(ctx, cfg, configure.LPSProtocol, stack.CacheDb)
 		})
 	} else {
 		err = stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
-			fullNode, err := ptn.New(ctx, cfg)
+			fullNode, err := ptn.New(ctx, cfg, stack.CacheDb)
 			if fullNode != nil && cfg.LightServ > 0 {
 				ls, _ := light.NewLesServer(fullNode, cfg, configure.LPSProtocol)
 				fullNode.AddLesServer(ls)
