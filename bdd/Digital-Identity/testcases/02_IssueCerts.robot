@@ -34,7 +34,7 @@ Power issues certificate for user succeed
 User can query his certificate in db
     ${args}=    Create List    ${getHolderCertMethod}    ${userCertHolder}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
-    ${respJson}=    sendRpcPost    ${queryMethod}    ${params}    queryCert
+    ${respJson}=    sendRpcPost    ${host}        ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
     ${resultDict}=    Evaluate    ${respJson["result"]}
     Dictionary Should Contain Key    ${resultDict}    IntermediateCertIDs
@@ -51,7 +51,7 @@ CA issues intermediate certificate name cert1 to power succeed
     ${args}=    Create List    addServerCert    ${powerCertHolder}    ${powerCertBytes}
     ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    1    1    ${certContractAddr}
     ...    ${args}    ${null}
-    ${respJson}=    sendRpcPost    ${invokeMethod}    ${params}    addServerCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    addServerCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
@@ -60,7 +60,7 @@ CA issues intermediate certificate name cert1 to power succeed
 Power can query his certificate in db
     ${args}=    Create List    ${getHolderCertMethod}    ${powerCertHolder}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
-    ${respJson}=    sendRpcPost    ${queryMethod}    ${params}    queryCert
+    ${respJson}=    sendRpcPost    ${host}        ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
     ${resultDict}=    Evaluate    ${respJson["result"]}
     Dictionary Should Contain Key    ${resultDict}    IntermediateCertIDs
