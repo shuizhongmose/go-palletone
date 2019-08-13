@@ -2,6 +2,7 @@
 Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
 Library           Collections
+Library           BuiltIn
 
 *** Test Cases ***
 CAIssueIntermedate
@@ -34,13 +35,14 @@ Power issues certificate for user succeed
 User can query his certificate in db
     ${args}=    Create List    ${getHolderCertMethod}    ${userCertHolder}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
-    ${respJson}=    sendRpcPost    ${host}        ${ccqueryMethod}    ${params}    queryCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
     ${resultDict}=    Evaluate    ${respJson["result"]}
-    Dictionary Should Contain Key    ${resultDict}    IntermediateCertIDs
-    Length Should Be    ${resultDict['IntermediateCertIDs']}    1
-    Dictionary Should Contain Key    ${resultDict['IntermediateCertIDs'][0]}    CertID
-    Should Be Equal    ${resultDict['IntermediateCertIDs'][0]['CertID']}    ${userCertID}
+    Dictionary Should Contain Key    ${resultDict}    MemberCertIDs
+    Length Should Be    ${resultDict['MemberCertIDs']}    1
+    Dictionary Should Contain Key    ${resultDict['MemberCertIDs'][0]}    CertID
+    ${CertID}=    Evaluate    ${resultDict}['MemberCertIDs'][0]['CertID']
+    Set Global Variable    ${userCertID}    ${CertID}
 
 CA unlock its account succeed
     ${respJson}=    unlockAccount    ${caCertHolder}
@@ -60,9 +62,11 @@ CA issues intermediate certificate name cert1 to power succeed
 Power can query his certificate in db
     ${args}=    Create List    ${getHolderCertMethod}    ${powerCertHolder}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
-    ${respJson}=    sendRpcPost    ${host}        ${ccqueryMethod}    ${params}    queryCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
     ${resultDict}=    Evaluate    ${respJson["result"]}
     Dictionary Should Contain Key    ${resultDict}    IntermediateCertIDs
     Length Should Be    ${resultDict['IntermediateCertIDs']}    1
     Dictionary Should Contain Key    ${resultDict['IntermediateCertIDs'][0]}    CertID
+    ${CertID}=    Evaluate    ${resultDict}['IntermediateCertIDs'][0]['CertID']
+    Set Global Variable    ${powerCertID}    ${CertID}

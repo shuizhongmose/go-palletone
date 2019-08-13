@@ -128,7 +128,8 @@ deployContract
     [Return]    ${respJson}
 
 invokeContract
-    [Arguments]    ${from}    ${to}    ${ptnAmount}    ${ptnFee}    ${contractId}    ${args}    ${certId}=${null}
+    [Arguments]    ${from}    ${to}    ${ptnAmount}    ${ptnFee}    ${contractId}    ${args}
+    ...    ${certId}=${null}
     ${params}=    Create List    ${from}    ${to}    ${ptnAmount}    ${ptnFee}    ${contractId}
     ...    ${args}    ${certId}    0
     ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    InvokeContract
@@ -229,7 +230,7 @@ Wait for unit about contract to be confirmed by unit height
     \    Run Keyword If    ${waitTimes}-${t}==1    Fail    "It takes too long for jury to signature"
     \    Sleep    5s
     # ------- query error code ------- #
-    ${errCode}=    Evaluate    re.findall('\"error_code\":(\\d*)', '${result}')    re
+    ${errCode}=    Evaluate    re.findall('\"error_code\":([\\d]*)', '${result}')    re
     ${errMsg}=    Evaluate    re.findall('\"error_message\":\"([^"]*)\"', '${result}')    re
     ${len}=    Get Length    ${errCode}
     ${errCode}=    Run Keyword If    ${len}>=1    Get From List    ${errCode}    0

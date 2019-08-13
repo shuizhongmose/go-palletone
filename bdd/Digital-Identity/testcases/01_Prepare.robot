@@ -9,6 +9,7 @@ Library           BuiltIn
 testprepare
     queryTokenHolder    ${false}
     queryCAHolder
+    queryCACertID
     # new account
     ${user}=    newAccount
     Set Global Variable    ${powerCertHolder}    ${user}

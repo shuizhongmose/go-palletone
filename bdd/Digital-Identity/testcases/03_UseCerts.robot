@@ -1,39 +1,105 @@
 *** Settings ***
 Library           Collections
+Library           BuiltIn
 Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
-Resource          ../../commonlib/setups.robot
 
 *** Test Cases ***
-sectionIssueUser
-    Given Power unlock its account succeed
-    When Power issues intermediate certificate name cert2 to user succeed
-    and Wait for transaction being packaged
-    Then user can query his certificate in db
+CAUseCert
+    Given CA unlock account succed
+    ${reqId}=    When CA uses debug contract to test getRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+    ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+
+PowerUseCert
+    Given Power unlock account succed
+    ${reqId}=    When Power uses debug contract to test getRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+    ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+
+UserUseCert
+    Given User unlock account succed
+    ${reqId}=    When User uses debug contract to test getRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+    ${reqId}=    Then User uses debug contract to test checkRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
 
 *** Keywords ***
-Power unlock its account succeed
-    Log    "section unlock its account succeed"
+CA unlock account succed
+    Log    "CA unlock account succed"
+    ${respJson}=    unlockAccount    ${caCertHolder}
+    Dictionary Should Contain Key    ${respJson}    result
+    Should Be Equal    ${respJson["result"]}    ${true}
+
+CA uses debug contract to test getRequesterCert without error
+    ${args}=    Create List    ${getRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${caCertID}
+    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    getRequesterCert
+    Dictionary Should Contain Key    ${respJson}    result
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
+
+CA uses debug contract to test checkRequesterCert without error
+    ${args}=    Create List    ${checkRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${caCertID}
+    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
+    Dictionary Should Contain Key    ${respJson}    result
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
+
+Power unlock account succed
     ${respJson}=    unlockAccount    ${powerCertHolder}
     Dictionary Should Contain Key    ${respJson}    result
     Should Be Equal    ${respJson["result"]}    ${true}
 
-Power issues intermediate certificate name cert2 to user succeed
-    Log    "section issues intermediate certificate name cert2 to user succeed"
-    ${args}=    Create List    addServerCert    ${userCertHolder}    ${userCertBytes}
-    ${params}=    genInvoketxParams    ${sectionCertHolder}    ${sectionCertHolder}    1    1    ${certContractAddr}
-    ...    ${args}    ${null}
-    ${respJson}=    sendRpcPost    ${invokeMethod}    ${params}    addServerCert
+Power uses debug contract to test getRequesterCert without error
+    ${args}=    Create List    ${getRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${powerCertHolder}    ${powerCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${powerCertID}
+    ${respJson}=    sendRpcPost      ${host}      ${ccinvokeMethod}    ${params}    getRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
 
-user can query his certificate in db
-    Log    "user can query his certificate in db"
-    ${args}=    Create List    ${getHolderCertMethod}    ${userCertHolder}
-    ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
-    ${respJson}=    sendRpcPost    ${queryMethod}    ${params}    queryCert
+Power uses debug contract to test checkRequesterCert without error
+    ${args}=    Create List    ${checkRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${powerCertHolder}    ${powerCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${powerCertID}
+    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
-    ${resultDict}=    Evaluate    ${respJson["result"]}
-    Dictionary Should Contain Key    ${resultDict}    IntermediateCertIDs
-    Length Should Be    ${resultDict['IntermediateCertIDs']}    1
-    Dictionary Should Contain Key    ${resultDict['IntermediateCertIDs'][0]}    CertID
-    Should Be Equal    ${resultDict['IntermediateCertIDs'][0]['CertID']}    ${userCertID}
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
+
+User unlock account succed
+    ${respJson}=    unlockAccount    ${userCertHolder}
+    Dictionary Should Contain Key    ${respJson}    result
+    Should Be Equal    ${respJson["result"]}    ${true}
+
+User uses debug contract to test getRequesterCert without error
+    ${args}=    Create List    ${getRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${userCertHolder}    ${userCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${userCertID}
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    getRequesterCert
+    Dictionary Should Contain Key    ${respJson}    result
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
+
+User uses debug contract to test checkRequesterCert without error
+    ${args}=    Create List    ${checkRequesterCertMethod}
+    ${params}=    genInvoketxParams    ${userCertHolder}    ${userCertHolder}    1    1    ${debugContractAddr}
+    ...    ${args}    ${userCertID}
+    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
+    Dictionary Should Contain Key    ${respJson}    result
+    ${result}=    Get From Dictionary    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${result}    reqId
+    [Return]    ${reqId}
+
