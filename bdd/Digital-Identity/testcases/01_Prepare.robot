@@ -5,6 +5,7 @@ Resource          ../../commonlib/setups.robot
 Library           Collections
 Library           BuiltIn
 Library           OperatingSystem
+Library           String
 
 *** Variables ***
 ${CertFilePath}    C:/Users/Administrator/Desktop/tmp
@@ -24,5 +25,4 @@ testprepare
     transferPtnTo    ${userCertHolder}    1000
     # query power cert bytes from ~/cawork/immediateca/
     ${cert}=    Get File    ${CertFilePath}/ca-cert.pem
-    ${newCert}=    Replace String    ${cert}    \n    \\n
-    Set Global Variable    ${powerCertBytes}    ${newCert}
+    Set Global Variable    ${powerCertBytes}    ${cert}

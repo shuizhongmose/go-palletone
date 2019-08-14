@@ -88,7 +88,45 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-
+    - os: linux
+      env: Digital Identity
+      dist: xenial
+      go: 1.12.5
+      services: docker
+      script:
+        - ip addr
+        - make gptn
+        - make golang-baseimage-dev
+        - docker images
+        - cd $BASE_DIR/bdd/Digital-Identity/scripts
+        - chmod +x ca-start.sh
+        - chmod +x one-ptn.sh
+        - sudo ./ca-start.sh
+        - sudo ./one-ptn.sh
+        - netstat -ntl
+        - sleep 30
+        - cd $BASE_DIR
+        - mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+        - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases;
+      after_script:
+        - killall gptn
+        - sleep 10
+        - cd ${BASE_DIR}
+        - |
+          if [ $IS_UPLOAD == 'true' ]; then
+            # uplaod all log
+            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH};
+          fi
+      install:
+        - sudo -H pip install --upgrade pip
+        - sudo -H pip install robotframework==2.8.5
+        - sudo -H pip install requests
+        - sudo -H pip install robotframework-requests
+        - sudo -H pip install demjson
+        - sudo -H pip install pexpect
+        - sudo -H apt-get install expect
+        - sudo -H apt-get install lftp
+        - chmod +x bdd/upload2Ftp.sh
 #before_install:
 #  - go get -u github.com/palletone/adaptor
 #  - go get -u github.com/palletone/btc-adaptor

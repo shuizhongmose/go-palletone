@@ -14,14 +14,14 @@ PowerRevokeUserCert
     And Sleep    10
     Then Power can query his issued CRL file
     And User certificate revocation time is before now
-
-CARevokePowerCert
-    Given CA unlock his account succeed
-    ${reqId}=    When CA revoke power certificate succeed
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    And Sleep    10
-    Then CA can query his issued CRL file
-    And Power certificate revocation time is before now
+#
+#CARevokePowerCert
+#    Given CA unlock his account succeed
+#    ${reqId}=    When CA revoke power certificate succeed
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
+#    And Sleep    10
+#    Then CA can query his issued CRL file
+#    And Power certificate revocation time is before now
 
 *** Keywords ***
 Power unlock his account succeed
