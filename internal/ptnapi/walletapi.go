@@ -92,7 +92,7 @@ func (s *PublicWalletAPI) CreateRawTransaction(ctx context.Context, from string,
         //}
 	allutxos, err := SelectUtxoFromDagAndPool(dbUtxos, poolTxs, from, ptn)
 	if err != nil {
-		return "", fmt.Errorf("Select utxo err")
+		return "", fmt.Errorf("SelectUtxoFromDagAndPool utxo err")
 	}
 	limitdao, _ := decimal.NewFromString("0.0001")
 	if !fee.GreaterThanOrEqual(limitdao) {
@@ -105,7 +105,7 @@ func (s *PublicWalletAPI) CreateRawTransaction(ctx context.Context, from string,
 	utxos, _ := convertUtxoMap2Utxos(allutxos)
 	taken_utxo, change, err := core.Select_utxo_Greedy(utxos, daoAmount)
 	if err != nil {
-		return "", fmt.Errorf("Select utxo err")
+		return "", fmt.Errorf("Select_utxo_Greedy utxo err")
 	}
 
 	var inputs []ptnjson.TransactionInput
@@ -160,13 +160,13 @@ func (s *PrivateWalletAPI) buildRawTransferTx(tokenId, from, to string, amount, 
 		return nil, nil, fmt.Errorf("GetAddrRawUtxos utxo err")
 	}
 	poolTxs, _ := s.b.GetPoolTxsByAddr(from)
-       if len(poolTxs) == 0 {
-               return nil, nil, fmt.Errorf("GetPoolTxsByAddr utxo err")
-        }
+       //if len(poolTxs) == 0 {
+        //       return nil, nil, fmt.Errorf("GetPoolTxsByAddr utxo err")
+        //}
 
 	utxosPTN, err := SelectUtxoFromDagAndPool(dbUtxos, poolTxs, from, ptn)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Select utxo err")
+		return nil, nil, fmt.Errorf("SelectUtxoFromDagAndPool utxo err")
 	}
 	feeAmount := ptnjson.Ptn2Dao(gasFee)
 	pay1, usedUtxo1, err := createPayment(fromAddr, toAddr, ptnAmount, feeAmount, utxosPTN)
@@ -180,7 +180,7 @@ func (s *PrivateWalletAPI) buildRawTransferTx(tokenId, from, to string, amount, 
 	//构造转移Token的Message1
 	utxosToken, err := SelectUtxoFromDagAndPool(dbUtxos, poolTxs, from, tokenId)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Select utxo err")
+		return nil, nil, fmt.Errorf("SelectUtxoFromDagAndPool token utxo err")
 	}
 	tokenAmount := ptnjson.JsonAmt2AssetAmt(tokenAsset, amount)
 	pay2, usedUtxo2, err := createPayment(fromAddr, toAddr, tokenAmount, 0, utxosToken)
@@ -204,7 +204,7 @@ func createPayment(fromAddr, toAddr common.Address, amountToken uint64, feePTN u
 
 	utxosPTNTaken, change, err := core.Select_utxo_Greedy(utxoPTNView, amountToken+feePTN)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Select utxo err")
+		return nil, nil, fmt.Errorf("createPayment Select_utxo_Greedy utxo err")
 	}
 	usedUtxo := []*modules.UtxoWithOutPoint{}
 	//ptn payment
@@ -598,9 +598,9 @@ func (s *PublicWalletAPI) CreateProofTransaction(ctx context.Context, params str
 		return common.Hash{}, err
 	}
 	poolTxs, _ := s.b.GetPoolTxsByAddr(proofTransactionGenParams.From)
-        if len(poolTxs) == 0 {
-	    return common.Hash{}, fmt.Errorf("Select utxo err")
-	} // end of pooltx is not nil
+        //if len(poolTxs) == 0 {
+	    //return common.Hash{}, fmt.Errorf("Select utxo err")
+	//} // end of pooltx is not nil
 	utxos, err := SelectUtxoFromDagAndPool(dbUtxos, poolTxs, proofTransactionGenParams.From, dagconfig.DagConfig.GasToken)
         if err != nil {
                 return common.Hash{}, fmt.Errorf("SelectUtxoFromDagAndPool err")
@@ -623,7 +623,7 @@ func (s *PublicWalletAPI) CreateProofTransaction(ctx context.Context, params str
 	utxoList, _ := convertUtxoMap2Utxos(utxos)
 	taken_utxo, change, err := core.Select_utxo_Greedy(utxoList, daoAmount)
 	if err != nil {
-		return common.Hash{}, fmt.Errorf("Select utxo err")
+		return common.Hash{}, fmt.Errorf("CreateProofTransaction Select_utxo_Greedy utxo err")
 	}
 
 	var inputs []ptnjson.TransactionInput
