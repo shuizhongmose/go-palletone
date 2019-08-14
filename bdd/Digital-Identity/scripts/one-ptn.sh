@@ -19,10 +19,10 @@ sed -i 's/^url:.*$/url: http:\/\/localhost:7064/g' caconfig.yaml
 # compile gptn
 cd $GOPATH/src/github.com/palletone/go-palletone
 export GO111MODULE=on
-go cmd/gptn/build
+go build -mod=vendor ./cmd/gptn
 rm -rf bdd/Digital-Identity/node
 mkdir -p bdd/Digital-Identity/node
-cp cmd/gptn/gptn bdd/Digital-Identity/node
+cp gptn bdd/Digital-Identity/node
 
 # new genesis
 cd bdd/Digital-Identity/node
