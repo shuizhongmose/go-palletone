@@ -4,6 +4,7 @@ Resource          ../../commonlib/pubFuncs.robot
 Resource          ../../commonlib/setups.robot
 Library           Collections
 Library           BuiltIn
+Library           OperatingSystem
 
 *** Variables ***
 ${CertFilePath}    C:/Users/Administrator/Desktop/tmp
