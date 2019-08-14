@@ -39,7 +39,7 @@ matrix:
     - os: linux
       env: usercontract_bdd_3-3
       dist: xenial
-      go: 1.12.5
+      go: 1.12.x
       services: docker
       script:
         - ip addr
@@ -91,7 +91,7 @@ matrix:
     - os: linux
       env: Digital Identity
       dist: xenial
-      go: 1.12.5
+      go: 1.12.x
       services: docker
       script:
         - ip addr
@@ -127,12 +127,8 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-#before_install:
-#  - go get -u github.com/palletone/adaptor
-#  - go get -u github.com/palletone/btc-adaptor
-#  - go get -u github.com/palletone/eth-adaptor
-#  - source ./build/goget_by_version.sh
-  #- source ./gomockgen.sh
+before_install:
+  - go get -u github.com/palletone/digital-identity
 
 addons:
   apt:
