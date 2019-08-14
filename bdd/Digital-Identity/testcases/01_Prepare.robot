@@ -8,7 +8,8 @@ Library           OperatingSystem
 Library           String
 
 *** Variables ***
-${CertFilePath}    C:/Users/Administrator/Desktop/tmp
+#${CertFilePath}    C:/Users/Administrator/Desktop/tmp
+${CertFilePath}    ~/cawork/immediateca/
 
 *** Test Cases ***
 testprepare
