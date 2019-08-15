@@ -31,7 +31,7 @@ env:
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
     - IS_RUN_MEDIATOR_VOTE=true
-    - GO112MODULE=on
+    - GO111MODULE=on
     - IS_UPLOAD=true
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'
 matrix:
@@ -94,8 +94,14 @@ matrix:
       go: 1.12.7
       script:
         - which go
+        # install fabric server
         - go get -u github.com/hyperledger/fabric-ca/cmd/...
+        - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
+        - make fabric-ca-server
+        - export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
+        # get digital-identity
         - go get -u github.com/palletone/digital-identity
+        # compile gptn
         - cd $GOPATH/src/github.com/palletone/go-palletone
         - go build -mod=vendor ./cmd/gptn
         - rm -rf bdd/Digital-Identity/node

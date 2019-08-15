@@ -12,12 +12,10 @@ if [ "$InTravis" = "false" ]; then
 export GO111MODULE=on
 cd $GOPATH/src
 go get -u github.com/hyperledger/fabric-ca/cmd/...
-fi
-
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
 make fabric-ca-server
 export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
-
+fi
 
 cd ~
 rm -rf cawork
