@@ -1,12 +1,19 @@
 #!/bin/bash
 
+InTravis=false
+if [ "true" = "$1" ]; then
+    InTravis=true
+fi
+
 pkill fabric
 
-go version
 # install ca
+if $InTravis==false; then
 export GO112MODULE=on
 cd $GOPATH/src
 go get -u github.com/hyperledger/fabric-ca/cmd/...
+fi
+
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
 make fabric-ca-server
 export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH

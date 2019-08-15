@@ -94,12 +94,18 @@ matrix:
       go: 1.12.7
       script:
         - which go
-        - go env
+        - go get -u github.com/hyperledger/fabric-ca/cmd/...
+        - go get -u github.com/palletone/digital-identity
+        - cd $GOPATH/src/github.com/palletone/go-palletone
+        - go build -mod=vendor ./cmd/gptn
+        - rm -rf bdd/Digital-Identity/node
+        - mkdir -p bdd/Digital-Identity/node
+        - cp gptn bdd/Digital-Identity/node
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
-        - sudo bash ca-start.sh
-        - sudo bash one-ptn.sh
+        - sudo bash ca-start.sh true
+        - sudo bash one-ptn.sh true
         - netstat -ntl
         - sleep 30
         - cd $BASE_DIR
