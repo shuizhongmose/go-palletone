@@ -96,6 +96,13 @@ matrix:
       script:
         - go version
         - go get -u github.com/palletone/digital-identity
+        - cd $GOPATH/src
+        - go get -u github.com/hyperledger/fabric-ca/cmd/...
+        - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
+        - make fabric-ca-server
+        - export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
+        - ls $GOPATH/src/github.com/palletone
+        - ls $GOPATH/src/github.com
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
