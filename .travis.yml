@@ -334,7 +334,6 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-
     # before_install:
     #     - go get -u github.com/palletone/adaptor
     #     - go get -u github.com/palletone/btc-adaptor
