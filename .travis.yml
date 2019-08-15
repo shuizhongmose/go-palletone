@@ -95,6 +95,7 @@ matrix:
       services: docker
       script:
         - go version
+        - go get -u github.com/palletone/digital-identity
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
@@ -124,10 +125,6 @@ matrix:
         - sudo -H apt-get install expect
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
-      before_install:
-        - go get -u github.com/palletone/digital-identity
-        - go vet ./...
-
 addons:
   apt:
     update: true
