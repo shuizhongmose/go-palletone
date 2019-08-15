@@ -342,7 +342,6 @@ matrix:
     #     - source ./build/goget_by_version.sh
     #- source ./gomockgen.sh
 
-
 addons:
   apt:
     update: true
