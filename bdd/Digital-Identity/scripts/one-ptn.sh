@@ -18,7 +18,7 @@ sed -i 's/CryptoS256/CryptoP256/g' crypto.go
 # edit digital-identity package config file caconfig.yaml
 
 if [ "$InTravis" = "false" ]; then
-export GO112MODULE=on
+export GO111MODULE=on
 go get -u github.com/palletone/digital-identity
 fi
 
