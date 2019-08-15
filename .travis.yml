@@ -89,13 +89,9 @@ matrix:
 #        - sudo -H apt-get install lftp
 #        - chmod +x bdd/upload2Ftp.sh
     - os: linux
-      env: Digital Identity
+      env: digital_identity
       dist: xenial
-      go: "1.12.7"
-      services: docker
-      go_import_path:
-        - github.com/hyperledger/fabric-ca
-        - github.com/palletone/digital-identity
+      go: 1.12.7
       script:
         - whereis go
         - go version
@@ -124,8 +120,7 @@ matrix:
         - sudo -H pip install requests
         - sudo -H pip install robotframework-requests
         - sudo -H pip install demjson
-        - sudo -H pip install pexpect
-        - sudo -H apt-get install expect
+        - sudo -H apt-get install jq
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
 addons:
