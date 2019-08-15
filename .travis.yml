@@ -95,6 +95,7 @@ matrix:
       script:
         - whereis go
         - go version
+        - echo $PATH
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
@@ -127,9 +128,9 @@ addons:
   apt:
     update: true
 
-notifications:
-  email:
-    recipients:
-      - travisreport@163.com
-    on_success: always # default: change
-    on_failure: always
+#notifications:
+#  email:
+#    recipients:
+#      - travisreport@163.com
+#    on_success: always # default: change
+#    on_failure: always
