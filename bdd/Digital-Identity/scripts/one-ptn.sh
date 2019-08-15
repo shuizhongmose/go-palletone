@@ -17,7 +17,7 @@ sed -i 's/CryptoS256/CryptoP256/g' crypto.go
 
 # edit digital-identity package config file caconfig.yaml
 
-if $InTravis==false; then
+if [ "$InTravis" = "false" ]; then
 export GO112MODULE=on
 go get -u github.com/palletone/digital-identity
 fi
@@ -27,7 +27,7 @@ sed -i 's/^url:.*$/url: http:\/\/localhost:7064/g' caconfig.yaml
 
 cd $GOPATH/src/github.com/palletone/go-palletone
 # compile gptn
-if $InTravis==false; then
+if [ "$InTravis" = "false" ]; then
 go build -mod=vendor ./cmd/gptn
 rm -rf bdd/Digital-Identity/node
 mkdir -p bdd/Digital-Identity/node
