@@ -28,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coocood/freecache"
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/event"
 	"github.com/palletone/go-palletone/common/log"
@@ -60,7 +61,7 @@ type UnitDag4Test struct {
 func NewTxPool4Test() *TxPool {
 	//l := log.NewTestLog()
 	testDag := NewUnitDag4Test()
-	return NewTxPool(testTxPoolConfig, testDag)
+	return NewTxPool(testTxPoolConfig, freecache.NewCache(1*1024*1024), testDag)
 }
 
 func NewUnitDag4Test() *UnitDag4Test {
@@ -188,7 +189,7 @@ func (ud *UnitDag4Test) GetMinFee() (*modules.AmountAsset, error) {
 	return nil, nil
 }
 
-func (ud *UnitDag4Test) GetContractJury(contractId []byte) ([]modules.ElectionInf, error) {
+func (ud *UnitDag4Test) GetContractJury(contractId []byte) (*modules.ElectionNode, error) {
 	return nil, nil
 }
 func (ud *UnitDag4Test) GetContractState(id []byte, field string) ([]byte, *modules.StateVersion, error) {
@@ -210,11 +211,24 @@ func createTxs(address string) []*modules.Transaction {
 	lockScript := tokenengine.GenerateLockScript(addr)
 	for j := 0; j < 16; j++ {
 		tx := modules.NewTransaction([]*modules.Message{})
-		tx.AddMessage(modules.NewMessage(modules.APP_PAYMENT, modules.NewPaymentPayload([]*modules.Input{modules.NewTxIn(modules.NewOutPoint(common.Hash{}, 0, 0), unlockScript)},
-			[]*modules.Output{modules.NewTxOut(uint64(j+1), lockScript, a)})))
+		output := modules.NewTxOut(uint64(j+10), lockScript, a)
+		tx.AddMessage(modules.NewMessage(modules.APP_PAYMENT, modules.NewPaymentPayload([]*modules.Input{modules.NewTxIn(modules.NewOutPoint(common.NewSelfHash(),
+			0, 0), unlockScript)}, []*modules.Output{output})))
 		txs = append(txs, tx)
 	}
 	return txs
+}
+func mockPtnUtxos() map[modules.OutPoint]*modules.Utxo {
+	result := map[modules.OutPoint]*modules.Utxo{}
+	p1 := modules.NewOutPoint(common.NewSelfHash(), 0, 0)
+	asset1 := &modules.Asset{AssetId: modules.PTNCOIN}
+	utxo1 := &modules.Utxo{Asset: asset1, Amount: 100, LockTime: 0}
+	utxo2 := &modules.Utxo{Asset: asset1, Amount: 200, LockTime: 0}
+
+	result[*p1] = utxo1
+	p2 := modules.NewOutPoint(common.NewSelfHash(), 1, 0)
+	result[*p2] = utxo2
+	return result
 }
 
 // Tests that if the transaction count belonging to multiple accounts go above
@@ -230,10 +244,15 @@ func TestTransactionAddingTxs(t *testing.T) {
 	utxodb := storage.NewUtxoDb(db)
 	mutex := new(sync.RWMutex)
 	unitchain := &UnitDag4Test{db, utxodb, *mutex, nil, 10000, new(event.Feed), nil}
-	config := testTxPoolConfig
+	config := DefaultTxPoolConfig
 	config.GlobalSlots = 4096
 
-	pool := NewTxPool(config, unitchain)
+	utxos := mockPtnUtxos()
+	for outpoint, utxo := range utxos {
+		utxodb.SaveUtxoEntity(&outpoint, utxo)
+	}
+
+	pool := NewTxPool(config, freecache.NewCache(1*1024*1024), unitchain)
 	defer pool.Stop()
 
 	var pending_cache, queue_cache, all, origin int

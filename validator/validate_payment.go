@@ -109,9 +109,6 @@ func (validate *Validate) validatePaymentPayload(tx *modules.Transaction, msgIdx
 					return TxValidationCode_ORPHAN
 				}
 			}
-			//if utxo.IsSpent() {
-			//	return TxValidationCode_INVALID_DOUBLE_SPEND
-			//}
 			if asset == nil {
 				asset = utxo.Asset
 			} else {
@@ -139,20 +136,12 @@ func (validate *Validate) validatePaymentPayload(tx *modules.Transaction, msgIdx
 		t1 := time.Now()
 		err := tokenengine.ScriptValidate1Msg(utxoScriptMap, validate.pickJuryFn, txForSign, msgIdx)
 		if err != nil {
-			// txjson, _ := tx.MarshalJSON()
-			// rlpdata, _ := rlp.EncodeToBytes(tx)
-			// log.Debugf("ScriptValidate1Msg error:%s, Tx msg[%d] for help debug: json: %s ,rlp: %x", err.Error(), msgIdx, string(txjson), rlpdata)
 			return TxValidationCode_INVALID_PAYMMENT_INPUT
 		} else {
 			log.Debugf("Unlock script validated! tx[%s],%d, spend time:%s", tx.Hash().String(), msgIdx, time.Since(t1))
 		}
 	}
 
-	//有可能没有Output，全部付手续费去了
-	//if len(payment.Outputs) == 0 {
-	//	log.Error("payment output is null.", "payment.output", payment.Outputs)
-	//	return TxValidationCode_INVALID_PAYMMENT_OUTPUT
-	//}
 	totalOutput := uint64(0)
 	//Check payment
 	//rule:
@@ -191,7 +180,7 @@ func (validate *Validate) pickJuryFn(contractAddr common.Address) ([]byte, error
 			log.Errorf("Cannot get contract[%s] jury", contractAddr.String())
 			return nil, errors.New("Cannot get contract jury")
 		}
-		redeemScript, _ = generateJuryRedeemScript(jury)
+		redeemScript = generateJuryRedeemScript(jury)
 		log.DebugDynamic(func() string {
 			redeemStr, _ := tokenengine.DisasmString(redeemScript)
 			return "Generate RedeemScript: " + redeemStr
@@ -219,12 +208,15 @@ func (validate *Validate) checkTokenStatus(asset *modules.Asset) ValidationCode 
 	return TxValidationCode_VALID
 }
 
-func generateJuryRedeemScript(jury []modules.ElectionInf) ([]byte, error) {
-	count := len(jury)
+func generateJuryRedeemScript(jury *modules.ElectionNode) []byte {
+	if jury == nil{
+		return nil
+	}
+	count := len(jury.EleList)
 	needed := byte(math.Ceil((float64(count)*2 + 1) / 3))
 	pubKeys := [][]byte{}
-	for _, jurior := range jury {
+	for _, jurior := range jury.EleList {
 		pubKeys = append(pubKeys, jurior.PublicKey)
 	}
-	return tokenengine.GenerateRedeemScript(needed, pubKeys), nil
+	return tokenengine.GenerateRedeemScript(needed, pubKeys)
 }

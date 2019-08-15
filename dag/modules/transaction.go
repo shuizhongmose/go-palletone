@@ -72,9 +72,10 @@ func NewContractCreation(msg []*Message) *Transaction {
 
 func newTransaction(msg []*Message) *Transaction {
 	tx := new(Transaction)
-	for _, m := range msg {
-		tx.TxMessages = append(tx.TxMessages, m)
-	}
+	//for _, m := range msg {
+	//	tx.TxMessages = append(tx.TxMessages, m)
+	//}
+	tx.TxMessages = append(tx.TxMessages, msg...)
 	return tx
 }
 
@@ -119,8 +120,7 @@ func (tx *TxPoolTransaction) Less(otherTx interface{}) bool {
 }
 
 func (tx *TxPoolTransaction) GetPriorityLvl() string {
-	level, _ := strconv.ParseFloat(tx.Priority_lvl, 64)
-	if level > 0 {
+	if tx.Priority_lvl != "" && tx.Priority_lvl > "0" {
 		return tx.Priority_lvl
 	}
 	var priority_lvl float64
@@ -128,9 +128,10 @@ func (tx *TxPoolTransaction) GetPriorityLvl() string {
 		if tx.CreationDate.Unix() <= 0 {
 			tx.CreationDate = time.Now()
 		}
-		priority_lvl, _ = strconv.ParseFloat(fmt.Sprintf("%f", float64(txfee.Int64())/tx.Tx.Size().Float64()*(1+float64(time.Now().Second()-tx.CreationDate.Second())/(24*3600))), 64)
+		priority_lvl, _ = strconv.ParseFloat(fmt.Sprintf("%f", float64(txfee.Int64())/
+			tx.Tx.Size().Float64()*(1+float64(time.Now().Second()-tx.CreationDate.Second())/(24*3600))), 64)
 	}
-	tx.Priority_lvl = strconv.FormatFloat(priority_lvl, 'E', -1, 64)
+	tx.Priority_lvl = strconv.FormatFloat(priority_lvl, 'f', -1, 64)
 	return tx.Priority_lvl
 }
 func (tx *TxPoolTransaction) GetPriorityfloat64() float64 {
@@ -143,12 +144,13 @@ func (tx *TxPoolTransaction) GetPriorityfloat64() float64 {
 		if tx.CreationDate.Unix() <= 0 {
 			tx.CreationDate = time.Now()
 		}
-		priority_lvl, _ = strconv.ParseFloat(fmt.Sprintf("%f", float64(txfee.Int64())/tx.Tx.Size().Float64()*(1+float64(time.Now().Second()-tx.CreationDate.Second())/(24*3600))), 64)
+		priority_lvl, _ = strconv.ParseFloat(fmt.Sprintf("%f", float64(txfee.Int64())/
+			tx.Tx.Size().Float64()*(1+float64(time.Now().Second()-tx.CreationDate.Second())/(24*3600))), 64)
 	}
 	return priority_lvl
 }
 func (tx *TxPoolTransaction) SetPriorityLvl(priority float64) {
-	tx.Priority_lvl = strconv.FormatFloat(priority, 'E', -1, 64)
+	tx.Priority_lvl = strconv.FormatFloat(priority, 'f', -1, 64)
 }
 func (tx *TxPoolTransaction) GetTxFee() *big.Int {
 	var fee uint64
@@ -165,9 +167,12 @@ func (tx *TxPoolTransaction) GetTxFee() *big.Int {
 // Hash hashes the RLP encoding of tx.
 // It uniquely identifies the transaction.
 func (tx *Transaction) Hash() common.Hash {
+	oldFlag := tx.Illegal
 	tx.Illegal = false
 
 	v := util.RlpHash(tx)
+	tx.Illegal = oldFlag
+
 	return v
 }
 
@@ -413,7 +418,8 @@ func (tx *Transaction) GetTxFee(queryUtxoFunc QueryUtxoFunc) (*AmountAsset, erro
 	}
 	if inAmount < outAmount {
 
-		return nil, fmt.Errorf("Compute fees: tx %s txin amount less than txout amount. amount:%d ,outAmount:%d ", tx.Hash().String(), inAmount, outAmount)
+		return nil, fmt.Errorf("Compute fees: tx %s txin amount less than txout amount. amount:%d ,outAmount:%d ",
+			tx.Hash().String(), inAmount, outAmount)
 	}
 	fees := inAmount - outAmount
 
@@ -561,7 +567,7 @@ func (tx *Transaction) GetResultRawTx() *Transaction {
 
 	txCopy := tx.Clone()
 	result := &Transaction{}
-	result.CertId = tx.CertId
+	//result.CertId = tx.CertId
 	isResultMsg := false
 	for _, msg := range txCopy.TxMessages {
 		if msg.App.IsRequest() {
@@ -578,6 +584,8 @@ func (tx *Transaction) GetResultRawTx() *Transaction {
 		}
 		result.TxMessages = append(result.TxMessages, msg)
 	}
+	result.CertId = txCopy.CertId
+	result.Illegal = txCopy.Illegal
 	return result
 }
 
@@ -633,7 +641,8 @@ func (tx *Transaction) InvokeContractId() []byte {
 }
 
 //获取该交易的所有From地址
-func (tx *Transaction) GetFromAddrs(queryUtxoFunc QueryUtxoFunc, getAddrFunc GetAddressFromScriptFunc) ([]common.Address, error) {
+func (tx *Transaction) GetFromAddrs(queryUtxoFunc QueryUtxoFunc, getAddrFunc GetAddressFromScriptFunc) (
+	[]common.Address, error) {
 	addrMap := map[common.Address]bool{}
 	for _, msg := range tx.TxMessages {
 		if msg.App == APP_PAYMENT {
@@ -651,14 +660,15 @@ func (tx *Transaction) GetFromAddrs(queryUtxoFunc QueryUtxoFunc, getAddrFunc Get
 		}
 	}
 	result := []common.Address{}
-	for k, _ := range addrMap {
+	for k := range addrMap {
 		result = append(result, k)
 	}
 	return result, nil
 }
 
 //获取该交易的发起人地址
-func (tx *Transaction) GetRequesterAddr(queryUtxoFunc QueryUtxoFunc, getAddrFunc GetAddressFromScriptFunc) (common.Address, error) {
+func (tx *Transaction) GetRequesterAddr(queryUtxoFunc QueryUtxoFunc, getAddrFunc GetAddressFromScriptFunc) (
+	common.Address, error) {
 	msg0 := tx.TxMessages[0]
 	if msg0.App != APP_PAYMENT {
 		return common.Address{}, errors.New("Coinbase or Invalid Tx, first message must be a payment")
@@ -686,7 +696,8 @@ type OutPoint struct {
 }
 
 func (outpoint *OutPoint) String() string {
-	return fmt.Sprintf("Outpoint[TxId:{%#x},MsgIdx:{%d},OutIdx:{%d}]", outpoint.TxHash, outpoint.MessageIndex, outpoint.OutIndex)
+	return fmt.Sprintf("Outpoint[TxId:{%#x},MsgIdx:{%d},OutIdx:{%d}]",
+		outpoint.TxHash, outpoint.MessageIndex, outpoint.OutIndex)
 }
 func (outpoint *OutPoint) Clone() *OutPoint {
 	return NewOutPoint(outpoint.TxHash, outpoint.MessageIndex, outpoint.OutIndex)
@@ -801,7 +812,8 @@ func (tx *Transaction) GetContractInvokeReqMsgIdx() int {
 	}
 	return -1
 }
-func (tx *Transaction) GetTxFeeAllocate(queryUtxoFunc QueryUtxoFunc, getSignerFunc GetScriptSignersFunc, mediatorAddr common.Address) ([]*Addition, error) {
+func (tx *Transaction) GetTxFeeAllocate(queryUtxoFunc QueryUtxoFunc, getSignerFunc GetScriptSignersFunc,
+	mediatorAddr common.Address) ([]*Addition, error) {
 	fee, err := tx.GetTxFee(queryUtxoFunc)
 	result := []*Addition{}
 	if err != nil {

@@ -136,16 +136,18 @@ func (validate *Validate) validateTransactions(txs modules.Transactions, unitTim
 			return "Fee allocation:" + string(data)
 		})
 		//手续费应该与其他交易付出的手续费相等
-		coinbaseValidateResult := validate.validateCoinbase(coinbase, out)
-		if coinbaseValidateResult == TxValidationCode_VALID {
-			log.Debugf("Validate coinbase[%s] pass", coinbase.Hash().String())
-		} else {
-			log.DebugDynamic(func() string {
-				data, _ := json.Marshal(coinbase)
-				return fmt.Sprintf("Coinbase[%s] invalid, content: %s", coinbase.Hash().String(), string(data))
-			})
+		if unitTime > 1564675200 { //2019.8.2主网升级，有些之前的Coinbase可能验证不过。所以主网升级前的不验证了
+			coinbaseValidateResult := validate.validateCoinbase(coinbase, out)
+			if coinbaseValidateResult == TxValidationCode_VALID {
+				log.Debugf("Validate coinbase[%s] pass", coinbase.Hash().String())
+			} else {
+				log.DebugDynamic(func() string {
+					data, _ := json.Marshal(coinbase)
+					return fmt.Sprintf("Coinbase[%s] invalid, content: %s", coinbase.Hash().String(), string(data))
+				})
+			}
+			return coinbaseValidateResult
 		}
-		return coinbaseValidateResult
 
 	}
 	return TxValidationCode_VALID
@@ -187,6 +189,10 @@ return all transactions' fee
 
 func (validate *Validate) ValidateTx(tx *modules.Transaction, isFullTx bool) ([]*modules.Addition, ValidationCode, error) {
 	txId := tx.Hash()
+	if txId.String()=="0x9c6e60e75aa59d253b156d102d6d314f21e57cdda923593346c98c30a841c64e"{
+		log.Warn("Invalid tx:0x9c6e60e75aa59d253b156d102d6d314f21e57cdda923593346c98c30a841c64e")
+		return nil,TxValidationCode_INVALID_MSG,NewValidateError(TxValidationCode_INVALID_MSG)
+	}
 	has, add := validate.cache.HasTxValidateResult(txId)
 	if has {
 		return add, TxValidationCode_VALID, nil
@@ -218,7 +224,8 @@ func (validate *Validate) ValidateUnitGroupSign(h *modules.Header) error {
 func (validate *Validate) validateDataPayload(payload *modules.DataPayload) ValidationCode {
 	//验证 maindata是否存在
 	//验证 maindata extradata大小 不可过大
-	if len(payload.MainData) >= MAX_DATA_PAYLOAD_MAIN_DATA_SIZE || len(payload.MainData) == 0 {
+	//len(payload.MainData) >= MAX_DATA_PAYLOAD_MAIN_DATA_SIZE
+	if len(payload.MainData) == 0 {
 		return TxValidationCode_INVALID_DATAPAYLOAD
 	}
 	//TODO 验证maindata其它属性

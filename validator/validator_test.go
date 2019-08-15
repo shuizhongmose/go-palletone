@@ -69,7 +69,7 @@ func (q *mockStatedbQuery) GetMediators() map[common.Address]bool {
 func (q *mockStatedbQuery) GetMinFee() (*modules.AmountAsset, error) {
 	return &modules.AmountAsset{Asset: modules.NewPTNAsset(), Amount: uint64(1)}, nil
 }
-func (q *mockStatedbQuery) GetContractJury(contractId []byte) ([]modules.ElectionInf, error) {
+func (q *mockStatedbQuery) GetContractJury(contractId []byte) (*modules.ElectionNode, error) {
 	return nil, nil
 }
 func (q *mockStatedbQuery) GetContractState(id []byte, field string) ([]byte, *modules.StateVersion, error) {
@@ -288,4 +288,9 @@ func TestSignAndVerifyATx(t *testing.T) {
 	unlockScript := tx.TxMessages[0].Payload.(*modules.PaymentPayload).Inputs[0].SignatureScript
 	t.Logf("UnlockScript:%x", unlockScript)
 
+}
+func TestTime(t *testing.T) {
+	ti, _ := time.ParseInLocation("2006-01-02 15:04:05", "2019-08-02 00:00:00", time.Local)
+	t.Log(ti.Format("2006-01-02 15:04:05"))
+	t.Log(ti.Unix())
 }

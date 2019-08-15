@@ -56,7 +56,8 @@ func (pm *ProtocolManager) GetBlockHeadersMsg(msg p2p.Msg, p *peer) error {
 	}
 
 	hashMode := query.Origin.Hash != (common.Hash{})
-	log.Debug("ProtocolManager", "GetBlockHeadersMsg getBlockHeadersData:", query, "GetBlockHeadersMsg hashMode:", hashMode)
+	log.Debug("ProtocolManager", "GetBlockHeadersMsg getBlockHeadersData:", query,
+		"GetBlockHeadersMsg hashMode:", hashMode)
 	// Gather headers until the fetch or network limits is reached
 	var (
 		bytes   common.StorageSize
@@ -64,7 +65,8 @@ func (pm *ProtocolManager) GetBlockHeadersMsg(msg p2p.Msg, p *peer) error {
 		unknown bool
 	)
 
-	for !unknown && len(headers) < int(query.Amount) && bytes < softResponseLimit && len(headers) < downloader.MaxHeaderFetch {
+	for !unknown && len(headers) < int(query.Amount) && bytes < softResponseLimit &&
+		len(headers) < downloader.MaxHeaderFetch {
 		// Retrieve the next header satisfying the query
 		var origin *modules.Header
 		if hashMode {
@@ -109,23 +111,29 @@ func (pm *ProtocolManager) GetBlockHeadersMsg(msg p2p.Msg, p *peer) error {
 			//log.Debug("ProtocolManager", "GetBlockHeadersMsg next", next, "current:", current)
 			if next <= current {
 				infos, _ := json.MarshalIndent(p.Peer.Info(), "", "  ")
-				log.Warn("GetBlockHeaders skip overflow attack", "current", current, "skip", query.Skip, "next", next, "attacker", infos)
+				log.Warn("GetBlockHeaders skip overflow attack", "current", current, "skip", query.Skip,
+					"next", next, "attacker", infos)
 				unknown = true
 			} else {
 				index.Index = next
 				log.Debug("ProtocolManager", "GetBlockHeadersMsg index.Index:", index.Index)
 				if header, _ := pm.dag.GetHeaderByNumber(index); header != nil {
 					hashs := pm.dag.GetUnitHashesFromHash(header.Hash(), query.Skip+1)
-					log.Debug("ProtocolManager", "GetUnitHashesFromHash len(hashs):", len(hashs), "header.index:", header.Number.Index, "header.hash:", header.Hash().String(), "query.Skip+1", query.Skip+1)
+					log.Debug("ProtocolManager", "GetUnitHashesFromHash len(hashs):", len(hashs),
+						"header.index:", header.Number.Index, "header.hash:", header.Hash().String(),
+						"query.Skip+1", query.Skip+1)
 					if len(hashs) > int(query.Skip) && (hashs[query.Skip] == query.Origin.Hash) {
 						query.Origin.Hash = header.Hash()
 					} else {
-						log.Debug("ProtocolManager", "GetBlockHeadersMsg unknown = true; pm.dag.GetUnitHashesFromHash not equal origin hash.", "")
-						log.Debug("ProtocolManager", "GetBlockHeadersMsg header.Hash()", header.Hash(), "query.Skip+1:", query.Skip+1, "query.Origin.Hash:", query.Origin.Hash)
+						log.Debug("ProtocolManager GetBlockHeadersMsg unknown = true;" +
+							" pm.dag.GetUnitHashesFromHash not equal origin hash.")
+						log.Debug("ProtocolManager", "GetBlockHeadersMsg header.Hash()", header.Hash(),
+							"query.Skip+1:", query.Skip+1, "query.Origin.Hash:", query.Origin.Hash)
 						unknown = true
 					}
 				} else {
-					log.Debug("ProtocolManager", "GetBlockHeadersMsg unknown = true; pm.dag.GetHeaderByNumber not found. Index:", index.Index)
+					log.Debug("ProtocolManager", "GetBlockHeadersMsg unknown = true; pm.dag.GetHeaderByNumber"+
+						" not found. Index:", index.Index)
 					unknown = true
 				}
 			}
@@ -145,14 +153,16 @@ func (pm *ProtocolManager) GetBlockHeadersMsg(msg p2p.Msg, p *peer) error {
 			query.Origin.Number.Index += query.Skip + 1
 		}
 	}
-	start := uint64(0)
-	end := uint64(0)
+
 	number := len(headers)
 	if number > 0 {
-		start = uint64(headers[0].Number.Index)
-		end = uint64(headers[number-1].Number.Index)
+		log.Debug("ProtocolManager", "GetBlockHeadersMsg query.Amount", query.Amount, "send number:", number,
+			"start:", headers[0].Number.Index, "end:", headers[number-1].Number.Index, " getBlockHeadersData:", query)
+	} else {
+		log.Debug("ProtocolManager", "GetBlockHeadersMsg query.Amount", query.Amount, "send number:", 0,
+			" getBlockHeadersData:", query)
 	}
-	log.Debug("ProtocolManager", "GetBlockHeadersMsg query.Amount", query.Amount, "send number:", len(headers), "start:", start, "end:", end, " getBlockHeadersData:", query)
+
 	return p.SendUnitHeaders(headers)
 }
 
@@ -357,12 +367,8 @@ func (pm *ProtocolManager) NewBlockMsg(msg p2p.Msg, p *peer) error {
 
 	// append by Albert·Gou
 	timestamp := time.Unix(unit.Timestamp(), 0)
-	unitHash := unit.Hash()
-	log.Debugf("Received unit(%v) #%v parent(%v) @%v signed by %v", unitHash.TerminalString(),
-		unit.NumberU64(), unit.ParentHash()[0].TerminalString(), timestamp.Format("2006-01-02 15:04:05"),
-		unit.Author().Str())
-
-	latency := time.Now().Sub(timestamp)
+	//latency := time.Now().Sub(timestamp)
+	latency := time.Since(timestamp)
 	if latency < -5*time.Second {
 		errStr := fmt.Sprintf("Rejecting unit #%v with timestamp(%v) in the future signed by %v",
 			unit.NumberU64(), timestamp.Format("2006-01-02 15:04:05"), unit.Author().Str())
@@ -370,12 +376,17 @@ func (pm *ProtocolManager) NewBlockMsg(msg p2p.Msg, p *peer) error {
 		return fmt.Errorf(errStr)
 	}
 
+	unitHash := unit.Hash()
 	if pm.IsExistInCache(unitHash.Bytes()) {
 		//log.Debugf("Received unit(%v) again, ignore it", unitHash.TerminalString())
 		p.MarkUnit(unitHash)
 		p.SetHead(unitHash, unit.Number())
 		return nil
 	}
+
+	log.Infof("Received unit(%v) #%v parent(%v) @%v signed by %v", unitHash.TerminalString(),
+		unit.NumberU64(), unit.ParentHash()[0].TerminalString(), timestamp.Format("2006-01-02 15:04:05"),
+		unit.Author().Str())
 
 	log.DebugDynamic(func() string {
 		txids := []common.Hash{}
@@ -417,16 +428,17 @@ func (pm *ProtocolManager) NewBlockMsg(msg p2p.Msg, p *peer) error {
 	requestNumber := unit.Number()
 	hash, number := p.Head(unit.Number().AssetID)
 	if common.EmptyHash(hash) || (!common.EmptyHash(hash) && requestNumber.Index > number.Index) {
-		log.Debug("ProtocolManager", "NewBlockMsg SetHead request.Index:", requestNumber.Index, "local peer index:", number.Index)
+		log.Debug("ProtocolManager", "NewBlockMsg SetHead request.Index:", requestNumber.Index,
+			"local peer index:", number.Index)
 		p.SetHead(unit.Hash(), requestNumber)
 
 		//currentUnitIndex := pm.dag.GetCurrentUnit(unit.Number().AssetID).UnitHeader.Number.Index
 		currentUnitIndex := pm.dag.HeadUnitNum()
 		if requestNumber.Index > currentUnitIndex+1 {
-			log.Debug("ProtocolManager", "NewBlockMsg synchronise request.Index:", requestNumber.Index,
+			log.Debug("ProtocolManager", "NewBlockMsg synchronize request.Index:", requestNumber.Index,
 				"current unit index+1:", currentUnitIndex+1)
 			go func() {
-				pm.synchronise(p, unit.Number().AssetID, nil)
+				pm.synchronize(p, unit.Number().AssetID, nil)
 			}()
 		}
 	}
@@ -488,10 +500,6 @@ func (pm *ProtocolManager) SigShareMsg(msg p2p.Msg, p *peer) error {
 }
 
 func (pm *ProtocolManager) VSSDealMsg(msg p2p.Msg, p *peer) error {
-	// comment by Albert·Gou
-	//var vssmsg vssMsg
-	//if err := msg.Decode(&vssmsg); err != nil {
-
 	var deal mp.VSSDealEvent
 	if err := msg.Decode(&deal); err != nil {
 		errStr := fmt.Sprintf("VSSDealMsg: %v, err: %v", msg, err)
@@ -509,16 +517,9 @@ func (pm *ProtocolManager) VSSDealMsg(msg p2p.Msg, p *peer) error {
 		return nil
 	}
 
-	pm.producer.AddToDealBuf(&deal)
+	// todo albert 清除在限制时间范围之外的deal消息
 
-	// comment by Albert·Gou
-	////TODO vssmark
-	//if !pm.peers.PeersWithoutVss(vssmsg.NodeId) {
-	//	pm.producer.AddToDealBuf(vssmsg.Deal)
-	//	pm.peers.MarkVss(vssmsg.NodeId)
-	//	pm.BroadcastVss(vssmsg.NodeId, vssmsg.Deal)
-	//}
-
+	go pm.producer.AddToDealBuf(&deal)
 	return nil
 }
 
@@ -531,6 +532,8 @@ func (pm *ProtocolManager) VSSResponseMsg(msg p2p.Msg, p *peer) error {
 		//return fmt.Errorf(errStr)
 		return nil
 	}
+
+	// todo albert 清除在限制时间范围之外的response消息
 
 	go pm.producer.AddToResponseBuf(&resp)
 	return nil

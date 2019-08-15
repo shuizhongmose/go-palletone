@@ -155,7 +155,8 @@ func (c *Console) init(preload []string) error {
 		return fmt.Errorf("namespace flattening: %v", err)
 	}
 	// Initialize the global name register (disabled for now)
-	//c.jsre.Run(`var GlobalRegistrar = ptn.contract(` + registrar.GlobalRegistrarAbi + `);   registrar = GlobalRegistrar.at("` + registrar.GlobalRegistrarAddr + `");`)
+	//c.jsre.Run(`var GlobalRegistrar = ptn.contract(` + registrar.GlobalRegistrarAbi + `);
+	// registrar = GlobalRegistrar.at("` + registrar.GlobalRegistrarAddr + `");`)
 
 	// If the console is in interactive mode, instrument password related methods to query the user
 	if c.prompter != nil {
@@ -193,14 +194,14 @@ func (c *Console) init(preload []string) error {
 			obj.Set("transferPtn", bridge.TransferPtn)
 
 		}
-		ptn, errr := c.jsre.Get("ptn")
-		if errr != nil {
-			return errr
-		}
-		if obj := ptn.Object(); obj != nil { // make sure the admin api is enabled over the interface
-			if _, err = c.jsre.Run(`jptn.signRawTransaction = ptn.signRawTransaction;`); err != nil {
-				return fmt.Errorf("ptn.signRawTransaction: %v", err)
-			}
+		//ptn, errr := c.jsre.Get("ptn")
+		//if errr != nil {
+		//	return errr
+		//}
+		//if obj := ptn.Object(); obj != nil { // make sure the admin api is enabled over the interface
+			//if _, err = c.jsre.Run(`jptn.signRawTransaction = ptn.signRawTransaction;`); err != nil {
+			//	return fmt.Errorf("ptn.signRawTransaction: %v", err)
+			//}
 			//obj.Set("signRawTransaction", bridge.SignRawTransaction)
 			//if _, err = c.jsre.Run(`jptn.getPtnTestCoin = wallet.getPtnTestCoin;`); err != nil {
 			//	return fmt.Errorf("ptn.getPtnTestCoin: %v", err)
@@ -210,12 +211,16 @@ func (c *Console) init(preload []string) error {
 			// 	return fmt.Errorf("ptn.transferToken: %v", err)
 			// }
 			// obj.Set("transferToken", bridge.TransferToken)
-		}
+		//}
 		wallet, err := c.jsre.Get("wallet")
 		if err != nil {
 			return err
 		}
 		if obj := wallet.Object(); obj != nil { // make sure the admin api is enabled over the interface
+                        if _, err = c.jsre.Run(`jptn.signRawTransaction = wallet.signRawTransaction;`); err != nil {
+                                return fmt.Errorf("wallet.signRawTransaction: %v", err)
+                        }
+                        obj.Set("signRawTransaction", bridge.SignRawTransaction)
 			if _, err = c.jsre.Run(`jptn.transferToken = wallet.transferToken;`); err != nil {
 				return fmt.Errorf("wallet.transferToken: %v", err)
 			}
@@ -247,15 +252,15 @@ func (c *Console) init(preload []string) error {
 		}
 	}
 	// The admin.sleep and admin.sleepBlocks are offered by the console and not by the RPC layer.
-	admin, err := c.jsre.Get("admin")
-	if err != nil {
-		return err
-	}
-	if obj := admin.Object(); obj != nil { // make sure the admin api is enabled over the interface
+	//admin, err := c.jsre.Get("admin")
+	//if err != nil {
+	//	return err
+	//}
+	//if obj := admin.Object(); obj != nil { // make sure the admin api is enabled over the interface
 		//obj.Set("sleepBlocks", bridge.SleepBlocks)
 		//obj.Set("sleep", bridge.Sleep)
 		//obj.Set("clearHistory", c.clearHistory)
-	}
+	//}
 	//Add by wzhyuan
 	// Preload any JavaScript files before starting the console
 	for _, path := range preload {
@@ -280,7 +285,7 @@ func (c *Console) init(preload []string) error {
 	return nil
 }
 
-func (c *Console) clearHistory() {
+/*func (c *Console) clearHistory() {
 	c.history = nil
 	c.prompter.ClearHistory()
 	if err := os.Remove(c.histPath); err != nil {
@@ -288,7 +293,7 @@ func (c *Console) clearHistory() {
 	} else {
 		fmt.Fprintln(c.printer, "history file deleted")
 	}
-}
+}*/
 
 // consoleOutput is an override for the console.log and console.error methods to
 // stream the output into the configured output stream instead of stdout.

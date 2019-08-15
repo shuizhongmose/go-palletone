@@ -180,7 +180,7 @@ func GetGensisTransctions(ks *keystore.KeyStore, genesis *core.Genesis) (modules
 			tx.TxMessages = append(tx.TxMessages, newMsg)
 		}
 	}
-	// step4, generate inital mediator info payload
+	// step4, generate initial mediator info payload
 	//initialMediatorMsgs := dagCommon.GetInitialMediatorMsgs(genesis)
 	//tx.TxMessages = append(tx.TxMessages, initialMediatorMsgs...)
 
@@ -210,7 +210,8 @@ func GenContractTransction(orgTx *modules.Transaction, msgs []*modules.Message) 
 	for i := 0; i < len(msgs); i++ {
 		tx.AddMessage(msgs[i])
 	}
-
+	tx.CertId = orgTx.CertId
+	tx.Illegal = orgTx.Illegal
 	return tx, nil
 }
 

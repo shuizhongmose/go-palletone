@@ -24,6 +24,7 @@ import (
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/crypto"
 	"github.com/palletone/go-palletone/common/ptndb"
+	"time"
 
 	dagcommon "github.com/palletone/go-palletone/dag/common"
 	"github.com/palletone/go-palletone/dag/modules"
@@ -156,20 +157,21 @@ func TestMemDag_AddOrphanUnit(t *testing.T) {
 	gasToken := modules.PTNCOIN
 	memdag := NewMemDag(gasToken, 2, false, db, unitRep, propRep, stateRep, cache())
 	u1 := newTestUnit(lastHeader.Hash(), 1, key2)
-	log.Debugf("Try add unit[%x] to memdag", u1.Hash())
+	log.Debugf("Try add unit[%x] to memdag, index: %d", u1.Hash(), u1.NumberU64())
 	_, _, _, _, _, err := memdag.AddUnit(u1, txpool)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 1, memdag.GetLastMainChainUnit().NumberU64())
 
 	u2 := newTestUnit(u1.Hash(), 2, key1)
 	u3 := newTestUnit(u2.Hash(), 3, key2)
-	log.Debugf("Try add orphan unit[%x] to memdag", u3.Hash())
+	log.Debugf("Try add orphan unit[%x] to memdag, index: %d", u3.Hash(), u3.NumberU64())
 	_, _, _, _, _, err = memdag.AddUnit(u3, txpool)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 1, memdag.GetLastMainChainUnit().NumberU64())
-	log.Debugf("Try add missed unit[%x] to memdag", u2.Hash())
+	log.Debugf("Try add missed unit[%x] to memdag, index: %d", u2.Hash(), u2.NumberU64())
 	_, _, _, _, _, err = memdag.AddUnit(u2, txpool)
 	assert.Nil(t, err)
+	time.Sleep(1 * time.Second)
 	assert.EqualValues(t, 3, memdag.GetLastMainChainUnit().NumberU64())
 }
 
@@ -211,16 +213,19 @@ func TestMemDag_SwitchMainChain(t *testing.T) {
 
 	_, _, _, _, _, err = memdag.AddUnit(u33, txpool)
 	assert.Nil(t, err)
+	time.Sleep(1 * time.Second)
 	assert.EqualValues(t, 3, memdag.GetLastMainChainUnit().NumberU64())
 }
 
 func mockMediatorInit(statedb storage.IStateDb, propDb storage.IPropertyDb) {
 	point, _ := core.StrToPoint("Dsn4gF2xpsM79R6kBfsR1joZD4BoPfBGREJGStCAz1bFfUnB5QXBGbNfudxyCWz6uWZZ8c43BYWkxiezyF5uifhv1diiykrxzgFhLMSAvppx34RjJwzjmXAXnYMuQX3Jy2P3ygehcKmATAyXQCVoXde6Xo3tkA2Jv8Zb8zDcdGjbFyd")
 	node, _ := core.StrToMedNode("pnode://f056aca66625c286ae444add82f44b9eb74f18a8a96572360cb70df9b6d64d9bd2c58a345e570beb2bcffb037cd0a075f548b73083d31c12f1f4564865372534@127.0.0.1:30303")
-	m1 := &core.Mediator{Address: addr1, InitPubKey: point, Node: node, MediatorApplyInfo: &core.MediatorApplyInfo{}, MediatorInfoExpand: &core.MediatorInfoExpand{}}
+	m1 := &core.Mediator{Address: addr1, InitPubKey: point, Node: node,
+		MediatorApplyInfo: core.NewMediatorApplyInfo(), MediatorInfoExpand: core.NewMediatorInfoExpand()}
 
 	statedb.StoreMediator(m1)
-	m2 := &core.Mediator{Address: addr2, InitPubKey: point, Node: node, MediatorApplyInfo: &core.MediatorApplyInfo{}, MediatorInfoExpand: &core.MediatorInfoExpand{}}
+	m2 := &core.Mediator{Address: addr2, InitPubKey: point, Node: node,
+		MediatorApplyInfo: core.NewMediatorApplyInfo(), MediatorInfoExpand: core.NewMediatorInfoExpand()}
 	statedb.StoreMediator(m2)
 	gp := modules.NewGlobalProp()
 	gp.ActiveMediators = make(map[common.Address]bool)

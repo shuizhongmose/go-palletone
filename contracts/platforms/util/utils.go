@@ -155,7 +155,7 @@ func DockerBuild(opts DockerBuildOptions) error {
 	}
 	if opts.Image == "" {
 		//通用的本地编译环境
-		opts.Image = contractcfg.GetConfig().ContractBuilder //cutil.GetDockerfileFromConfig("chaincode.builder")
+		opts.Image = contractcfg.GetConfig().CommonBuilder //cutil.GetDockerfileFromConfig("chaincode.builder")
 		if opts.Image == "" {
 			return fmt.Errorf("No image provided and \"chaincode.builder\" default does not exist")
 		}
@@ -192,10 +192,9 @@ func DockerBuild(opts DockerBuildOptions) error {
 		//MemorySwap: dockercontroller.GetInt64FromDb("TempUccMemorySwap"), //1GB
 		//CPUShares:  dockercontroller.GetInt64FromDb("TempUccCpuShares"),
 		//CPUQuota:   dockercontroller.GetInt64FromDb("TempUccCpuQuota"),
-		Memory:     cp.TempUccMemory,     //1GB
-		MemorySwap: cp.TempUccMemorySwap, //1GB
-		CPUShares:  cp.TempUccCpuShares,
-		CPUQuota:   cp.TempUccCpuQuota,
+		Memory:    cp.TempUccMemory, //1GB
+		CPUShares: cp.TempUccCpuShares,
+		CPUQuota:  cp.TempUccCpuQuota,
 	}
 	log.Infof("client.CreateContainer")
 	container, err := client.CreateContainer(docker.CreateContainerOptions{
@@ -254,7 +253,7 @@ func DockerBuild(opts DockerBuildOptions) error {
 		return fmt.Errorf("Error executing build: %s \"%s\"", err, stdout.String())
 	}
 	//解决临时容器一直运行的情况
-	go utils.RemoveContainerWhenGoBuildTimeOut(client, container.ID)
+	go utils.RemoveContainerWhenGoBuildTimeOut(container.ID)
 
 	//-----------------------------------------------------------------------------------
 	// Wait for the build to complete and gather the return value

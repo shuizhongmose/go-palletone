@@ -27,13 +27,15 @@ import (
 
 const (
 	ApplyMediator      = "ApplyBecomeMediator"
-	IsApproved         = "IsInAgressList"
+	IsApproved         = "IsInAgreeList"
 	MediatorPayDeposit = "MediatorPayToDepositContract"
 	MediatorList       = "MediatorList"
 	GetMediatorDeposit = "GetMediatorDeposit"
 	MediatorApplyQuit  = "MediatorApplyQuit"
+	UpdateMediatorInfo = "UpdateMediatorInfo"
 )
 
+// mediator 信息
 type MediatorInfo struct {
 	*core.MediatorInfoBase
 	*core.MediatorApplyInfo
@@ -70,13 +72,47 @@ func (mi *MediatorInfo) InfoToMediator() *core.Mediator {
 	return md
 }
 
-type MediatorCreateOperation struct {
+// 创建 mediator 所需的参数
+type MediatorCreateArgs struct {
 	*core.MediatorInfoBase
 	*core.MediatorApplyInfo
 }
 
-func (mco *MediatorCreateOperation) FeePayer() common.Address {
-	addr, _ := common.StringToAddress(mco.AddStr)
+func NewMediatorCreateArgs() *MediatorCreateArgs {
+	return &MediatorCreateArgs{
+		MediatorInfoBase:  core.NewMediatorInfoBase(),
+		MediatorApplyInfo: core.NewMediatorApplyInfo(),
+	}
+}
 
-	return addr
+// 更新 mediator 信息所需参数
+type MediatorUpdateArgs struct {
+	AddStr      string  `json:"account"`             // 要更新的mediator地址
+	Logo        *string `json:"logo" rlp:"nil"`      // 节点图标url
+	Name        *string `json:"name" rlp:"nil"`      // 节点名称
+	Location    *string `json:"loc" rlp:"nil"`       // 节点所在地区
+	Url         *string `json:"url" rlp:"nil"`       // 节点宣传网站
+	Description *string `json:"applyInfo" rlp:"nil"` // 节点详细信息描述
+	Node        *string `json:"node" rlp:"nil"`      // 节点网络信息，包括ip和端口等
+}
+
+func (mua *MediatorUpdateArgs) Validate() (common.Address, error) {
+	addr, err := core.StrToMedAdd(mua.AddStr)
+	if err != nil {
+		return addr, err
+	}
+
+	if mua.Node != nil {
+		node, err := core.StrToMedNode(*mua.Node)
+		if err != nil {
+			return addr, err
+		}
+
+		err = node.ValidateComplete()
+		if err != nil {
+			return addr, err
+		}
+	}
+
+	return addr, nil
 }

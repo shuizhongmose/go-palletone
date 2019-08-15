@@ -43,6 +43,7 @@ func NewGlobalPropBase() GlobalPropBase {
 type GlobalProperty struct {
 	GlobalPropBase
 
+	// todo albert 待重构为数组，提高效率
 	ActiveJuries       map[common.Address]bool // 当前活跃Jury集合
 	ActiveMediators    map[common.Address]bool // 当前活跃 mediator 集合；每个维护间隔更新一次
 	PrecedingMediators map[common.Address]bool // 上一届 mediator
@@ -51,9 +52,9 @@ type GlobalProperty struct {
 func NewGlobalProp() *GlobalProperty {
 	return &GlobalProperty{
 		GlobalPropBase:     NewGlobalPropBase(),
-		ActiveJuries:       make(map[common.Address]bool, 0),
-		ActiveMediators:    make(map[common.Address]bool, 0),
-		PrecedingMediators: make(map[common.Address]bool, 0),
+		ActiveJuries:       make(map[common.Address]bool),
+		ActiveMediators:    make(map[common.Address]bool),
+		PrecedingMediators: make(map[common.Address]bool),
 	}
 }
 
@@ -162,9 +163,9 @@ func (gp *GlobalProperty) GetActiveMediatorAddr(index int) common.Address {
 // GetActiveMediators, return the list of active mediators, and the order of the list from small to large
 func (gp *GlobalProperty) GetActiveMediators() []common.Address {
 	var mediators common.Addresses
-	mediators = make([]common.Address, 0, gp.ActiveMediatorsCount())
+	//mediators = make([]common.Address, 0, gp.ActiveMediatorsCount())
 
-	for medAdd, _ := range gp.ActiveMediators {
+	for medAdd := range gp.ActiveMediators {
 		mediators = append(mediators, medAdd)
 	}
 

@@ -70,7 +70,8 @@ interface IERC20 {
 contract PTNMap is IERC20 {
     IERC20 public ptnToken;
     mapping (address => address) public addrmap;
-    event Deposit(address addr, address ptnhex, uint amount);
+    mapping (address => address) public addrmapPTN;
+    //event Deposit(address addr, address ptnhex, uint256 amount);
 
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -86,10 +87,11 @@ contract PTNMap is IERC20 {
        ptnToken = IERC20(0xa54880da9a63cdd2ddacf25af68daf31a1bcc0c9);
     }
     
-    function transfer(address _ptnhex, uint _amt) external returns (bool) {
+    function transfer(address _ptnhex, uint256 _amt) external returns (bool) {
         if (addrmap[msg.sender] == address(0)) {
             addrmap[msg.sender] = _ptnhex;
-            emit Deposit(msg.sender, _ptnhex, _amt);
+            addrmapPTN[_ptnhex] = msg.sender;
+            emit Transfer(msg.sender, _ptnhex, _amt);
             return true;
         } else {
             return false;
@@ -115,7 +117,10 @@ contract PTNMap is IERC20 {
 
     function balanceOf(address _owner) public view returns (uint) {
         if (addrmap[_owner] == address(0)) {
-            return 1;
+            if (addrmapPTN[_owner] == address(0)) {
+              return 1;
+            }
+            return 0;
         } else {
             return 0;
         }

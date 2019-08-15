@@ -27,15 +27,15 @@ import (
 	"github.com/palletone/go-palletone/dag/rwset"
 )
 
-type TempCC struct {
-	templateId  []byte
-	name        string
-	path        string
-	version     string
-	description string
-	abi         string
-	language    string
-}
+//type TempCC struct {
+//	templateId  []byte
+//	name        string
+//	path        string
+//	version     string
+//	description string
+//	abi         string
+//	language    string
+//}
 
 // contract manger module init
 func Init(dag dag.IDag, jury core.IAdapterJury) error {
@@ -112,7 +112,7 @@ func Install(dag dag.IDag, chainID, ccName, ccPath, ccVersion, ccDescription, cc
 	buffer.Write([]byte(ccVersion))
 	tpid := crypto.Keccak256Hash(buffer.Bytes())
 	payloadUnit := &md.ContractTplPayload{
-		TemplateId: []byte(tpid[:]),
+		TemplateId: tpid[:],
 		//Name:       ccName,
 		//Path:       ccPath,
 		//Version:    ccVersion,
@@ -179,6 +179,11 @@ func Deploy(rwM rwset.TxManager, idag dag.IDag, chainID string, templateId []byt
 			Version: usrcc.Version,
 		},
 	}
+	//TODO 这里获取运行用户合约容器的相关资源  CpuQuota  CpuShare  MEMORY
+	cp := idag.GetChainParameters()
+	spec.CpuQuota = cp.UccCpuQuota  //微妙单位（100ms=100000us=上限为1个CPU）
+	spec.CpuShare = cp.UccCpuShares //占用率，默认1024，即可占用一个CPU，相对值
+	spec.Memory = cp.UccMemory      //字节单位 物理内存  1073741824  1G 2147483648 2G 209715200 200m 104857600 100m
 	err = ucc.DeployUserCC(depId.Bytes(), chaincodeData, spec, chainID, txId, txsim, setTimeOut)
 	if err != nil {
 		log.Error("deployUserCC err:", "error", err)
@@ -194,6 +199,7 @@ func Deploy(rwM rwset.TxManager, idag dag.IDag, chainID string, templateId []byt
 		SysCC:    false,
 	}
 	if depId.IsSystemContractAddress() {
+		cc.SysCC = true
 		err = cclist.SetChaincode(chainID, 0, cc)
 		if err != nil {
 			log.Error("Deploy", "SetChaincode fail, chainId", chainID, "name", cc.Name)
@@ -235,7 +241,7 @@ func Invoke(rwM rwset.TxManager, idag dag.IDag, chainID string, deployId []byte,
 	var mksupt Support = &SupportImpl{}
 	creator := []byte("palletone")
 	address := common.NewAddress(deployId, common.ContractHash)
-	cc := &cclist.CCInfo{}
+	var cc *cclist.CCInfo
 	var err error
 
 	if address.IsSystemContractAddress() {
@@ -270,12 +276,18 @@ func Invoke(rwM rwset.TxManager, idag dag.IDag, chainID string, deployId []byte,
 		return nil, err
 	}
 	rsp, unit, err := es.ProcessProposal(rwM, idag, deployId, context.Background(), sprop, prop, chainID, cid, timeout)
-	//  TODO 执行完invoke，获取容器资源使用情况
-	//utils.GetResourcesWhenInvokeContainer(cc)
 	log.Debugf("process proposal")
 	if err != nil {
 		log.Infof("ProcessProposal error[%v]", err)
 		return nil, err
+	}
+	//
+	if !cc.SysCC {
+		sizeRW, disk, isOver := utils.RemoveConWhenOverDisk(cc, idag)
+		if isOver {
+			log.Debugf("utils.KillAndRmWhenOver name = %s,sizeRW = %d,disk = %d", cc.Name, sizeRW, disk)
+			return nil, fmt.Errorf("utils.KillAndRmWhenOver name = %s,sizeRW = %d bytes,disk = %d bytes", cc.Name, sizeRW, disk)
+		}
 	}
 	stopTm := time.Now()
 	duration := stopTm.Sub(startTm)
@@ -303,6 +315,9 @@ func Stop(rwM rwset.TxManager, idag dag.IDag, contractid []byte, chainID string,
 		return nil, err
 	}
 	stopResult, err := StopByName(contractid, setChainId, txid, cc, deleteImage, dontRmCon)
+	if err != nil {
+		return nil, err
+	}
 	if !dontRmCon {
 		err := saveChaincode(idag, address, nil)
 		if err != nil {
@@ -332,6 +347,7 @@ func StopByName(contractid []byte, chainID string, txid string, usercc *cclist.C
 }
 
 func GetAllContainers(client *docker.Client) {
+	//
 	addrs, err := utils.GetAllExitedContainer(client)
 	if err != nil {
 		log.Infof("client.ListContainers err: %s\n", err.Error())
@@ -344,7 +360,7 @@ func GetAllContainers(client *docker.Client) {
 				log.Infof("db.GetCcDagHand err: %s", err.Error())
 				return
 			}
-			rd, err := crypto.GetRandomBytes(32)
+			rd, _ := crypto.GetRandomBytes(32)
 			txid := util.RlpHash(rd)
 			log.Infof("==============需要重启====容器地址为--->%s", hex.EncodeToString(v.Bytes21()))
 			_, err = RestartContainer(dag, "palletone", v.Bytes21(), txid.String())
@@ -354,7 +370,6 @@ func GetAllContainers(client *docker.Client) {
 			}
 		}
 	}
-	return
 }
 
 func RestartContainer(idag dag.IDag, chainID string, deployId []byte, txId string) ([]byte, error) {

@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"unsafe"
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/palletone/go-palletone/common"
@@ -84,7 +83,7 @@ func (s *PrivateDagAPI) GetCommonByPrefix(ctx context.Context, prefix string) (s
 		return "", fmt.Errorf("参数为空")
 	}
 	result := s.b.GetCommonByPrefix([]byte(prefix))
-	if result == nil || len(result) == 0 {
+	if len(result) == 0 {
 		return "all_items:null", nil
 	}
 
@@ -109,9 +108,9 @@ func (s *PublicDagAPI) GetHeaderByHash(ctx context.Context, condition string) (s
 	content, err := json.Marshal(info)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetHeaderByHash Marshal err:", err, "hash", hash.String())
-		return "Marshal err", err
+		return "info Marshal err", err
 	}
-	return *(*string)(unsafe.Pointer(&content)), nil
+	return string(content), nil
 }
 func (s *PublicDagAPI) GetHeaderByNumber(ctx context.Context, condition string) (string, error) {
 	number := &modules.ChainIndex{}
@@ -126,17 +125,17 @@ func (s *PublicDagAPI) GetHeaderByNumber(ctx context.Context, condition string) 
 	if err != nil {
 		return "", err
 	}
-	headerRlp, _ := rlp.EncodeToBytes(header)
-	headerJson := ptnjson.ConvertUnitHeader2Json(header)
+	headerRlp, err := rlp.EncodeToBytes(header)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetHeaderByNumber err:", err, "number", number.String())
 	}
+	headerJson := ptnjson.ConvertUnitHeader2Json(header)
 	info := NewPublicReturnInfoWithHex("header", headerJson, headerRlp)
 	content, err := json.Marshal(info)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetHeaderByNumber Marshal err:", err, "number", number.String())
 	}
-	return *(*string)(unsafe.Pointer(&content)), nil
+	return string(content), nil
 }
 
 func (s *PublicDagAPI) GetUnitByHash(ctx context.Context, condition string) string {
@@ -151,13 +150,13 @@ func (s *PublicDagAPI) GetUnitByHash(ctx context.Context, condition string) stri
 		log.Info("PublicBlockChainAPI", "GetUnitByHash GetUnitByHash is nil hash:", hash)
 		return "GetUnitByHash nil"
 	}
-	jsonUnit := ptnjson.ConvertUnit2Json(unit, s.b.Dag().GetUtxoEntry)
+	jsonUnit := ptnjson.ConvertUnit2Json(unit, s.b.Dag().GetTxOutput)
 	content, err := json.Marshal(jsonUnit)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetUnitByHash Marshal err:", err, "unit:", *unit)
-		return "Marshal err"
+		return "jsonUnit Marshal err"
 	}
-	return *(*string)(unsafe.Pointer(&content))
+	return string(content)
 }
 
 func (s *PublicDagAPI) GetUnitByNumber(ctx context.Context, condition string) string {
@@ -179,13 +178,13 @@ func (s *PublicDagAPI) GetUnitByNumber(ctx context.Context, condition string) st
 		log.Info("PublicBlockChainAPI", "GetUnitByNumber GetUnitByNumber is nil number:", number)
 		return "GetUnitByNumber nil"
 	}
-	jsonUnit := ptnjson.ConvertUnit2Json(unit, s.b.Dag().GetUtxoEntry)
+	jsonUnit := ptnjson.ConvertUnit2Json(unit, s.b.Dag().GetTxOutput)
 	content, err := json.Marshal(jsonUnit)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetUnitByNumber Marshal err:", err, "unit:", *unit)
-		return "Marshal err"
+		return "json UnitMarshal err"
 	}
-	return *(*string)(unsafe.Pointer(&content))
+	return string(content)
 }
 
 // getUnitsByIndex
@@ -195,7 +194,7 @@ func (s *PublicDagAPI) GetUnitsByIndex(ctx context.Context, start, end decimal.D
 	jsonUnits := make([]*ptnjson.UnitJson, 0)
 
 	for _, u := range units {
-		jsonu := ptnjson.ConvertUnit2Json(u, s.b.Dag().GetUtxoEntry)
+		jsonu := ptnjson.ConvertUnit2Json(u, s.b.Dag().GetTxOutput)
 		jsonUnits = append(jsonUnits, jsonu)
 	}
 	info := NewPublicReturnInfo("units", jsonUnits)
@@ -203,7 +202,7 @@ func (s *PublicDagAPI) GetUnitsByIndex(ctx context.Context, start, end decimal.D
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetUnitsByIndexs Marshal err:", err)
 	}
-	return *(*string)(unsafe.Pointer(&content))
+	return string(content)
 }
 
 func (s *PublicDagAPI) GetFastUnitIndex(ctx context.Context, assetid string) string {
@@ -229,9 +228,9 @@ func (s *PublicDagAPI) GetFastUnitIndex(ctx context.Context, assetid string) str
 	content, err := json.Marshal(result)
 	if err != nil {
 		log.Info("PublicDagAPI", "GetFastUnitIndex Marshal err:", err)
-		return "Marshal err"
+		return "result Marshal err"
 	}
-	return *(*string)(unsafe.Pointer(&content))
+	return string(content)
 }
 func (s *PublicDagAPI) GetUnitSummaryByNumber(ctx context.Context, condition string) string {
 	log.Info("PublicBlockChainAPI", "GetUnitByNumber condition:", condition)
@@ -256,9 +255,9 @@ func (s *PublicDagAPI) GetUnitSummaryByNumber(ctx context.Context, condition str
 	content, err := json.Marshal(jsonUnit)
 	if err != nil {
 		log.Info("PublicBlockChainAPI", "GetUnitByNumber Marshal err:", err, "unit:", *unit)
-		return "Marshal err"
+		return "json Unit Marshal err"
 	}
-	return *(*string)(unsafe.Pointer(&content))
+	return string(content)
 }
 
 func (s *PublicDagAPI) GetUnstableUnits() []*ptnjson.UnitSummaryJson {
@@ -405,6 +404,15 @@ func (s *PublicDagAPI) StableUnitNum() uint64 {
 	}
 
 	return uint64(0)
+}
+
+func (s *PublicDagAPI) IsSynced() bool {
+	dag := s.b.Dag()
+	if dag != nil {
+		return dag.IsSynced()
+	}
+
+	return false
 }
 
 func (s *PrivateDagAPI) GetAllUtxos(ctx context.Context) (string, error) {

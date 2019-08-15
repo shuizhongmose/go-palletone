@@ -27,14 +27,14 @@ import (
 	"github.com/palletone/go-palletone/dag/modules"
 )
 
-func (self *ProtocolManager) newProducedUnitBroadcastLoop() {
+func (pm *ProtocolManager) newProducedUnitBroadcastLoop() {
 	for {
 		select {
-		case event := <-self.newProducedUnitCh:
-			self.BroadcastUnit(event.Unit, true)
+		case event := <-pm.newProducedUnitCh:
+			pm.BroadcastUnit(event.Unit, true)
 			//self.BroadcastCorsHeader(event.Unit.Header(), self.SubProtocols[0].Name)
 
-		case <-self.newProducedUnitSub.Err():
+		case <-pm.newProducedUnitSub.Err():
 			return
 		}
 	}
@@ -68,60 +68,43 @@ func (pm *ProtocolManager) toGroupSign(event modules.ToGroupSignEvent) {
 		return
 	}
 
-	//if !pm.producer.IsEnabledGroupSign() {
-	//	log.Debugf("the current node is enabled groupSign")
-	//	return
-	//}
-
 	// 获取最高稳定单元的高度
 	gasToken := dagconfig.DagConfig.GetGasToken()
 	iun := pm.dag.GetIrreversibleUnitNum(gasToken)
 
 	// 对稳定单元后一个unit进行群签名
-	newUnit, err := pm.dag.GetUnitByNumber(&modules.ChainIndex{gasToken, iun + 1})
+	newHash, err := pm.dag.GetUnitHash(&modules.ChainIndex{AssetID: gasToken, Index: iun + 1})
 	if err != nil {
 		log.Debugf(err.Error())
 		return
 	}
 
-	go pm.producer.AddToTBLSSignBufs(newUnit)
+	go pm.producer.AddToTBLSSignBufs(newHash)
 }
 
 // @author Albert·Gou
-func (self *ProtocolManager) sigShareTransmitLoop() {
+func (pm *ProtocolManager) sigShareTransmitLoop() {
 	for {
 		select {
-		case event := <-self.sigShareCh:
-			unit, err := self.dag.GetUnitByHash(event.UnitHash)
+		case event := <-pm.sigShareCh:
+			unit, err := pm.dag.GetUnitByHash(event.UnitHash)
 			if unit != nil && err == nil {
 				med := unit.Author()
-				node := self.dag.GetActiveMediator(med).Node
-				self.TransmitSigShare(node, &event)
+				node := pm.dag.GetActiveMediator(med).Node
+				pm.transmitSigShare(node, &event)
 			}
 
 			// Err() channel will be closed when unsubscribing.
-		case <-self.sigShareSub.Err():
+		case <-pm.sigShareSub.Err():
 			return
 		}
 	}
 }
 
 // @author Albert·Gou
-func (pm *ProtocolManager) TransmitSigShare(node *discover.Node, sigShare *mp.SigShareEvent) {
+func (pm *ProtocolManager) transmitSigShare(node *discover.Node, sigShare *mp.SigShareEvent) {
 	peer, self := pm.GetPeer(node)
 	if self {
-		//size, reader, err := rlp.EncodeToReader(sigShare)
-		//if err != nil {
-		//	log.Debug(err.Error())
-		//}
-		//
-		//var s mp.SigShareEvent
-		//stream := rlp.NewStream(reader, uint64(size))
-		//if err := stream.Decode(&s); err != nil {
-		//	log.Debug(err.Error())
-		//}
-		//pm.producer.AddToTBLSRecoverBuf(s.UnitHash, s.SigShare)
-
 		pm.producer.AddToTBLSRecoverBuf(sigShare.UnitHash, sigShare.SigShare)
 		return
 	}
@@ -137,14 +120,14 @@ func (pm *ProtocolManager) TransmitSigShare(node *discover.Node, sigShare *mp.Si
 }
 
 // @author Albert·Gou
-func (self *ProtocolManager) groupSigBroadcastLoop() {
+func (pm *ProtocolManager) groupSigBroadcastLoop() {
 	for {
 		select {
-		case event := <-self.groupSigCh:
-			self.BroadcastGroupSig(&event)
+		case event := <-pm.groupSigCh:
+			pm.BroadcastGroupSig(&event)
 
 		// Err() channel will be closed when unsubscribing.
-		case <-self.groupSigSub.Err():
+		case <-pm.groupSigSub.Err():
 			return
 		}
 	}
@@ -160,21 +143,21 @@ func (pm *ProtocolManager) BroadcastGroupSig(groupSig *mp.GroupSigEvent) {
 }
 
 // @author Albert·Gou
-func (self *ProtocolManager) vssDealTransmitLoop() {
+func (pm *ProtocolManager) vssDealTransmitLoop() {
 	for {
 		select {
-		case event := <-self.vssDealCh:
-			self.TransmitVSSDeal(&event)
+		case event := <-pm.vssDealCh:
+			pm.transmitVSSDeal(&event)
 
 			// Err() channel will be closed when unsubscribing.
-		case <-self.vssDealSub.Err():
+		case <-pm.vssDealSub.Err():
 			return
 		}
 	}
 }
 
 // @author Albert·Gou
-func (pm *ProtocolManager) TransmitVSSDeal(deal *mp.VSSDealEvent) {
+func (pm *ProtocolManager) transmitVSSDeal(deal *mp.VSSDealEvent) {
 	// 判断是否同步, 如果没同步完成，发起的vss deal是无效的，浪费带宽
 	if !pm.dag.IsSynced() {
 		log.Debugf("this node is not synced")
@@ -184,19 +167,7 @@ func (pm *ProtocolManager) TransmitVSSDeal(deal *mp.VSSDealEvent) {
 	node := pm.dag.GetActiveMediatorNode(int(deal.DstIndex))
 	peer, self := pm.GetPeer(node)
 	if self {
-		//size, reader, err := rlp.EncodeToReader(deal)
-		//if err != nil {
-		//	log.Debug(err.Error())
-		//}
-		//
-		//var d mp.VSSDealEvent
-		//s := rlp.NewStream(reader, uint64(size))
-		//if err := s.Decode(&d); err != nil {
-		//	log.Debug(err.Error())
-		//}
-		//pm.producer.AddToDealBuf(&d)
-
-		pm.producer.AddToDealBuf(deal)
+		go pm.producer.AddToDealBuf(deal)
 		return
 	}
 
@@ -204,93 +175,38 @@ func (pm *ProtocolManager) TransmitVSSDeal(deal *mp.VSSDealEvent) {
 		return
 	}
 
-	// comment by Albert·Gou
-	// // append by wangjiyou
-	//if pm.peers.PeersWithoutVss(dstId) {
-	//	return
-	//}
-	//pm.peers.MarkVss(dstId)
-
-	//msg := &vssMsg{
-	//	NodeId: dstId,
-	//	Deal:   deal,
-	//}
-	//err := peer.SendVSSDeal(msg)
-
 	err := peer.SendVSSDeal(deal)
 	if err != nil {
-		log.Debug(err.Error())
+		log.Debugf(err.Error())
 	}
 }
 
 // @author Albert·Gou
-func (self *ProtocolManager) vssResponseBroadcastLoop() {
+func (pm *ProtocolManager) vssResponseBroadcastLoop() {
 	for {
 		select {
-		case event := <-self.vssResponseCh:
-			self.BroadcastVssResp(&event)
+		case event := <-pm.vssResponseCh:
+			pm.broadcastVssResp(&event)
 
 			// Err() channel will be closed when unsubscribing.
-		case <-self.vssResponseSub.Err():
+		case <-pm.vssResponseSub.Err():
 			return
 		}
 	}
 }
 
 // @author Albert·Gou
-//func (pm *ProtocolManager) BroadcastVssResp(dstId string, resp *mp.VSSResponseEvent) {
-func (pm *ProtocolManager) BroadcastVssResp(resp *mp.VSSResponseEvent) {
-	// comment by Albert·Gou
-	//dstId := node.ID.TerminalString()
-	//peer := pm.peers.Peer(dstId)
-	//if peer == nil {
-	//	log.Debugf("peer not exist: %v", node.String())
-	//}
-
-	// comment by Albert·Gou
-	//if pm.peers.PeersWithoutVssResp(dstId) {
-	//	return
-	//}
-	//pm.peers.MarkVssResp(dstId)
-
+func (pm *ProtocolManager) broadcastVssResp(resp *mp.VSSResponseEvent) {
 	peers := pm.GetActiveMediatorPeers()
-	//peers := pm.GetTransitionPeers()
 	for _, peer := range peers {
 		if peer == nil { // 此时为本节点
-			//size, reader, err := rlp.EncodeToReader(resp)
-			//if err != nil {
-			//	log.Debug(err.Error())
-			//}
-			//
-			//var r mp.VSSResponseEvent
-			//s := rlp.NewStream(reader, uint64(size))
-			//if err := s.Decode(&r); err != nil {
-			//	log.Debug(err.Error())
-			//}
-			//go pm.producer.AddToResponseBuf(&r)
-
 			go pm.producer.AddToResponseBuf(resp)
 			continue
 		}
 
-		// comment by Albert·Gou
-		//dstId := peer.id
-		//if pm.peers.PeersWithoutVssResp(dstId) {
-		//	return
-		//}
-		//pm.peers.MarkVssResp(dstId)
-
-		// comment by Albert·Gou
-		//msg := &vssRespMsg{
-		//	NodeId: dstId,
-		//	Resp:   resp,
-		//}
-		//
-		//err := peer.SendVSSResponse(msg)
-
 		err := peer.SendVSSResponse(resp)
 		if err != nil {
-			log.Info(err.Error())
+			log.Debugf(err.Error())
 		}
 	}
 }
