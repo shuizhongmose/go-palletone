@@ -91,13 +91,10 @@ matrix:
     - os: linux
       env: Digital Identity
       dist: xenial
-      go: 1.12.7
+      go: "1.12.7"
       services: docker
       script:
-        - ip addr
-        - make gptn
-        - make golang-baseimage-dev
-        - docker images
+        - go version
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
@@ -129,6 +126,7 @@ matrix:
         - chmod +x bdd/upload2Ftp.sh
       before_install:
         - go get -u github.com/palletone/digital-identity
+        - go vet ./...
 
 addons:
   apt:
