@@ -31,7 +31,7 @@ env:
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
     - IS_RUN_MEDIATOR_VOTE=true
-    - GO111MODULE=on
+    - GO112MODULE=on
     - IS_UPLOAD=true
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'
 matrix:
@@ -93,8 +93,12 @@ matrix:
       dist: xenial
       go: "1.12.7"
       services: docker
+      go_import_path:
+        - github.com/hyperledger/fabric-ca
+        - github.com/palletone/digital-identity
       script:
         - whereis go
+        - go version
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh

@@ -6,7 +6,7 @@ go version
 # install ca
 export GO112MODULE=on
 cd $GOPATH/src
-/usr/local/go/bin/go get -u github.com/hyperledger/fabric-ca/cmd/...
+go get -u github.com/hyperledger/fabric-ca/cmd/...
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
 make fabric-ca-server
 export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
