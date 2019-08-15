@@ -93,14 +93,13 @@ matrix:
       dist: xenial
       go: 1.12.7
       script:
-        - whereis go
-        - go version
-        - echo $PATH
+        - which go
+        - go env
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
-        - sudo ./ca-start.sh
-        - sudo ./one-ptn.sh
+        - sudo bash ca-start.sh
+        - sudo bash one-ptn.sh
         - netstat -ntl
         - sleep 30
         - cd $BASE_DIR
