@@ -94,6 +94,7 @@ matrix:
       go: "1.12.7"
       services: docker
       script:
+        - whereis go
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
