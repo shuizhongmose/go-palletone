@@ -4,14 +4,12 @@
 pkill fabric
 
 # install ca
-if [ "$InTravis" = "false" ]; then
 export GO111MODULE=off
 cd $GOPATH/src
 go get -u github.com/hyperledger/fabric-ca/cmd/...
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
 make fabric-ca-server
 export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
-fi
 
 cd ~
 rm -rf cawork
