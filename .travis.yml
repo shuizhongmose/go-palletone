@@ -98,7 +98,10 @@ matrix:
         - cd $GOPATH/src
         - go clean -modcache
         - go get -u github.com/hyperledger/fabric-ca
+        - ls $GOPATH
+        - ls $GOPATH/src
         - ls $GOPATH/src/github.com
+        - ls $GOPATH/src/github.com/palletone
         - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
         - make fabric-ca-server
         - chmod +x bin/fabric-ca-server
