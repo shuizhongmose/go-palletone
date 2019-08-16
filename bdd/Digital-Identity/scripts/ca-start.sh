@@ -9,7 +9,7 @@ pkill fabric
 
 # install ca
 if [ "$InTravis" = "false" ]; then
-export GO111MODULE=on
+export GO112MODULE=on
 cd $GOPATH/src
 go get -u github.com/hyperledger/fabric-ca/cmd/...
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
