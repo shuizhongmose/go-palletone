@@ -2,10 +2,10 @@
 Library           RequestsLibrary
 
 *** Variables ***
-#${ip}            123.126.106.82
-#${host}          http://${ip}:58645/
-${ip}             127.0.0.1
-${host}           http://${ip}:8645/
+${ip}             123.126.106.82
+${host}           http://${ip}:58645/
+#${ip}            127.0.0.1
+#${host}          http://${ip}:8645/
 ${juryHosts}      Create List
 ${gastokenHost}    http://localhost:8545
 ${nodenum}        3
@@ -29,6 +29,7 @@ ${queryCRLMethod}    getCRL
 ${prc720ContractAddr}    PCGTta3M4t3yXu8uRgkKvaWd2d8DREThG43
 ${certContractAddr}    PCGTta3M4t3yXu8uRgkKvaWd2d8DRv2vsEk
 ${debugContractAddr}    PCGTta3M4t3yXu8uRgkKvaWd2d8DSfQdUHf
+${depositContractAddr}    PCGTta3M4t3yXu8uRgkKvaWd2d8DR32W9vM
 # comman param
 ${tokenHolder}    ${null}
 ${Alice}          ${null}
