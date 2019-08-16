@@ -96,7 +96,6 @@ matrix:
         - which go
         # install fabric server
         - cd $GOPATH/src
-        - export GO112MODULE=on
         - go get -u github.com/hyperledger/fabric-ca/cmd/...
         - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
         - make fabric-ca-server
