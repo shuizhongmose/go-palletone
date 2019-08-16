@@ -301,3 +301,20 @@ queryErr
     ${errCode}=    Get From Dictionary    ${res}    error_code
     ${errMsg}=    Get From Dictionary    ${res}    error_message
     [Return]    ${errCode}    ${errMsg}
+
+To Be a Developer
+    [Arguments]    ${addr}
+    # step1 unlock account
+    unlockAccount    ${addr}
+    # depoist some PTN as a developer
+    ${args}=    Create List    DeveloperPayToDepositContract
+    ${params}=    Create List    ${addr}    ${addr}    ${1}    ${1}    ${args}
+    ${respJson}=    sendRpcPost    ${host}    contract_depositContractInvoke    ${params}    DepositInvoke
+    Dictionary Should Contain Key    ${respJson}    result
+    ${reqId}=    Get From Dictionary    ${respJson}    result
+    wait for unit about contract to be confirmed by unit height  ${reqId}   ${true}
+    # check succeed
+    ${args}=    Create List     GetNodeBalance  ${addr}
+    ${params}=  Create List     ${args}
+    ${respJson}=    sendRpcPost    ${host}    contract_depositContractQuery    ${params}    QueryDeposit
+    Dictionary Should Contain Key    ${respJson}    result
