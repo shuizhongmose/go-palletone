@@ -97,7 +97,7 @@ matrix:
         # install fabric server
         - cd $GOPATH/src
         - go clean -modcache
-        - go get -u github.com/hyperledger/fabric-ca/cmd/...
+        - go get -u github.com/hyperledger/fabric-ca
         - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
         - make fabric-ca-server
         - chmod +x bin/fabric-ca-server
