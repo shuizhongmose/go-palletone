@@ -348,7 +348,7 @@ func (chaincodeSupport *ChaincodeSupport) sendReady(context context.Context, ccc
 				res := &pb.Response{}
 				_ = proto.Unmarshal(ccMsg.Payload, res)
 				if res.Status != shim.OK {
-					err = errors.Errorf("error initializing container %s: %s", canName, string(res.Message))
+					err = errors.Errorf("error initializing container %s: %s", canName, res.Message)
 				}
 				// TODO
 				// return res so that endorser can anylyze it.
@@ -586,7 +586,7 @@ func (chaincodeSupport *ChaincodeSupport) launchAndWaitForRegister(ctxt context.
 		if err == nil {
 			// TODO
 			return errors.New("nil error notified. the launch contract is to notify errors only")
-			panic("nil error notified. the launch contract is to notify errors only")
+			//panic("nil error notified. the launch contract is to notify errors only")
 		}
 	case <-time.After(chaincodeSupport.ccStartupTimeout):
 		err = errors.Errorf("timeout expired while starting chaincode %s(networkid:%s,peerid:%s,tx:%s)", canName, chaincodeSupport.peerNetworkID, chaincodeSupport.peerID, cccid.TxID)
@@ -680,7 +680,8 @@ func (chaincodeSupport *ChaincodeSupport) Destroy(context context.Context, cccid
 }
 
 // Launch will launch the chaincode if not running (if running return nil) and will wait for handler of the chaincode to get into FSM ready state.
-func (chaincodeSupport *ChaincodeSupport) Launch(context context.Context, cccid *ccprovider.CCContext, spec interface{}) (*pb.ChaincodeID, *pb.ChaincodeInput, error) {
+func (chaincodeSupport *ChaincodeSupport) Launch(context context.Context, 
+	cccid *ccprovider.CCContext, spec interface{}) (*pb.ChaincodeID, *pb.ChaincodeInput, error) {
 	log.Debugf("launch enter")
 	//build the chaincode
 	var cID *pb.ChaincodeID
@@ -694,7 +695,7 @@ func (chaincodeSupport *ChaincodeSupport) Launch(context context.Context, cccid 
 		if ci, _ = spec.(*pb.ChaincodeInvocationSpec); ci == nil {
 			//  TODO
 			return cID, cMsg, errors.New("Launch should be called with deployment or invocation spec")
-			panic("Launch should be called with deployment or invocation spec")
+			//panic("Launch should be called with deployment or invocation spec")
 		}
 	}
 	if cds != nil {
