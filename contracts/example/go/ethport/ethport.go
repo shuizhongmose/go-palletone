@@ -97,7 +97,7 @@ const consultN = 4
 const jsonResp1 = "{\"Error\":\"Failed to get contractAddr, need set contractAddr\"}"
 
 // contractABI is same, but contractAddr is not
-const contractABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"reqid\",\"type\":\"string\"}],\"name\":\"getmultisig\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"suicideto\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"ptnaddr\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"my_eth_bal\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"addra\",\"type\":\"address\"},{\"name\":\"addrb\",\"type\":\"address\"},{\"name\":\"addrc\",\"type\":\"address\"},{\"name\":\"addrd\",\"type\":\"address\"}],\"name\":\"setaddrs\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"recver\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"},{\"name\":\"reqid\",\"type\":\"string\"},{\"name\":\"sigstr1\",\"type\":\"bytes\"},{\"name\":\"sigstr2\",\"type\":\"bytes\"},{\"name\":\"sigstr3\",\"type\":\"bytes\"}],\"name\":\"withdraw\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"addra\",\"type\":\"address\"},{\"name\":\"addrb\",\"type\":\"address\"},{\"name\":\"addrc\",\"type\":\"address\"},{\"name\":\"addrd\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"fallback\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"ptnaddr\",\"type\":\"string\"}],\"name\":\"Deposit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"recver\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"reqid\",\"type\":\"string\"},{\"indexed\":false,\"name\":\"confirmvalue\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"state\",\"type\":\"string\"}],\"name\":\"Withdraw\",\"type\":\"event\"}]"
+const contractABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"reqid\",\"type\":\"string\"}],\"name\":\"getmultisig\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"suicideto\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"ptnaddr\",\"type\":\"string\"}],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"my_eth_bal\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"addra\",\"type\":\"address\"},{\"name\":\"addrb\",\"type\":\"address\"},{\"name\":\"addrc\",\"type\":\"address\"},{\"name\":\"addrd\",\"type\":\"address\"}],\"name\":\"setaddrs\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"recver\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"},{\"name\":\"reqid\",\"type\":\"string\"},{\"name\":\"sigstr1\",\"type\":\"bytes\"},{\"name\":\"sigstr2\",\"type\":\"bytes\"},{\"name\":\"sigstr3\",\"type\":\"bytes\"}],\"name\":\"withdraw\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"addra\",\"type\":\"address\"},{\"name\":\"addrb\",\"type\":\"address\"},{\"name\":\"addrc\",\"type\":\"address\"},{\"name\":\"addrd\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"ptnaddr\",\"type\":\"string\"}],\"name\":\"Deposit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"recver\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"reqid\",\"type\":\"string\"},{\"indexed\":false,\"name\":\"confirmvalue\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"state\",\"type\":\"string\"}],\"name\":\"Withdraw\",\"type\":\"event\"}]"
 
 func consult(stub shim.ChaincodeStubInterface, content []byte, myAnswer []byte) ([]byte, error) {
 	sendResult, err := stub.SendJury(2, content, myAnswer)
@@ -133,7 +133,11 @@ func _initDepositAddr(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	//
-	recvResult, _ := consult(stub, []byte("juryETHAddr"), []byte(result))
+	recvResult, err := consult(stub, []byte("juryETHAddr"), result)
+	if err != nil {
+		log.Debugf("consult juryETHAddr failed: " + err.Error())
+		return shim.Error("consult juryETHAddr failed: " + err.Error())
+	}
 	var juryMsg []JuryMsgAddr
 	err = json.Unmarshal(recvResult, &juryMsg)
 	if err != nil {
@@ -145,7 +149,7 @@ func _initDepositAddr(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	//
-	var address []string
+	address := make([]string, 0, len(juryMsg))
 	for i := range juryMsg {
 		address = append(address, string(juryMsg[i].Answer))
 	}
@@ -343,7 +347,7 @@ func getDepositETHInfo(contractAddr, ptnAddr string, stub shim.ChaincodeStubInte
 
 	//event Deposit(address token, address user, uint amount, string ptnaddr);
 	endBlockNum, _ := strconv.ParseUint(endHeight, 10, 64)
-	var depositInfo []DepositETHInfo
+	depositInfo := make([]DepositETHInfo, 0, len(geteventresult.Events))
 	for i, event := range geteventresult.Events {
 		//Event example : ["0x0000000000000000000000000000000000000000","0x7d7116a8706ae08baa7f4909e26728fa7a5f0365",500000000000000000,"P1DXLJmJh9j3LFNUZ7MmfLVNWHoLzDUHM9A"]
 		strArray := strings.Split(event, ",")
@@ -488,7 +492,11 @@ func _withdrawPrepare(args []string, stub shim.ChaincodeStubInterface) pb.Respon
 	log.Debugf("tempHashHex:%s", tempHashHex)
 
 	//协商交易
-	recvResult, _ := consult(stub, []byte(tempHashHex), []byte("rawTx"))
+	recvResult, err := consult(stub, []byte(tempHashHex), []byte("rawTx"))
+	if err != nil {
+		log.Debugf("consult rawTx failed: " + err.Error())
+		return shim.Error("consult rawTx failed: " + err.Error())
+	}
 	var juryMsg []JuryMsgAddr
 	err = json.Unmarshal(recvResult, &juryMsg)
 	if err != nil {
@@ -697,7 +705,11 @@ func _withdrawETH(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	log.Debugf("tempHashHex:%s", tempHashHex)
 
 	//协商交易
-	recvResult, _ := consult(stub, []byte(tempHashHex), []byte(sig))
+	recvResult, err := consult(stub, []byte(tempHashHex), []byte(sig))
+	if err != nil {
+		log.Debugf("consult sig failed: " + err.Error())
+		return shim.Error("consult sig failed: " + err.Error())
+	}
 	var juryMsg []JuryMsgAddr
 	err = json.Unmarshal(recvResult, &juryMsg)
 	if err != nil {
@@ -785,7 +797,7 @@ func _withdrawETH(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error("delete WithdrawPrepare failed: " + err.Error())
 	}
 
-	return shim.Success([]byte(withdrawBytes))
+	return shim.Success(withdrawBytes)
 }
 
 func _withdrawFee(args []string, stub shim.ChaincodeStubInterface) pb.Response {
@@ -835,7 +847,11 @@ func _withdrawFee(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 	log.Debugf("tempHashHex:%s", tempHashHex)
 
 	//协商交易
-	recvResult, _ := consult(stub, []byte(tempHashHex), []byte(sig))
+	recvResult, err := consult(stub, []byte(tempHashHex), []byte(sig))
+	if err != nil {
+		log.Debugf("consult sig failed: " + err.Error())
+		return shim.Error("consult sig failed: " + err.Error())
+	}
 	var juryMsg []JuryMsgAddr
 	err = json.Unmarshal(recvResult, &juryMsg)
 	if err != nil {
@@ -916,7 +932,7 @@ func _withdrawFee(args []string, stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error("save withdraw failed: " + err.Error())
 	}
 
-	return shim.Success([]byte(withdrawBytes))
+	return shim.Success(withdrawBytes)
 }
 
 func get(args []string, stub shim.ChaincodeStubInterface) pb.Response {

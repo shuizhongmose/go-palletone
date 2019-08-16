@@ -180,7 +180,7 @@ func (p *Processor) electionEventIsProcess(event *ElectionEvent) (common.Hash, b
 	case ELECTION_EVENT_VRF_RESULT:
 		evt := event.Event.(*ElectionResultEvent)
 		reqId = evt.ReqId
-		if evt.Ele.Etype != 1 {
+		if evt.Ele.EType != 1 {
 			if !checkJuryCountValid(evt.JuryCount, jCnt) {
 				return reqId, false
 			}
@@ -192,7 +192,7 @@ func (p *Processor) electionEventIsProcess(event *ElectionEvent) (common.Hash, b
 		evt := event.Event.(*ElectionSigRequestEvent)
 		reqId = evt.ReqId
 		for _, e := range evt.Ele {
-			if e.Etype != 1 {
+			if e.EType != 1 {
 				if !checkJuryCountValid(evt.JuryCount, jCnt) {
 					return reqId, false
 				}
@@ -204,9 +204,6 @@ func (p *Processor) electionEventIsProcess(event *ElectionEvent) (common.Hash, b
 	case ELECTION_EVENT_SIG_RESULT:
 		evt := event.Event.(*ElectionSigResultEvent)
 		reqId = evt.ReqId
-		if !checkJuryCountValid(evt.JuryCount, jCnt) {
-			return reqId, false
-		}
 		if haveM {
 			return reqId, true
 		}
@@ -289,7 +286,7 @@ func (p *Processor) checkElectionSigRequestEventValid(evt *ElectionSigRequestEve
 	}
 	etor.weight = electionWeightValue(etor.total)
 	for i, e := range evt.Ele {
-		if e.Etype == 1 { //todo
+		if e.EType == 1 { //todo
 			continue
 		}
 		//验证proof是否通过
@@ -373,7 +370,7 @@ func (p *Processor) processElectionRequestEvent(reqEvt *ElectionRequestEvent) (e
 		rstEvt := &ElectionResultEvent{
 			ReqId:     reqEvt.ReqId,
 			JuryCount: reqEvt.JuryCount,
-			Ele:       modules.ElectionInf{AddrHash: addrHash, Proof: proof, PublicKey: pubKey},
+			Ele:       modules.ElectionInf{EType: 0, AddrHash: addrHash, Proof: proof, PublicKey: pubKey},
 		}
 		log.Debugf("[%s]processElectionRequestEvent, ok", shortId(reqId.String()))
 		go p.ptn.ElectionBroadcast(ElectionEvent{EType: ELECTION_EVENT_VRF_RESULT, Event: rstEvt}, true)
@@ -529,9 +526,9 @@ func (p *Processor) processElectionSigResultEvent(evt *ElectionSigResultEvent) e
 		shortId(reqId.String()), len(mel.sigs), evt.Sig.String(), p.dag.ChainThreshold())
 	if len(mel.sigs) >= p.dag.ChainThreshold() {
 		event := ContractEvent{
-			CType:     CONTRACT_EVENT_EXEC,
-			Ele:       p.mtx[reqId].eleNode,
-			Tx:        p.mtx[reqId].reqTx,
+			CType: CONTRACT_EVENT_EXEC,
+			Ele:   p.mtx[reqId].eleNode,
+			Tx:    p.mtx[reqId].reqTx,
 		}
 		log.Infof("[%s]processElectionSigResultEvent, CONTRACT_EVENT_EXEC", shortId(reqId.String()))
 		log.Info("processElectionSigResultEvent, CONTRACT_EVENT_EXEC", "reqId",
@@ -556,12 +553,12 @@ func (p *Processor) BroadcastElectionSigRequestEvent() {
 		var eList []modules.ElectionInf
 		if mtx.eleNode != nil {
 			eList = mtx.eleNode.EleList
-		}else{
+		} else {
 			eList = nil
-			mtx.eleNode = &modules.ElectionNode{JuryCount:ele.juryCnt}
+			mtx.eleNode = &modules.ElectionNode{JuryCount: ele.juryCnt}
 		}
 
-		if len(eList) + len(ele.rcvEle) >= p.electionNum {
+		if len(eList)+len(ele.rcvEle) >= p.electionNum {
 			se, valid := p.selectElectionInf(eList, ele.rcvEle, p.electionNum)
 			if !valid {
 				continue

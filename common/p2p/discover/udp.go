@@ -25,6 +25,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/coocood/freecache"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/palletone/go-palletone/common/crypto"
 	"github.com/palletone/go-palletone/common/log"
@@ -169,8 +170,10 @@ type conn interface {
 type udp struct {
 	conn        conn
 	netrestrict *netutil.Netlist
-	priv        *ecdsa.PrivateKey
-	ourEndpoint rpcEndpoint
+	// AlienRestrict black list
+	alienRestrict *freecache.Cache
+	priv          *ecdsa.PrivateKey
+	ourEndpoint   rpcEndpoint
 
 	addpending chan *pending
 	gotreply   chan reply
@@ -235,6 +238,9 @@ type Config struct {
 	NetRestrict  *netutil.Netlist  // network whitelist
 	Bootnodes    []*Node           // list of bootstrap nodes
 	Unhandled    chan<- ReadPacket // unhandled packets are sent on this channel
+
+	// AlienRestrict black list
+	AlienRestrict *freecache.Cache
 }
 
 // ListenUDP returns a new table that listens for UDP packets on laddr.
@@ -249,12 +255,13 @@ func ListenUDP(c conn, cfg Config) (*Table, error) {
 
 func newUDP(c conn, cfg Config) (*Table, *udp, error) {
 	udp := &udp{
-		conn:        c,
-		priv:        cfg.PrivateKey,
-		netrestrict: cfg.NetRestrict,
-		closing:     make(chan struct{}),
-		gotreply:    make(chan reply),
-		addpending:  make(chan *pending),
+		conn:          c,
+		priv:          cfg.PrivateKey,
+		netrestrict:   cfg.NetRestrict,
+		alienRestrict: cfg.AlienRestrict,
+		closing:       make(chan struct{}),
+		gotreply:      make(chan reply),
+		addpending:    make(chan *pending),
 	}
 	realaddr := c.LocalAddr().(*net.UDPAddr)
 	if cfg.AnnounceAddr != nil {
@@ -317,6 +324,17 @@ func (t *udp) findnode(toid NodeID, toaddr *net.UDPAddr, target NodeID) ([]*Node
 				log.Trace("Invalid neighbor node received", "ip", rn.IP, "addr", toaddr, "err", err)
 				continue
 			}
+			//AlienRestrict.Reject connections that match AlienRestrict.
+			if t.alienRestrict != nil {
+				if _, err := t.alienRestrict.Get([]byte(n.ID.TerminalString())); err != nil {
+				} else {
+					log.Debug("Bad discv4 neighbors is alien", "node", n.ID.TerminalString())
+					nodes = nodes[0:0]
+					t.alienRestrict.Set([]byte(n.ID.TerminalString()), []byte(n.String()), 3600)
+					return false
+				}
+			}
+
 			nodes = append(nodes, n)
 		}
 		return nreceived >= bucketSize
@@ -595,11 +613,23 @@ func (req *ping) handle(t *udp, from *net.UDPAddr, fromID NodeID, mac []byte) er
 	}
 	//Start Add by wangjiyou for discv4 in 2019-7-19
 	if req.Version != configure.UdpVersion || !bytes.Equal(req.Genesis, configure.GenesisHash) {
-		log.Debug("Bad discv4 ping", "Req Version", req.Version, "Version", configure.UdpVersion,
-			"Req Genesis", req.Genesis, "Genesis", configure.GenesisHash)
+		//log.Debug("Bad discv4 ping", "Req Version", req.Version, "Version", configure.UdpVersion,
+		//	"Req Genesis", req.Genesis, "Genesis", configure.GenesisHash)
+		if t.alienRestrict != nil {
+			t.alienRestrict.Set([]byte(fromID.TerminalString()), []byte(fromID.String()), 3600)
+		}
 		return errUnknownNode
 	}
 	//End Add by wangjiyou for discv4 in 2019-7-19
+	//AlienRestrict.Reject connections that match AlienRestrict.
+	if t.alienRestrict != nil {
+		if _, err := t.alienRestrict.Get([]byte(fromID.TerminalString())); err != nil {
+		} else {
+			log.Debug("Bad discv4 ping is alien", "err", err, "fromId", fromID.TerminalString())
+			return errUnknownNode
+		}
+	}
+
 	t.send(from, pongPacket, &pong{
 		To:         makeEndpoint(from, req.From.TCP),
 		ReplyTok:   mac,
@@ -633,11 +663,22 @@ func (req *findnode) handle(t *udp, from *net.UDPAddr, fromID NodeID, mac []byte
 
 	//Start Add by wangjiyou for discv4 in 2019-8-14
 	if req.Version != configure.UdpVersion || !bytes.Equal(req.Genesis, configure.GenesisHash) {
-		log.Debug("Bad discv4 findnode", "Req Version", req.Version, "Version", configure.UdpVersion,
-			"Req Genesis", req.Genesis, "Genesis", configure.GenesisHash)
+		//log.Debug("Bad discv4 findnode", "Req Version", req.Version, "Version", configure.UdpVersion,
+		//	"Req Genesis", req.Genesis, "Genesis", configure.GenesisHash)
+		if t.alienRestrict != nil {
+			t.alienRestrict.Set([]byte(fromID.TerminalString()), []byte(fromID.String()), 3600)
+		}
 		return errUnknownNode
 	}
 	//End Add by wangjiyou for discv4 in 2019-8-14
+	//AlienRestrict.Reject connections that match AlienRestrict.
+	if t.alienRestrict != nil {
+		if _, err := t.alienRestrict.Get([]byte(fromID.TerminalString())); err != nil {
+		} else {
+			log.Debug("Bad discv4 findnode is alien", "fromId", fromID.TerminalString())
+			return errUnknownNode
+		}
+	}
 
 	if !t.db.hasBond(fromID) {
 		// No bond exists, we don't process the packet. This prevents
@@ -647,6 +688,9 @@ func (req *findnode) handle(t *udp, from *net.UDPAddr, fromID NodeID, mac []byte
 		// port of the target as the source address. The recipient of
 		// the findnode packet would then send a neighbors packet
 		// (which is a much bigger packet than findnode) to the victim.
+		//TODO add alienRestrict that the node is not matched ???
+		//t.alienRestrict.Set([]byte(fromID.TerminalString()), []byte(""), 3600)
+
 		return errUnknownNode
 	}
 	target := crypto.Keccak256Hash(req.Target[:])
