@@ -1,9 +1,5 @@
 #!/bin/bash
 
-InTravis=false
-if [ "true" = "$1" ]; then
-    InTravis=true
-fi
 
 pkill fabric
 
