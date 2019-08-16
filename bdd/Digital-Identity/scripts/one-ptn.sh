@@ -15,9 +15,8 @@ sed -i 's/CryptoS256/CryptoP256/g' crypto.go
 
 export GO111MODULE=on
 go get -u github.com/palletone/digital-identity
-go install github.com/palletone/digital-identity
 ls $GOPATH/src/github.com/palletone
-ls $GOPATH/src/github.com/palletone/digital-identity
+ls $GOPATH/src/github.com/palletone/go-palletone
 
 cd $GOPATH/src/github.com/palletone/digital-identity/config
 sed -i 's/^url:.*$/url: http:\/\/localhost:7064/g' caconfig.yaml 
