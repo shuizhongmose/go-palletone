@@ -22,8 +22,8 @@ testprepare
     ${user}=    newAccount
     Set Global Variable    ${userCertHolder}    ${user}
     # transfer ptn to power and user
-    transferPtnTo    ${powerCertHolder}    1000
-    transferPtnTo    ${userCertHolder}    1000
+    transferPtnTo    ${powerCertHolder}    10000
+    transferPtnTo    ${userCertHolder}    10000
     # query power cert bytes from ~/cawork/immediateca/
     ${cert}=    Get File    ${CertFilePath}/ca-cert.pem
     Set Global Variable    ${powerCertBytes}    ${cert}
