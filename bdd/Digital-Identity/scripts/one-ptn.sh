@@ -58,5 +58,5 @@ sed -i "s/HTTPHost = \"localhost\"/HTTPHost = \"0.0.0.0\"/g" ptn-config.toml
 EOF
 
 # start gptn
-nohup ./gptn &
+nohup ./gptn > /dev/null 2>&1
 
