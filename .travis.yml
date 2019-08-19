@@ -93,29 +93,7 @@ matrix:
       dist: xenial
       go: 1.12.7
       script:
-#        - which go
-#        # install fabric server
-#        - cd $GOPATH/src
-#        - go clean -modcache
-#        - go get -u github.com/hyperledger/fabric-ca
-#        - ls $GOPATH
-#        - ls $GOPATH/src
-#        - ls $GOPATH/src/github.com
-#        - ls $GOPATH/src/github.com/palletone
-#        - cd $GOPATH/src/github.com/hyperledger/fabric-ca/
-#        - make fabric-ca-server
-#        - chmod +x bin/fabric-ca-server
-#        - export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
-#        # get digital-identity
-#        - cd $GOPATH/src
-#        - go get -u github.com/palletone/digital-identity
-#        # compile gptn
-#        - cd $GOPATH/src/github.com/palletone/go-palletone
-#        - go build -mod=vendor ./cmd/gptn
-#        - rm -rf bdd/Digital-Identity/node
-#        - mkdir -p bdd/Digital-Identity/node
-#        - cp gptn bdd/Digital-Identity/node
-#        - chmod +x bdd/Digital-Identity/node
+        - go get -u github.com/palletone/digital-identity
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
