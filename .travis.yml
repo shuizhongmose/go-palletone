@@ -93,7 +93,8 @@ matrix:
       dist: xenial
       go: 1.12.7
       script:
-        - go get -u github.com/palletone/digital-identity
+        - cd $GOPATH/src/github.com/palletone
+        - git clone https://github.com/palletone/digital-identity.git
         - cd $BASE_DIR/bdd/Digital-Identity/scripts
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
