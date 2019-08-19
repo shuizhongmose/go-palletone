@@ -12,7 +12,7 @@ env:
     - UDID721_DIR=crt721UDID
     - VOTECONTRACT_DIR=voteContract
     - MULTIPLE_DIR=zMulti-node
-    - DIGITAL_IDENTITY_DIR=DigitalIdentityCert
+    - DIGITAL_IDENTITY_DIR=Digital-IdentityCert
     - DEPOSIT_DIR=deposit
     - GAS_TOKEN_DIR=gasToken
     - MEDIATOR_VOTE_DIR=meidatorvote
@@ -109,6 +109,7 @@ matrix:
         - killall gptn
         - sleep 10
         - cd ${BASE_DIR}
+        - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
         - |
           if [ $IS_UPLOAD == 'true' ]; then
             # uplaod all log
