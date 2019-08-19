@@ -110,6 +110,7 @@ matrix:
         - sleep 10
         - cd ${BASE_DIR}
         - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+          - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
         - |
           if [ $IS_UPLOAD == 'true' ]; then
             # uplaod all log
