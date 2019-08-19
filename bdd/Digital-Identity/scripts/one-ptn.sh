@@ -14,7 +14,8 @@ sed -i 's/CryptoS256/CryptoP256/g' crypto.go
 # edit digital-identity package config file caconfig.yaml
 
 export GO111MODULE=on
-go get -u github.com/palletone/digital-identity
+cd $GOPATH/src/github.com/palletone/digital-identity
+git pull
 
 cd $GOPATH/src/github.com/palletone/digital-identity/config
 sed -i 's/^url:.*$/url: http:\/\/localhost:7064/g' caconfig.yaml 
@@ -56,6 +57,5 @@ sed -i "s/HTTPHost = \"localhost\"/HTTPHost = \"0.0.0.0\"/g" ptn-config.toml
 EOF
 
 # start gptn
-nohup ./gptn > /dev/null 2>&1
-echo "start gptn succeed"
+nohup ./gptn >/dev/null 2>&1 &
 
