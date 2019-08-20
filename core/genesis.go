@@ -64,15 +64,15 @@ import (
 //}
 
 type DigitalIdentityConfig struct {
-	RootCAHolder string `json:"rootCAHolder"` // ROOT CA的持有者
-	RootCABytes  string `json:"rootCABytes"`  // ROOT CA证书内容
+	//RootCAHolder string `json:"rootCAHolder"` // ROOT CA的持有者
+	RootCABytes string `json:"rootCABytes"` // ROOT CA证书内容
 }
 
 func DefaultDigitalIdentityConfig() DigitalIdentityConfig {
 	return DigitalIdentityConfig{
 		// default root ca holder, 默认是基金会地址
-		RootCAHolder: DefaultFoundationAddress,
-		RootCABytes:  DefaultRootCABytes,
+		//RootCAHolder: DefaultFoundationAddress,
+		RootCABytes: DefaultRootCABytes,
 	}
 }
 
@@ -160,7 +160,7 @@ type InitialMediator struct {
 
 func NewInitialMediator() *InitialMediator {
 	return &InitialMediator{
-		MediatorInfoBase:  NewMediatorInfoBase(),
+		MediatorInfoBase: NewMediatorInfoBase(),
 		//MediatorApplyInfo: NewMediatorApplyInfo(),
 	}
 }

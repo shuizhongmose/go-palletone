@@ -59,10 +59,12 @@ func (d *DigitalIdentityChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.R
 		return d.getCertFormateInfo(stub, args)
 	case "getCertBytes":
 		return d.getCertBytes(stub, args)
-	case "getCertHolder":
-		return d.getCertHolder(stub, args)
-	case "getRootCAHoler":
-		return d.getRootCAHolder(stub, args)
+	case "getRootCACertId":
+		return d.getRootCACertId(stub, args)
+	case "getRootCACertBytes":
+		return d.getRootCACertBytes(stub, args)
+	//case "getRootCAHoler":
+	//	return d.getRootCAHolder(stub, args)
 	// 添加CRL证书
 	case "addCRL":
 		return d.addCRLCert(stub, args)
@@ -75,28 +77,35 @@ func (d *DigitalIdentityChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.R
 }
 
 func (d *DigitalIdentityChainCode) addCert(stub shim.ChaincodeStubInterface, args []string, isServer bool) pb.Response {
-	if len(args) != 2 {
-		reqStr := fmt.Sprintf("Need two args: [holder address][Cert Bytes]")
-		return shim.Error(reqStr)
+	certHolder := string("")
+	certRawBytes := []byte{}
+	if !isServer {
+		if len(args) != 2 {
+			reqStr := fmt.Sprintf("Need two args: [holder address][Cert Bytes]")
+			return shim.Error(reqStr)
+		}
+		certHolder = args[0]
+		// check addrss
+		if !common.IsValidAddress(certHolder) {
+			return shim.Error(fmt.Sprintf("certificate holder address is invalid"))
+		}
+		certRawBytes = []byte(args[1])
+	} else {
+		certRawBytes = []byte(args[0])
 	}
-	certHolder := args[0]
-	// check addrss
-	if !common.IsValidAddress(certHolder) {
-		return shim.Error(fmt.Sprintf("certificate holder address is invalid"))
-	}
-	// parse issuer
-	issuer, err := stub.GetInvokeAddress()
-	if err != nil {
-		reqStr := fmt.Sprintf("DigitalIdentityChainCode parse issuer error:%s", err.Error())
-		return shim.Error(reqStr)
-	}
+	//// parse issuer
+	//issuer, err := stub.GetInvokeAddress()
+	//if err != nil {
+	//	reqStr := fmt.Sprintf("DigitalIdentityChainCode parse issuer error:%s", err.Error())
+	//	return shim.Error(reqStr)
+	//}
 	//// load Cert file
 	//pemBytes, err := loadCert(certPath)
 	//if err != nil {
 	//	reqStr := fmt.Sprintf("DigitalIdentityChainCode load [%s] error: %s", certPath, err.Error())
 	//	return shim.Error(reqStr)
 	//}
-	certBytes, err := dagModules.LoadCertBytes([]byte(args[1]))
+	certBytes, err := dagModules.LoadCertBytes(certRawBytes)
 	if err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode load cert bytes error:%s", err.Error())
 		return shim.Error(reqStr)
@@ -108,7 +117,7 @@ func (d *DigitalIdentityChainCode) addCert(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(reqStr)
 	}
 	// basic validate certificate
-	if err := ValidateCert(issuer.String(), cert, stub); err != nil {
+	if err := ValidateCert( /*issuer.String(),*/ cert, stub); err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode validate error: %s", err.Error())
 		return shim.Error(reqStr)
 	}
@@ -118,13 +127,13 @@ func (d *DigitalIdentityChainCode) addCert(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(reqStr)
 	}
 	// query nonce
-	nonce, err := queryNonce(dagConstants.CERT_ISSUER_SYMBOL, issuer.String(), stub)
+	nonce, err := queryNonce(dagConstants.CERT_ISSUER_SYMBOL, cert.Issuer.String(), stub)
 	if err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode query nonce error: %s", err.Error())
 		return shim.Error(reqStr)
 	}
 	certInfo := dagModules.CertRawInfo{
-		Issuer: issuer.String(),
+		//Issuer: issuer.String(),
 		Holder: certHolder,
 		Cert:   cert,
 		Nonce:  nonce + 1,
@@ -136,8 +145,7 @@ func (d *DigitalIdentityChainCode) addCert(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(reqStr)
 	}
 
-	rspStr := fmt.Sprintf("------ Add Cert success ------")
-	return shim.Success([]byte(rspStr))
+	return shim.Success([]byte(cert.SerialNumber.String()))
 }
 
 func (d *DigitalIdentityChainCode) addCRLCert(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -145,12 +153,12 @@ func (d *DigitalIdentityChainCode) addCRLCert(stub shim.ChaincodeStubInterface, 
 		reqStr := fmt.Sprintf("Need 1 arg:[CRL Cert Bytes]")
 		return shim.Error(reqStr)
 	}
-	// parse issuerAddr
-	issuerAddr, err := stub.GetInvokeAddress()
-	if err != nil {
-		reqStr := fmt.Sprintf("DigitalIdentityChainCode addCRLCert parse issuerAddr error:%s", err.Error())
-		return shim.Error(reqStr)
-	}
+	//// parse issuerAddr
+	//issuerAddr, err := stub.GetInvokeAddress()
+	//if err != nil {
+	//	reqStr := fmt.Sprintf("DigitalIdentityChainCode addCRLCert parse issuerAddr error:%s", err.Error())
+	//	return shim.Error(reqStr)
+	//}
 	crlBytes, err := dagModules.LoadCertBytes([]byte(args[0]))
 	if err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode addCRLCert load bytes to CRL error: %s", err.Error())
@@ -166,18 +174,18 @@ func (d *DigitalIdentityChainCode) addCRLCert(stub shim.ChaincodeStubInterface, 
 	if crl.TBSCertList.ThisUpdate.After(time.Now()) || crl.TBSCertList.NextUpdate.Before(time.Now()) {
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert error: crl is expired"))
 	}
-	// check whether the issuer address has authority to revoke certificates in CRL revocation list
-	certHolderInfo, err := ValidateCRLIssuer(issuerAddr.String(), crl, stub)
+	// check whether the CRL issuer has authority to revoke certificates in CRL revocation list
+	certHolderInfo, err := ValidateCRLIssuer(crl.TBSCertList.Issuer.String(), crl, stub)
 	if err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode addCRLCert validate error: %s", err.Error())
 		return shim.Error(reqStr)
 	}
 	// validate crl issuer signature
-	if err := ValidateCRLIssuerSig(issuerAddr.String(), crl, stub); err != nil {
+	if err := ValidateCRLIssuerSig(crl, stub); err != nil {
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert validate signature error:%s", err.Error()))
 	}
 	// handle state
-	if err := setCRL(issuerAddr.String(), crl, certHolderInfo, stub); err != nil {
+	if err := setCRL(crl.TBSCertList.Issuer.String(), crl, certHolderInfo, stub); err != nil {
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert save state error: %s", err.Error()))
 	}
 	return shim.Success([]byte("---- Add CRL Success --- "))
@@ -188,31 +196,31 @@ func (d *DigitalIdentityChainCode) getAddressCertIDs(stub shim.ChaincodeStubInte
 		reqStr := fmt.Sprintf("Need one args: [holder address]")
 		return shim.Error(reqStr)
 	}
-	serverCertIDs := []*dagModules.CertState{}
-	val, err := stub.GetState("RootCAHolder")
-	if err != nil {
-		return shim.Error(fmt.Sprintf("get ca holder error"))
-	}
-	if string(val) == args[0] {
-		rootcert, err := GetRootCACert(stub)
-		if err != nil {
-			return shim.Error(fmt.Sprintf("get root cert error:%s", err.Error()))
-		}
-		rootState := dagModules.CertState{
-			CertID:         rootcert.SerialNumber.String(),
-			RecovationTime: rootcert.NotAfter.String(),
-		}
-		serverCertIDs = append(serverCertIDs, &rootState)
-	}
-	newServerCertIDs, memberCertIDs, err := getHolderCertIDs(args[0], stub)
+	//serverCertIDs := []*dagModules.CertState{}
+	//val, err := stub.GetState("RootCAHolder")
+	//if err != nil {
+	//	return shim.Error(fmt.Sprintf("get ca holder error"))
+	//}
+	//if string(val) == args[0] {
+	//	rootcert, err := GetRootCACert(stub)
+	//	if err != nil {
+	//		return shim.Error(fmt.Sprintf("get root cert error:%s", err.Error()))
+	//	}
+	//	rootState := dagModules.CertState{
+	//		CertID:         rootcert.SerialNumber.String(),
+	//		RecovationTime: rootcert.NotAfter.String(),
+	//	}
+	//	serverCertIDs = append(serverCertIDs, &rootState)
+	//}
+	memberCertIDs, err := getHolderCertIDs(args[0], stub)
 	if err != nil {
 		reqStr := fmt.Sprintf("get address Cert ids error:%s", err.Error())
 		return shim.Error(reqStr)
 	}
-	serverCertIDs = append(serverCertIDs, newServerCertIDs...)
+	//serverCertIDs = append(serverCertIDs, newServerCertIDs...)
 	certIDs := map[string][]*dagModules.CertState{
-		"IntermediateCertIDs": serverCertIDs,
-		"MemberCertIDs":       memberCertIDs,
+		//"IntermediateCertIDs": serverCertIDs,
+		"MemberCertIDs": memberCertIDs,
 	}
 
 	//return json
@@ -225,7 +233,7 @@ func (d *DigitalIdentityChainCode) getAddressCertIDs(stub shim.ChaincodeStubInte
 
 func (d *DigitalIdentityChainCode) getIssuerCertsInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		reqStr := fmt.Sprintf("Need one args: [issuer address]")
+		reqStr := fmt.Sprintf("Need one args: [issuer subject]")
 		return shim.Error(reqStr)
 	}
 	issuerCertInfo, err := getIssuerCertsInfo(args[0], stub)
@@ -270,14 +278,45 @@ func (d *DigitalIdentityChainCode) getCertBytes(stub shim.ChaincodeStubInterface
 		reqStr := fmt.Sprintf("Get Cert byts error: %s", err.Error())
 		return shim.Error(reqStr)
 	}
-
 	certInfoMap := map[string]interface{}{
 		"CertID":    args[0],
-		"CertBytes": data,
+		"CertBytes": CertToPem(data),
 	}
 	certInfoJson, err := json.Marshal(certInfoMap)
 	if err != nil {
 		reqStr := fmt.Sprintf("Get Cert byts error: %s", err.Error())
+		return shim.Error(reqStr)
+	}
+	return shim.Success(certInfoJson)
+}
+
+func (d *DigitalIdentityChainCode) getRootCACertId(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	CACert, err := GetRootCACert(stub)
+	if err != nil {
+		reqStr := fmt.Sprintf("Get root CA Cert ID error: %s", err.Error())
+		return shim.Error(reqStr)
+	}
+	sCertId, err := json.Marshal(CACert.SerialNumber.String())
+	if err != nil {
+		reqStr := fmt.Sprintf("Get root CA Cert ID error: %s", err.Error())
+		return shim.Error(reqStr)
+	}
+	return shim.Success(sCertId)
+}
+
+func (d *DigitalIdentityChainCode) getRootCACertBytes(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	CACert, err := GetRootCACert(stub)
+	if err != nil {
+		reqStr := fmt.Sprintf("Get root CA Cert bytes error: %s", err.Error())
+		return shim.Error(reqStr)
+	}
+	certInfoMap := map[string]interface{}{
+		"CertID":    CACert.SerialNumber.String(),
+		"CertBytes": CertToPem(CACert.Raw),
+	}
+	certInfoJson, err := json.Marshal(certInfoMap)
+	if err != nil {
+		reqStr := fmt.Sprintf("Get root CA Cert byts error: %s", err.Error())
 		return shim.Error(reqStr)
 	}
 	return shim.Success(certInfoJson)
@@ -295,18 +334,18 @@ func (d *DigitalIdentityChainCode) getCertHolder(stub shim.ChaincodeStubInterfac
 
 	var certHolder string
 	if caCert.SerialNumber.String() == args[0] {
-		data, err := stub.GetState("RootCAHolder")
-		if err != nil {
-			return shim.Error(fmt.Sprintf("query ca certificate holder error:%s", err.Error()))
-		}
-		certHolder = string(data)
+		return shim.Success([]byte("This certificate is Root CA Certificate"))
 	} else {
 		data, err := GetCertDBInfo(args[0], stub)
 		if err != nil {
 			reqStr := fmt.Sprintf("Get Cert holder error: %s", err.Error())
 			return shim.Error(reqStr)
 		}
-		certHolder = data.Holder
+		if len(data.Holder) == 0 {
+			certHolder = fmt.Sprintf("This certificate is an Intermediate CA certificate")
+		} else {
+			certHolder = data.Holder
+		}
 	}
 	certInfoJson, err := json.Marshal(certHolder)
 	if err != nil {

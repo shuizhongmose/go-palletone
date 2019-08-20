@@ -28,7 +28,7 @@ import (
 )
 
 type CertRawInfo struct {
-	Issuer string
+	//Issuer string
 	Holder string
 	Nonce  int // 不断加1的数，可以表示当前issuer发布的第几个证书。
 	Cert   *x509.Certificate

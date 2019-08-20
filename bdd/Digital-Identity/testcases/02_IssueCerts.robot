@@ -50,7 +50,7 @@ CA unlock its account succeed
     Should Be Equal    ${respJson["result"]}    ${true}
 
 CA issues intermediate certificate name cert1 to power succeed
-    ${args}=    Create List    addServerCert    ${powerCertHolder}    ${powerCertBytes}
+    ${args}=    Create List    addServerCert    ${powerCertBytes}
     ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    100    100    ${certContractAddr}
     ...    ${args}    ${null}
     ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    addServerCert

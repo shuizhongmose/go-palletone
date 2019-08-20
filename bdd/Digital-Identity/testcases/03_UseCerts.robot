@@ -5,19 +5,19 @@ Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
 
 *** Test Cases ***
-CAUseCert
-    Given CA unlock account succed
-    ${reqId}=    When CA uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-    ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-
-PowerUseCert
-    Given Power unlock account succed
-    ${reqId}=    When Power uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-    ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+#CAUseCert
+#    Given CA unlock account succed
+#    ${reqId}=    When CA uses debug contract to test getRequesterCert without error
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+#    ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+#
+#PowerUseCert
+#    Given Power unlock account succed
+#    ${reqId}=    When Power uses debug contract to test getRequesterCert without error
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+#    ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
 
 UserUseCert
     Given User unlock account succed

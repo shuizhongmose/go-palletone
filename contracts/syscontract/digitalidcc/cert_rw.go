@@ -38,7 +38,7 @@ import (
 // put Cert state to write set
 func setCert(certInfo *dagModules.CertRawInfo, isServer bool, stub shim.ChaincodeStubInterface) error {
 	// put {issuer, certid} state
-	key := dagConstants.CERT_ISSUER_SYMBOL + certInfo.Issuer + dagConstants.CERT_SPLIT_CH + strconv.Itoa(certInfo.Nonce)
+	key := dagConstants.CERT_ISSUER_SYMBOL + certInfo.Cert.Issuer.String() + dagConstants.CERT_SPLIT_CH + strconv.Itoa(certInfo.Nonce)
 	certHolderInfo := dagModules.CertHolderInfo{
 		Holder:   certInfo.Holder,
 		IsServer: isServer,
@@ -51,9 +51,9 @@ func setCert(certInfo *dagModules.CertRawInfo, isServer bool, stub shim.Chaincod
 	if isServer {
 		key = dagConstants.CERT_SERVER_SYMBOL
 	} else {
-		key = dagConstants.CERT_MEMBER_SYMBOL
+		key = dagConstants.CERT_MEMBER_SYMBOL + certInfo.Holder + dagConstants.CERT_SPLIT_CH
 	}
-	key += certInfo.Holder + dagConstants.CERT_SPLIT_CH + certInfo.Cert.SerialNumber.String()
+	key += certInfo.Cert.SerialNumber.String()
 	revocationTime, _ := time.Time{}.MarshalBinary()
 	if !certInfo.Cert.NotAfter.IsZero() {
 		revocationTime, _ = certInfo.Cert.NotAfter.MarshalBinary()
@@ -82,18 +82,18 @@ func setCert(certInfo *dagModules.CertRawInfo, isServer bool, stub shim.Chaincod
 	return nil
 }
 
-func getHolderCertIDs(addr string, stub shim.ChaincodeStubInterface) (serverCertStates []*dagModules.CertState, memberCertStates []*dagModules.CertState, err error) {
+func getHolderCertIDs(addr string, stub shim.ChaincodeStubInterface) (memberCertStates []*dagModules.CertState, err error) {
 	// query server certificates
-	serverCertStates, err = queryCertsIDs(dagConstants.CERT_SERVER_SYMBOL, addr, stub)
-	if err != nil {
-		return nil, nil, err
-	}
+	//serverCertStates, err = queryCertsIDs(dagConstants.CERT_SERVER_SYMBOL, addr, stub)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
 	// query memmber certificates
 	memberCertStates, err = queryCertsIDs(dagConstants.CERT_MEMBER_SYMBOL, addr, stub)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return serverCertStates, memberCertStates, nil
+	return memberCertStates, nil
 }
 
 // Return all validated certificate
@@ -315,8 +315,9 @@ func GetCertIDBySubject(subject string, stub shim.ChaincodeStubInterface) (certi
 	return serial.String(), nil
 }
 
-func GetCertRevocationTime(holder string, certid string, stub shim.ChaincodeStubInterface) (revocationtime time.Time, err error) {
-	key := dagConstants.CERT_SERVER_SYMBOL + holder + dagConstants.CERT_SPLIT_CH + certid
+func GetCertRevocationTime( /*holder string,*/ certid string, stub shim.ChaincodeStubInterface) (revocationtime time.Time, err error) {
+	//key := dagConstants.CERT_SERVER_SYMBOL + holder + dagConstants.CERT_SPLIT_CH + certid
+	key := dagConstants.CERT_SERVER_SYMBOL + certid
 	val, err := stub.GetState(key)
 	if err != nil {
 		return time.Time{}, err

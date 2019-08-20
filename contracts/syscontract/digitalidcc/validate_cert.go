@@ -23,6 +23,7 @@ package digitalidcc
 import (
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
 	"github.com/palletone/go-palletone/contracts/shim"
 	dagConstants "github.com/palletone/go-palletone/dag/constants"
@@ -32,11 +33,11 @@ import (
 )
 
 // This is the basic validation
-func ValidateCert(issuer string, cert *x509.Certificate, stub shim.ChaincodeStubInterface) error {
+func ValidateCert( /*issuer string,*/ cert *x509.Certificate, stub shim.ChaincodeStubInterface) error {
 	if err := checkExists(cert, stub); err != nil {
 		return err
 	}
-	if err := validateIssuer(issuer, cert, stub); err != nil {
+	if err := validateIssuer( /*issuer,*/ cert, stub); err != nil {
 		return err
 	}
 	// validate
@@ -92,38 +93,33 @@ func checkExists(cert *x509.Certificate, stub shim.ChaincodeStubInterface) error
 	return nil
 }
 
-func validateIssuer(issuer string, cert *x509.Certificate, stub shim.ChaincodeStubInterface) error {
-	// check with root ca holder
-	rootCAHolder, err := stub.GetState("RootCAHolder")
-	if err != nil {
-		return err
-	}
-	// check in intermediate certificate
+func validateIssuer( /*issuer string,*/ cert *x509.Certificate, stub shim.ChaincodeStubInterface) error {
+	// if the cert's issuer is root ca, then pass
 	rootCert, err := GetRootCACert(stub)
 	if err != nil {
 		return err
 	}
-	if issuer == string(rootCAHolder) {
-		if cert.Issuer.String() != rootCert.Subject.String() {
-			return fmt.Errorf("cert issuer is invalid, excepted %s but %s", rootCert.Subject.String(), cert.Issuer.String())
+	if cert.Issuer.String() == rootCert.Subject.String() {
+		if rootCert.NotAfter.IsZero() || rootCert.NotAfter.Before(time.Now()) {
+			return fmt.Errorf("Root CA is expired")
 		}
-	} else {
-		// query certid
-		certid, err := GetCertIDBySubject(cert.Issuer.String(), stub)
-		if err != nil {
-			return err
-		}
-		if certid == "" {
-			return fmt.Errorf("the issuer has no verified certificate")
-		}
-		// query server list
-		revocationTime, err := GetCertRevocationTime(issuer, certid, stub)
-		if err != nil {
-			return err
-		}
-		if revocationTime.IsZero() || revocationTime.Before(time.Now()) {
-			return fmt.Errorf("Has no validate intermidate certificate. Time is %s", revocationTime.String())
-		}
+		return nil
+	}
+	// query certid
+	certid, err := GetCertIDBySubject(cert.Issuer.String(), stub)
+	if err != nil {
+		return err
+	}
+	if certid == "" {
+		return fmt.Errorf("the issuer has no verified certificate")
+	}
+	// query server list
+	revocationTime, err := GetCertRevocationTime( /*issuer, */ certid, stub)
+	if err != nil {
+		return err
+	}
+	if revocationTime.IsZero() || revocationTime.Before(time.Now()) {
+		return fmt.Errorf("The issuer's certificate(%s) is expired. Time is %s", certid, revocationTime.String())
 	}
 	return nil
 }
@@ -165,19 +161,16 @@ func ValidateCertChain(cert *x509.Certificate, stub shim.ChaincodeStubInterface)
 }
 
 // Validate CRL Issuer Signature
-func ValidateCRLIssuerSig(issuerAddr string, crl *pkix.CertificateList, stub shim.ChaincodeStubInterface) error {
-	// check ca holder
-	caHolder, err := stub.GetState("RootCAHolder")
+func ValidateCRLIssuerSig(crl *pkix.CertificateList, stub shim.ChaincodeStubInterface) error {
+	// if crl issuer is ca so check ca signature
+	rootCert, err := GetRootCACert(stub)
 	if err != nil {
 		return err
 	}
-	if issuerAddr == string(caHolder) {
-		rootCert, err := GetRootCACert(stub)
-		if err != nil {
-			return err
-		}
+	if crl.TBSCertList.Issuer.String() == rootCert.Subject.String() {
 		return rootCert.CheckCRLSignature(crl)
 	}
+
 	// query issuer cert info
 	key := dagConstants.CERT_SUBJECT_SYMBOL + crl.TBSCertList.Issuer.String()
 	val, err := stub.GetState(key)
@@ -187,7 +180,7 @@ func ValidateCRLIssuerSig(issuerAddr string, crl *pkix.CertificateList, stub shi
 	certid := big.Int{}
 	certid.SetBytes(val)
 	// check revocation time
-	key = dagConstants.CERT_SERVER_SYMBOL + issuerAddr + dagConstants.CERT_SPLIT_CH + certid.String()
+	key = dagConstants.CERT_SERVER_SYMBOL + certid.String()
 	val, err = stub.GetState(key)
 	if err != nil {
 		return err
@@ -206,4 +199,9 @@ func ValidateCRLIssuerSig(issuerAddr string, crl *pkix.CertificateList, stub shi
 	}
 	// check signature
 	return cert.CheckCRLSignature(crl)
+}
+
+func CertToPem(certBytes []byte) []byte {
+	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	return pemCert
 }
