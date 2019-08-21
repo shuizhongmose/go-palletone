@@ -203,5 +203,6 @@ func ValidateCRLIssuerSig(crl *pkix.CertificateList, stub shim.ChaincodeStubInte
 
 func CertToPem(certBytes []byte) []byte {
 	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
-	return pemCert
+	cb, _ := pem.Decode(pemCert)
+	return cb.Bytes
 }
