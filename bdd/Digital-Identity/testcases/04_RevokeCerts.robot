@@ -64,12 +64,12 @@ User certificate revocation time is before now
     ...    ELSE    Fail    Power invoke user certificate failed
 
 CA unlock his account succeed
-    ${respJson}=    unlockAccount    ${caCertHolder}
+    ${respJson}=    unlockAccount    ${tokenHolder}
     Dictionary Should Contain Key    ${respJson}    result
     Should Be Equal    ${respJson["result"]}    ${true}
 
 CA revoke power certificate succeed
-    ${params}=    Create List    ${caCertHolder}    1    ${powerCertHolder}
+    ${params}=    Create List    ${tokenHolder}    1    ${powerCertHolder}
     ${respJson}=    sendRpcPost    ${host}    wallet_revokeCert    ${params}    RevokeCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
@@ -77,7 +77,7 @@ CA revoke power certificate succeed
     [Return]    ${reqId}
 
 CA can query his issued CRL file
-    ${args}=    Create List    ${queryCRLMethod}    ${caCertHolder}
+    ${args}=    Create List    ${queryCRLMethod}    ${tokenHolder}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCRL
     Dictionary Should Contain Key    ${respJson}    result

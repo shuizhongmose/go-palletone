@@ -8,13 +8,12 @@ Library           OperatingSystem
 Library           String
 
 *** Variables ***
-#${CertFilePath}    C:/Users/Administrator/Desktop/tmp
-${CertFilePath}    ~/cawork/immediateca/
+${CertFilePath}    C:/Users/Administrator/Desktop/tmp
+#${CertFilePath}    ~/cawork/immediateca/
 
 *** Test Cases ***
 testprepare
     queryTokenHolder    ${false}
-    queryCAHolder
     queryCACertID
     # new account
     ${user}=    newAccount

@@ -5,19 +5,19 @@ Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
 
 *** Test Cases ***
-#CAUseCert
-#    Given CA unlock account succed
-#    ${reqId}=    When CA uses debug contract to test getRequesterCert without error
-#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-#    ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
-#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-#
-#PowerUseCert
-#    Given Power unlock account succed
-#    ${reqId}=    When Power uses debug contract to test getRequesterCert without error
-#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
-#    ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
-#    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+CAUseCert
+    Given CA unlock account succed
+    ${reqId}=    When CA uses debug contract to test getRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+
+PowerUseCert
+    Given Power unlock account succed
+    ${reqId}=    When Power uses debug contract to test getRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
 
 UserUseCert
     Given User unlock account succed
@@ -29,13 +29,13 @@ UserUseCert
 *** Keywords ***
 CA unlock account succed
     Log    "CA unlock account succed"
-    ${respJson}=    unlockAccount    ${caCertHolder}
+    ${respJson}=    unlockAccount    ${tokenHolder}
     Dictionary Should Contain Key    ${respJson}    result
     Should Be Equal    ${respJson["result"]}    ${true}
 
 CA uses debug contract to test getRequesterCert without error
     ${args}=    Create List    ${getRequesterCertMethod}
-    ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    1    1    ${debugContractAddr}
+    ${params}=    genInvoketxParams    ${tokenHolder}    ${tokenHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${caCertID}
     ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    getRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
@@ -45,7 +45,7 @@ CA uses debug contract to test getRequesterCert without error
 
 CA uses debug contract to test checkRequesterCert without error
     ${args}=    Create List    ${checkRequesterCertMethod}
-    ${params}=    genInvoketxParams    ${caCertHolder}    ${caCertHolder}    1    1    ${debugContractAddr}
+    ${params}=    genInvoketxParams    ${tokenHolder}    ${tokenHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${caCertID}
     ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
