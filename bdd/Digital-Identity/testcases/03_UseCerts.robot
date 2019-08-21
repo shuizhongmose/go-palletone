@@ -8,23 +8,25 @@ Resource          ../../commonlib/pubFuncs.robot
 CAUseCert
     Given CA unlock account succed
     ${reqId}=    When CA uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    And Should Be Equal ${errMsg}    ${500}
     ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    And Should Be Equal ${errMsg}    ${500}
 
 PowerUseCert
     Given Power unlock account succed
     ${reqId}=    When Power uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
     ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${false}
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
 
 UserUseCert
     Given User unlock account succed
     ${reqId}=    When User uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     ${reqId}=    Then User uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}     ${true}
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
 
 *** Keywords ***
 CA unlock account succed
@@ -37,7 +39,7 @@ CA uses debug contract to test getRequesterCert without error
     ${args}=    Create List    ${getRequesterCertMethod}
     ${params}=    genInvoketxParams    ${tokenHolder}    ${tokenHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${caCertID}
-    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    getRequesterCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    getRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
@@ -47,7 +49,7 @@ CA uses debug contract to test checkRequesterCert without error
     ${args}=    Create List    ${checkRequesterCertMethod}
     ${params}=    genInvoketxParams    ${tokenHolder}    ${tokenHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${caCertID}
-    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    checkRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
@@ -62,7 +64,7 @@ Power uses debug contract to test getRequesterCert without error
     ${args}=    Create List    ${getRequesterCertMethod}
     ${params}=    genInvoketxParams    ${powerCertHolder}    ${powerCertHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${powerCertID}
-    ${respJson}=    sendRpcPost      ${host}      ${ccinvokeMethod}    ${params}    getRequesterCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    getRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
@@ -72,7 +74,7 @@ Power uses debug contract to test checkRequesterCert without error
     ${args}=    Create List    ${checkRequesterCertMethod}
     ${params}=    genInvoketxParams    ${powerCertHolder}    ${powerCertHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${powerCertID}
-    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    checkRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
@@ -97,9 +99,8 @@ User uses debug contract to test checkRequesterCert without error
     ${args}=    Create List    ${checkRequesterCertMethod}
     ${params}=    genInvoketxParams    ${userCertHolder}    ${userCertHolder}    1    1    ${debugContractAddr}
     ...    ${args}    ${userCertID}
-    ${respJson}=    sendRpcPost     ${host}       ${ccinvokeMethod}    ${params}    checkRequesterCert
+    ${respJson}=    sendRpcPost    ${host}    ${ccinvokeMethod}    ${params}    checkRequesterCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
     [Return]    ${reqId}
-

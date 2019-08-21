@@ -20,6 +20,7 @@ queryCACertID
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    getCAHolder
     ${certId}=    Get From Dictionary    ${respJson}    result
+    Set Global Variable     ${caCertID}     ${certId}
     [Return]    ${certId}
 
 genInvoketxParams

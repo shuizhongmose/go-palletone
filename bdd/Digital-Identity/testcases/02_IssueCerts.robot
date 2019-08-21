@@ -9,7 +9,7 @@ CAIssueIntermedate
     Given CA unlock its account succeed
     ${reqId}=    When CA issues intermediate certificate name cert1 to power succeed
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    Then Power can query his certificate in db  ${reqId}
+    Then Power can query his certificate in db    ${reqId}
 
 PowerIssueUserCert
     Given Power unlock its account succeed
@@ -60,15 +60,13 @@ CA issues intermediate certificate name cert1 to power succeed
     [Return]    ${reqId}
 
 Power can query his certificate in db
-    [Arguments]     ${reqId}    ${certBytes}
-    ${certID}= Get invoke payload info ${reqId}
+    [Arguments]    ${reqId}
+    ${certID}=    Get invoke payload info    ${reqId}
+    ${certID}=    Evaluate    str(${certID})
     ${args}=    Create List    getCertBytes    ${certID}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCertBytes
     Dictionary Should Contain Key    ${respJson}    result
-    ${resultDict}=    Evaluate    ${respJson["result"]}
-    ${resCertID}=    Evaluate    ${resultDict}['CertID']
-    ${resCertBytes}=    Evaluate    ${resultDict}['CertBytes']
-    Should Be Equal     ${resCertID}    ${certID}
-    Should Be Equal     ${resCertBytes}    ${powerCertBytes}
-    Set Global Variable    ${powerCertID}    ${CertID}
+    ${resCertBytes}=    Get From Dictionary    ${respJson}    result
+    Should Be Equal    ${resCertBytes}    ${powerCertBytes}
+    Set Global Variable    ${powerCertID}    ${certID}
