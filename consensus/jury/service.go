@@ -188,8 +188,8 @@ func NewContractProcessor(ptn PalletOne, dag iDag, contract *contracts.Contract,
 		mtx:            make(map[common.Hash]*contractTx),
 		mel:            make(map[common.Hash]*electionVrf),
 		lockVrf:        make(map[common.Address][]modules.ElectionInf),
-		electionNum:    cfg.ElectionNum,    //todo contractSigNum
-		contractSigNum: cfg.ContractSigNum, //todo contractEleNum
+		electionNum:    contractSigNum, //todo contractSigNum ,cfg.ContractSigNum
+		contractSigNum: contractEleNum, //todo contractEleNum ,cfg.ElectionNum
 		validator:      validator,
 		errMsgEnable:   true,
 	}

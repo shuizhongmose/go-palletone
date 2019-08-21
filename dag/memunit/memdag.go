@@ -476,8 +476,8 @@ func (chain *MemDag) AddUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 	}
 	a, b, c, d, e, err := chain.addUnit(unit, txpool)
 	log.DebugDynamic(func() string {
-		return fmt.Sprintf("MemDag[%s] AddUnit cost time: %v ,index: %d, hash: %s", chain.token.String(),
-			time.Since(start), unit.NumberU64(), unit.Hash().String())
+		return fmt.Sprintf("MemDag[%s]: index: %d, hash: %s,AddUnit cost time: %v ,", chain.token.String(),
+			unit.NumberU64(), unit.Hash().String(), time.Since(start))
 	})
 
 	if err == nil {
@@ -528,6 +528,8 @@ func (chain *MemDag) addUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 				vali_err := validator.NewValidateError(validateCode)
 				log.Debugf("validate main chain unit error, %s, unit hash:%s",
 					vali_err.Error(), uHash.String())
+				// reset unit's txs
+				go txpool.ResetPendingTxs(unit.Transactions())
 				return nil, nil, nil, nil, nil, vali_err
 			}
 			tempdb, _ := temp_db.AddUnit(unit, chain.saveHeaderOnly)
@@ -577,6 +579,8 @@ func (chain *MemDag) addUnit(unit *modules.Unit, txpool txspool.ITxPool) (common
 			if validateCode != validator.TxValidationCode_VALID {
 				vali_err := validator.NewValidateError(validateCode)
 				log.Debugf("validate fork unit error, %s, unit hash:%s", vali_err.Error(), uHash.String())
+				// reset unit's txs
+				go txpool.ResetPendingTxs(unit.Transactions())
 				return nil, nil, nil, nil, nil, vali_err
 			}
 			temp, _ := main_temp.AddUnit(unit, chain.saveHeaderOnly)
