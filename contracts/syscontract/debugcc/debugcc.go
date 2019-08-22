@@ -87,6 +87,10 @@ func (d *DebugChainCode) getbalance(stub shim.ChaincodeStubInterface, args []str
 }
 
 func (d *DebugChainCode) getRequesterCert(stub shim.ChaincodeStubInterface) pb.Response {
+	isValid, err := stub.IsRequesterCertValid()
+	if !isValid {
+		return shim.Error(fmt.Sprintf("Requester cert is invalid, because %s", err.Error()))
+	}
 	certBytes, err := stub.GetRequesterCert()
 	if err != nil {
 		return shim.Error(err.Error())
