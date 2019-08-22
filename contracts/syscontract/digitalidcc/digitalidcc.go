@@ -188,7 +188,7 @@ func (d *DigitalIdentityChainCode) addCRLCert(stub shim.ChaincodeStubInterface, 
 	if err := setCRL(crl.TBSCertList.Issuer.String(), crl, certHolderInfo, stub); err != nil {
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert save state error: %s", err.Error()))
 	}
-	return shim.Success([]byte("---- Add CRL Success --- "))
+	return shim.Success([]byte(crl.TBSCertList.Issuer.String()))
 }
 
 func (d *DigitalIdentityChainCode) getAddressCertIDs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
