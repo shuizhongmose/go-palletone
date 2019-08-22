@@ -1102,13 +1102,13 @@ func (handler *Handler) handlerCheckCertValidation(caller string, certID []byte,
 	if err != nil {
 		return false, fmt.Errorf("query ca certificate error (%s)", err.Error())
 	}
-	if caCert.NotBefore.After(time.Now()) || caCert.NotAfter.Before(time.Now()) {
-		return false, fmt.Errorf("ca certificate has expired")
-	}
-	// caller is ca holder
-	if caCert.SerialNumber.String() == intCertID.String() && caCert.NotAfter.After(time.Now()) {
-		return true, nil
-	}
+	//if caCert.NotBefore.After(time.Now()) || caCert.NotAfter.Before(time.Now()) {
+	//	return false, fmt.Errorf("ca certificate has expired")
+	//}
+	//// caller is ca holder
+	//if caCert.SerialNumber.String() == intCertID.String() && caCert.NotAfter.After(time.Now()) {
+	//	return true, nil
+	//}
 
 	// get cert bytes
 	resBytes, err := handler.handleGetCertState(key, channelId, txid)
