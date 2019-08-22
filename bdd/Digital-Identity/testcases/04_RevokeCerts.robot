@@ -12,7 +12,6 @@ PowerRevokeUserCert
     ${reqId}=    When Power revoke user certificate succeed
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     ${issuer}=  And Get invoke payload info     ${reqId}
-    And Sleep    10
     Then Power can query his issued CRL file    ${issuer}
     And User certificate revocation time is before now
 
@@ -20,8 +19,8 @@ CARevokePowerCert
     Given CA unlock his account succeed
     ${reqId}=    When CA revoke power certificate succeed
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    And Sleep    10
-    Then CA can query his issued CRL file
+    ${issuer}=  And Get invoke payload info     ${reqId}
+    Then CA can query his issued CRL file   ${issuer}
     And Power certificate revocation time is before now
 
 *** Keywords ***
@@ -79,7 +78,8 @@ CA revoke power certificate succeed
     [Return]    ${reqId}
 
 CA can query his issued CRL file
-    ${args}=    Create List    ${queryCRLMethod}    ${tokenHolder}
+    [Arguments]     ${issuer}
+    ${args}=    Create List    ${queryCRLMethod}    ${issuer}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCRL
     Dictionary Should Contain Key    ${respJson}    result
