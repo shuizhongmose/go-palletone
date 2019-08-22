@@ -20,6 +20,7 @@ queryCACertID
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    getCAHolder
     ${certId}=    Get From Dictionary    ${respJson}    result
+    ${certId}=    Evaluate    str(${certId})
     Set Global Variable     ${caCertID}     ${certId}
     [Return]    ${certId}
 
@@ -258,7 +259,7 @@ Get invoke payload info
     ${info}=    Get From Dictionary    ${result}    info
     ${invokeInfo}=    Get From Dictionary    ${info}    contract_invoke
     ${payload}=    Get From Dictionary    ${invokeInfo}    payload
-    ${payload}=    To Json    ${payload}
+    #${payload}=    To Json    ${payload}
     [Return]    ${payload}
 
 Query Error Msg From Response

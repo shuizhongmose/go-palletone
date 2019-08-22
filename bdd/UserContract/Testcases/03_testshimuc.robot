@@ -85,6 +85,7 @@ UseDigitalCertificate
     ${reqId}=    Then User use cert to invoke contract
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     ${payload}=    Then Get invoke payload info    ${reqId}
+    ${payload}=    To Json    ${payload}
     ${compareBytes}=    And Replace String    ${caCertBytes}    \n    ${EMPTY}
     ${compareBytes}=    And Replace String    ${compareBytes}    -----BEGIN CERTIFICATE-----    ${EMPTY}
     ${compareBytes}=    And Replace String    ${compareBytes}    -----END CERTIFICATE-----    ${EMPTY}
@@ -107,6 +108,7 @@ Get Invoke Info
     ${reqId}=    When User get invoke info    ${args}    ${newAddr}
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     ${payload}=    Get invoke payload info    ${reqId}
+    ${payload}=    To Json    ${payload}
     Then Check all invoke info    ${payload}    ${args}    testGetInvokeInfo    ${reqId}    ${newAddr}
 
 Stop testshimuc contract

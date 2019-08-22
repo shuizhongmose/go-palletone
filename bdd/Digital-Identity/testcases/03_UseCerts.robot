@@ -9,17 +9,19 @@ CAUseCert
     Given CA unlock account succed
     ${reqId}=    When CA uses debug contract to test getRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal ${errMsg}    ${500}
+    And Should Be Equal    ${errCode}    ${500}
     ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal ${errMsg}    ${500}
+    And Should Be Equal    ${errCode}    ${500}
 
 PowerUseCert
     Given Power unlock account succed
     ${reqId}=    When Power uses debug contract to test getRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    And Should Be Equal    ${errCode}    ${500}
     ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
+    And Should Be Equal    ${errCode}    ${500}
 
 UserUseCert
     Given User unlock account succed
