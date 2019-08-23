@@ -231,7 +231,7 @@ Wait for unit about contract to be confirmed by unit height
     \    ${status}    ${result}=    Run Keyword And Ignore Error    Get From Dictionary    ${respJson}    result
     \    Exit For Loop If    '${status}' == 'PASS'
     \    Run Keyword If    ${waitTimes}-${t}==1    Fail    "It takes too long for jury to signature"
-    \    Sleep    5s
+    \    Sleep    35s
     # ------- query error code ------- #
     ${errCode}    ${errMsg}=    Query Error Msg From Response    ${result}
     Run Keyword If    ${checkCode}==${true}    Check response code    ${errCode}    ${errMsg}
