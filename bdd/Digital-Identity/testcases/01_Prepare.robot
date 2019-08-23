@@ -8,8 +8,10 @@ Library           OperatingSystem
 Library           String
 
 *** Variables ***
-#${CertFilePath}    C:/Users/Administrator/Desktop/tmp
-${CertFilePath}    ~/cawork/immediateca/
+${CertFilePath}    C:/Users/Administrator/Desktop/tmp
+${CrlFilePath}    C:/Users/Administrator/Desktop/tmp
+#${CertFilePath}    ~/cawork/immediateca/
+#${CrlFilePath}    ~/cawork/root/msp/crls/
 
 *** Test Cases ***
 testprepare
@@ -26,3 +28,6 @@ testprepare
     # query power cert bytes from ~/cawork/immediateca/
     ${cert}=    Get File    ${CertFilePath}/ca-cert.pem
     Set Global Variable    ${powerCertBytes}    ${cert}
+    # query immediate crl bytes
+    ${crl}=    Get File    ${CrlFilePath}/crl.pem
+    Set Global Variable    ${immediateCrlBytes}    ${crl}
