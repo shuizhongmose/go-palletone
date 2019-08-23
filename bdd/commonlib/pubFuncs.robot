@@ -224,14 +224,14 @@ Wait for unit about contract to be confirmed by unit height
     # query the height of unit including tpl install tx
     ${params}=    Create List    ${reqId}
     # jury signature needs time to set agree
-    ${waitTimes}=    Set Variable    ${20}
+    ${waitTimes}=    Set Variable    ${50}
     ${unitHeight}=    Set Variable    999999999999999999999999999999999999
     : FOR    ${t}    IN RANGE    ${waitTimes}
     \    ${respJson}=    sendRpcPost    ${host}    dag_getTxByReqId    ${params}    QueryContractReqStats
     \    ${status}    ${result}=    Run Keyword And Ignore Error    Get From Dictionary    ${respJson}    result
     \    Exit For Loop If    '${status}' == 'PASS'
     \    Run Keyword If    ${waitTimes}-${t}==1    Fail    "It takes too long for jury to signature"
-    \    Sleep    35s
+    \    Sleep    5s
     # ------- query error code ------- #
     ${errCode}    ${errMsg}=    Query Error Msg From Response    ${result}
     Run Keyword If    ${checkCode}==${true}    Check response code    ${errCode}    ${errMsg}
