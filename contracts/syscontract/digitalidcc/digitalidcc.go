@@ -303,7 +303,7 @@ func (d *DigitalIdentityChainCode) getRootCACertBytes(stub shim.ChaincodeStubInt
 	}
 	certInfoMap := map[string]interface{}{
 		"CertID":    CACert.SerialNumber.String(),
-		"CertBytes": CertToPem(CACert.Raw, "CERTIFICATE"),
+		"CertBytes": string(CertToPem(CACert.Raw, "CERTIFICATE")),
 	}
 	certInfoJson, err := json.Marshal(certInfoMap)
 	if err != nil {
