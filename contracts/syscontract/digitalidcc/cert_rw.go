@@ -255,18 +255,18 @@ func setCRL(issuer string, crl *pkix.CertificateList, certHolderInfo []*dagModul
 	return nil
 }
 
-func getIssuerCRLBytes(issuer string, stub shim.ChaincodeStubInterface) ([][]byte, error) {
+func getIssuerCRLBytes(issuer string, stub shim.ChaincodeStubInterface) ([]string, error) {
 	// query server certificates
 	key := dagConstants.CRL_BYTES_SYMBOL + issuer
 	data, err := stub.GetStateByPrefix(key)
 	if err != nil {
 		return nil, err
 	}
-	bytes := [][]byte{}
+	crls := []string{}
 	for _, val := range data {
-		bytes = append(bytes, CertToPem(val.Value, "X509 CRL"))
+		crls = append(crls, string(CertToPem(val.Value, "X509 CRL")))
 	}
-	return bytes, nil
+	return crls, nil
 }
 
 func GetIntermidateCertChains(cert *x509.Certificate, rootIssuer string, stub shim.ChaincodeStubInterface) (certChains []*x509.Certificate, err error) {
