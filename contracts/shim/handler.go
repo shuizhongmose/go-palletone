@@ -1102,6 +1102,9 @@ func (handler *Handler) handlerCheckCertValidation(caller string, certID []byte,
 	if err != nil {
 		return false, fmt.Errorf("query ca certificate error (%s)", err.Error())
 	}
+	if caCert.SerialNumber.String() == intCertID.String() {
+		return false, fmt.Errorf("you are using root ca cert")
+	}
 	//if caCert.NotBefore.After(time.Now()) || caCert.NotAfter.Before(time.Now()) {
 	//	return false, fmt.Errorf("ca certificate has expired")
 	//}

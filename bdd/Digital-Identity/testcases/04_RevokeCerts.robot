@@ -7,21 +7,21 @@ Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
 
 *** Test Cases ***
-PowerRevokeUserCert
+PowerRevokeUser1Cert1
     Given Power unlock his account succeed
-    ${reqId}=    When Power revoke user certificate succeed
+    ${reqId}=    When Power revoke user certificate succeed    ${userCertHolder}
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    ${issuer}=  And Get invoke payload info     ${reqId}
+    ${issuer}=    And Get invoke payload info    ${reqId}
     Then Power can query his issued CRL file    ${issuer}
-    And User certificate revocation time is before now
+    And User certificate revocation time is before now    ${userCertHolder}
 
 CARevokePowerCert
     Given CA unlock his account succeed
     ${reqId}=    When CA revoke power certificate succeed
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    ${issuer}=  And Get invoke payload info     ${reqId}
-    Then CA can query his issued CRL file   ${issuer}
-    And Power certificate revocation time is before now
+    ${issuer}=    And Get invoke payload info    ${reqId}
+    Then CA can query his issued CRL file    ${issuer}
+    And User certificate revocation time is before now    ${userCertHolder2}
 
 *** Keywords ***
 Power unlock his account succeed
@@ -30,7 +30,8 @@ Power unlock his account succeed
     Should Be Equal    ${respJson["result"]}    ${true}
 
 Power revoke user certificate succeed
-    ${params}=    Create List    ${powerCertHolder}    1    ${userCertHolder}
+    [Arguments]    ${userAddr}
+    ${params}=    Create List    ${powerCertHolder}    1    ${userAddr}
     ${respJson}=    sendRpcPost    ${host}    wallet_revokeCert    ${params}    RevokeCert
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
@@ -38,7 +39,7 @@ Power revoke user certificate succeed
     [Return]    ${reqId}
 
 Power can query his issued CRL file
-    [Arguments]     ${issuer}
+    [Arguments]    ${issuer}
     ${args}=    Create List    ${queryCRLMethod}    ${issuer}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCRL
@@ -47,7 +48,8 @@ Power can query his issued CRL file
     Length Should Be    ${bytes}    1
 
 User certificate revocation time is before now
-    ${args}=    Create List    ${getHolderCertMethod}    ${userCertHolder}
+    [Arguments]    ${userAddr}
+    ${args}=    Create List    ${getHolderCertMethod}    ${userAddr}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
@@ -70,21 +72,22 @@ CA unlock his account succeed
     Should Be Equal    ${respJson["result"]}    ${true}
 
 CA revoke power certificate succeed
-    ${params}=    Create List    ${tokenHolder}    1    ${powerCertHolder}
-    ${respJson}=    sendRpcPost    ${host}    wallet_revokeCert    ${params}    RevokeCert
+    ${args}=    Create List    ${addCRLMethod}    ${immediateCrlBytes}
+    ${respJson}=    invokeContract    ${tokenHolder}    ${tokenHolder}    100    100    ${certContractAddr}
+    ...    ${args}
     Dictionary Should Contain Key    ${respJson}    result
     ${result}=    Get From Dictionary    ${respJson}    result
     ${reqId}=    Get From Dictionary    ${result}    reqId
     [Return]    ${reqId}
 
 CA can query his issued CRL file
-    [Arguments]     ${issuer}
+    [Arguments]    ${issuer}
     ${args}=    Create List    ${queryCRLMethod}    ${issuer}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCRL
     Dictionary Should Contain Key    ${respJson}    result
     ${bytes}=    Evaluate    ${respJson['result']}
-    Length Should Be    ${bytes}    1
+    Should Be Equal    ${bytes}    ${immediateCrlBytes}
 
 Power certificate revocation time is before now
     ${args}=    Create List    ${getHolderCertMethod}    ${powerCertHolder}

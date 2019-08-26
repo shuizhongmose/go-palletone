@@ -11,11 +11,19 @@ CAIssueIntermedate
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     Then Power can query his certificate in db    ${reqId}
 
-PowerIssueUserCert
+PowerIssueUser1Cert1
     Given Power unlock its account succeed
-    ${reqId}=    When Power issues certificate for user succeed
+    ${reqId}=    When Power issues certificate for user succeed    ${userCertHolder}
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    Then User can query his certificate in db
+    ${certID}=    Then User can query his certificate in db    ${userCertHolder}
+    And Set Global Variable    ${userCertID}    ${CertID}
+
+PowerIssueUser2Cert2
+    Given Power unlock its account succeed
+    ${reqId}=    When Power issues certificate for user succeed    ${userCertHolder2}
+    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
+    ${certID}=    Then User can query his certificate in db    ${userCertHolder2}
+    And Set Global Variable    ${userCertID2}    ${CertID}
 
 *** Keywords ***
 Power unlock its account succeed
@@ -24,7 +32,8 @@ Power unlock its account succeed
     Should Be Equal    ${respJson["result"]}    ${true}
 
 Power issues certificate for user succeed
-    ${params}=    Create List    ${powerCertHolder}    ${userCertHolder}    1    1k    palletone
+    [Arguments]    ${userAddr}
+    ${params}=    Create List    ${powerCertHolder}    ${userAddr}    1    1k    palletone
     ...    user    gptn.mediator1
     ${respJson}=    sendRpcPost    ${host}    wallet_genCert    ${params}    GenCert
     Dictionary Should Contain Key    ${respJson}    result
@@ -33,7 +42,8 @@ Power issues certificate for user succeed
     [Return]    ${reqId}
 
 User can query his certificate in db
-    ${args}=    Create List    ${getHolderCertMethod}    ${userCertHolder}
+    [Arguments]    ${userAddr}
+    ${args}=    Create List    ${getHolderCertMethod}    ${userAddr}
     ${params}=    Create List    ${certContractAddr}    ${args}    ${0}
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCert
     Dictionary Should Contain Key    ${respJson}    result
@@ -42,7 +52,7 @@ User can query his certificate in db
     Length Should Be    ${resultDict['MemberCertIDs']}    1
     Dictionary Should Contain Key    ${resultDict['MemberCertIDs'][0]}    CertID
     ${CertID}=    Evaluate    ${resultDict}['MemberCertIDs'][0]['CertID']
-    Set Global Variable    ${userCertID}    ${CertID}
+    [Return]    ${CertID}
 
 CA unlock its account succeed
     ${respJson}=    unlockAccount    ${tokenHolder}

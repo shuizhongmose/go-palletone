@@ -9,19 +9,19 @@ CAUseCert
     Given CA unlock account succed
     ${reqId}=    When CA uses debug contract to test getRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal    ${errCode}    ${500}
+    And Should Be Equal    ${errMsg}    Chaincode Error:Requester cert is invalid, because you are using root ca cert
     ${reqId}=    Then CA uses debug contract to test checkRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal    ${errCode}    ${500}
+    And Should Be Equal    ${errMsg}    Chaincode Error:Requester cert is invalid, because you are using root ca cert
 
 PowerUseCert
     Given Power unlock account succed
     ${reqId}=    When Power uses debug contract to test getRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal    ${errCode}    ${500}
+    And Should Be Equal    ${errMsg}    Chaincode Error:Requester cert is invalid, because you have no authority to use this certificate
     ${reqId}=    Then Power uses debug contract to test checkRequesterCert without error
     ${errCode}    ${errMsg}=    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${false}
-    And Should Be Equal    ${errCode}    ${500}
+    And Should Be Equal    ${errMsg}    Chaincode Error:Requester cert is invalid, because you have no authority to use this certificate
 
 UserUseCert
     Given User unlock account succed
