@@ -87,7 +87,8 @@ CA can query his issued CRL file
     ${respJson}=    sendRpcPost    ${host}    ${ccqueryMethod}    ${params}    queryCRL
     Dictionary Should Contain Key    ${respJson}    result
     ${bytes}=    Evaluate    ${respJson['result']}
-    Should Be Equal    ${bytes}    ${immediateCrlBytes}
+    ${certByte}=    Get From List    ${bytes}    0
+    Should Be Equal    ${certByte}    ${immediateCrlBytes}
 
 Power certificate revocation time is before now
     ${args}=    Create List    ${getHolderCertMethod}    ${powerCertHolder}
