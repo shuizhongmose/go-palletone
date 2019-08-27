@@ -360,7 +360,7 @@ func (d *DigitalIdentityChainCode) getRootCAHolder(stub shim.ChaincodeStubInterf
 
 func (d *DigitalIdentityChainCode) getIssuerCRL(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
-		reqStr := fmt.Sprintf("Need one args: [issuer address]")
+		reqStr := fmt.Sprintf("Need one args: [issuer object]")
 		return shim.Error(reqStr)
 	}
 	crlInfo, err := getIssuerCRLBytes(args[0], stub)

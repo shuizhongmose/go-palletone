@@ -264,7 +264,8 @@ func getIssuerCRLBytes(issuer string, stub shim.ChaincodeStubInterface) ([]strin
 	}
 	crls := []string{}
 	for _, val := range data {
-		crls = append(crls, string(CertToPem(val.Value, "X509 CRL")))
+		//crls = append(crls, string(CertToPem(val.Value, "X509 CRL")))
+		crls = append(crls, string(val.Value))
 	}
 	return crls, nil
 }
