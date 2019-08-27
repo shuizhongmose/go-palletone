@@ -116,6 +116,9 @@ func (d *DigitalIdentityChainCode) addCert(stub shim.ChaincodeStubInterface, arg
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode parse to certificate error:%s", err.Error())
 		return shim.Error(reqStr)
 	}
+	if isServer {
+		certHolder = cert.Issuer.String()
+	}
 	// basic validate certificate
 	if err := ValidateCert( /*issuer.String(),*/ cert, stub); err != nil {
 		reqStr := fmt.Sprintf("DigitalIdentityChainCode validate error: %s", err.Error())

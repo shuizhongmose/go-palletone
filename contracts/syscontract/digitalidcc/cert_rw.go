@@ -213,6 +213,7 @@ func GetCertDBInfo(certid string, stub shim.ChaincodeStubInterface) (certDBInfo 
 }
 
 func setCRL(rawBytes []byte, crl *pkix.CertificateList, certHolderInfo []*dagModules.CertHolderInfo, stub shim.ChaincodeStubInterface) error {
+	var key string
 	for index, revokeCert := range crl.TBSCertList.RevokedCertificates {
 		t, err := revokeCert.RevocationTime.MarshalBinary()
 		if err != nil {
@@ -220,9 +221,10 @@ func setCRL(rawBytes []byte, crl *pkix.CertificateList, certHolderInfo []*dagMod
 		}
 		// update holder cert revocation
 		if certHolderInfo[index].IsServer {
-			continue
+			key = dagConstants.CERT_SERVER_SYMBOL + certHolderInfo[index].CertID
+		} else {
+			key = dagConstants.CERT_MEMBER_SYMBOL + certHolderInfo[index].Holder + dagConstants.CERT_SPLIT_CH + certHolderInfo[index].CertID
 		}
-		key := dagConstants.CERT_MEMBER_SYMBOL + certHolderInfo[index].Holder + dagConstants.CERT_SPLIT_CH + certHolderInfo[index].CertID
 		if err := stub.PutState(key, t); err != nil {
 			return err
 		}
@@ -243,7 +245,7 @@ func setCRL(rawBytes []byte, crl *pkix.CertificateList, certHolderInfo []*dagMod
 		}
 	}
 	// update issuer crl bytes
-	key := dagConstants.CRL_BYTES_SYMBOL + crl.TBSCertList.Issuer.String() +
+	key = dagConstants.CRL_BYTES_SYMBOL + crl.TBSCertList.Issuer.String() +
 		dagConstants.CERT_SPLIT_CH + crl.TBSCertList.ThisUpdate.String() + dagConstants.CERT_SPLIT_CH + crl.TBSCertList.NextUpdate.String()
 	if err := stub.PutState(key, rawBytes); err != nil {
 		return err
