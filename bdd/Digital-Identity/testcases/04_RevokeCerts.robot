@@ -7,13 +7,13 @@ Resource          ../../commonlib/pubVariables.robot
 Resource          ../../commonlib/pubFuncs.robot
 
 *** Test Cases ***
-PowerRevokeUser1Cert1
-    Given Power unlock his account succeed
-    ${reqId}=    When Power revoke user certificate succeed    ${userCertHolder}
-    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
-    ${issuer}=    And Get invoke payload info    ${reqId}
-    Then Power can query his issued CRL file    ${issuer}
-    And User certificate revocation time is before now    ${userCertHolder}
+#PowerRevokeUser1Cert1
+#    Given Power unlock his account succeed
+#    ${reqId}=    When Power revoke user certificate succeed    ${userCertHolder}
+#    And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
+#    ${issuer}=    And Get invoke payload info    ${reqId}
+#    Then Power can query his issued CRL file    ${issuer}
+#    And User certificate revocation time is before now    ${userCertHolder}
 
 CARevokePowerCert
     Given CA unlock his account succeed
@@ -21,6 +21,7 @@ CARevokePowerCert
     And Wait for unit about contract to be confirmed by unit height    ${reqId}    ${true}
     ${issuer}=    And Get invoke payload info    ${reqId}
     Then CA can query his issued CRL file    ${issuer}
+    And User certificate revocation time is before now    ${userCertHolder}
     And User certificate revocation time is before now    ${userCertHolder2}
 
 *** Keywords ***
