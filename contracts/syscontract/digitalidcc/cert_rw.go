@@ -212,8 +212,7 @@ func GetCertDBInfo(certid string, stub shim.ChaincodeStubInterface) (certDBInfo 
 	return certDBInfo, nil
 }
 
-func setCRL(issuer string, crl *pkix.CertificateList, certHolderInfo []*dagModules.CertHolderInfo, stub shim.ChaincodeStubInterface) error {
-	var symbol string
+func setCRL(rawBytes []byte, crl *pkix.CertificateList, certHolderInfo []*dagModules.CertHolderInfo, stub shim.ChaincodeStubInterface) error {
 	for index, revokeCert := range crl.TBSCertList.RevokedCertificates {
 		t, err := revokeCert.RevocationTime.MarshalBinary()
 		if err != nil {
@@ -221,11 +220,9 @@ func setCRL(issuer string, crl *pkix.CertificateList, certHolderInfo []*dagModul
 		}
 		// update holder cert revocation
 		if certHolderInfo[index].IsServer {
-			symbol = dagConstants.CERT_SERVER_SYMBOL
-		} else {
-			symbol = dagConstants.CERT_MEMBER_SYMBOL
+			continue
 		}
-		key := symbol + certHolderInfo[index].Holder + dagConstants.CERT_SPLIT_CH + certHolderInfo[index].CertID
+		key := dagConstants.CERT_MEMBER_SYMBOL + certHolderInfo[index].Holder + dagConstants.CERT_SPLIT_CH + certHolderInfo[index].CertID
 		if err := stub.PutState(key, t); err != nil {
 			return err
 		}
@@ -236,36 +233,34 @@ func setCRL(issuer string, crl *pkix.CertificateList, certHolderInfo []*dagModul
 		}
 		for _, branch := range branchCerts {
 			if branch.IsServer {
-				key = dagConstants.CERT_SERVER_SYMBOL
-			} else {
-				key = dagConstants.CERT_MEMBER_SYMBOL
+				continue
 			}
+			key = dagConstants.CERT_MEMBER_SYMBOL
 			key += branch.Holder + dagConstants.CERT_SPLIT_CH + branch.CertID
 			if err := stub.PutState(key, t); err != nil {
 				return err
 			}
 		}
-		// update issuer crl bytes
-		key = dagConstants.CRL_BYTES_SYMBOL + issuer +
-			dagConstants.CERT_SPLIT_CH + crl.TBSCertList.ThisUpdate.String() + dagConstants.CERT_SPLIT_CH + crl.TBSCertList.NextUpdate.String()
-		if err := stub.PutState(key, crl.TBSCertList.Raw); err != nil {
-			return err
-		}
+	}
+	// update issuer crl bytes
+	key := dagConstants.CRL_BYTES_SYMBOL + crl.TBSCertList.Issuer.String() +
+		dagConstants.CERT_SPLIT_CH + crl.TBSCertList.ThisUpdate.String() + dagConstants.CERT_SPLIT_CH + crl.TBSCertList.NextUpdate.String()
+	if err := stub.PutState(key, rawBytes); err != nil {
+		return err
 	}
 	return nil
 }
 
-func getIssuerCRLBytes(issuer string, stub shim.ChaincodeStubInterface) ([][]byte, error) {
+func getIssuerCRLBytes(issuer string, stub shim.ChaincodeStubInterface) ([]string, error) {
 	// query server certificates
 	key := dagConstants.CRL_BYTES_SYMBOL + issuer
 	data, err := stub.GetStateByPrefix(key)
 	if err != nil {
 		return nil, err
 	}
-	crls := [][]byte{}
+	crls := []string{}
 	for _, val := range data {
-		//crls = append(crls, string(CertToPem(val.Value, "X509 CRL")))
-		crls = append(crls, val.Value)
+		crls = append(crls, string(CertToPem(val.Value, "X509 CRL")))
 	}
 	return crls, nil
 }

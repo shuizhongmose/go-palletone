@@ -185,7 +185,7 @@ func (d *DigitalIdentityChainCode) addCRLCert(stub shim.ChaincodeStubInterface, 
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert validate signature error:%s", err.Error()))
 	}
 	// handle state
-	if err := setCRL(crl.TBSCertList.Issuer.String(), crl, certHolderInfo, stub); err != nil {
+	if err := setCRL(crlBytes, crl, certHolderInfo, stub); err != nil {
 		return shim.Error(fmt.Sprintf("DigitalIdentityChainCode addCRLCert save state error: %s", err.Error()))
 	}
 	return shim.Success([]byte(crl.TBSCertList.Issuer.String()))
