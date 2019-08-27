@@ -51,3 +51,12 @@ sed -i 's/9443/9453/g' fabric-ca-server-config.yaml
 # start immediate ca
 nohup fabric-ca-server start -b lk:123 -p 7064 -u http://lk:123@localhost:7054 >> immediate.out &
 
+sleep 20
+
+# revoke immediate certificate
+cd ~/cawork/immediateca/
+fabric-ca-client enroll --tls.client.certfile ca-cert.pem -u http://lk:123@localhost:7054 -M ~/cawork/root/msp
+serial=$(openssl x509 -in ca-cert.pem -serial -noout | cut -d "=" -f 2)
+aki=$(openssl x509 -in ca-cert.pem -text | awk '/keyid/ {gsub(/ *keyid:|:/,"",$1);print tolower($0)}')
+fabric-ca-client revoke -s $serial -a $aki -r affiliationchange -u http://lk:123@localhost:7054 -M ~/cawork/root/msp -c ~/cawork/root/fabric-ca-server-config.yaml --gencrl
+
