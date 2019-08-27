@@ -99,6 +99,7 @@ matrix:
         - chmod +x ca-start.sh
         - chmod +x one-ptn.sh
         - ./ca-start.sh
+        - tree ~/cawork
         - ./one-ptn.sh
         - sleep 30
         - netstat -ntl
@@ -127,6 +128,7 @@ matrix:
         - sudo -H apt-get install jq
         - sudo -H apt-get install lftp
         - chmod +x bdd/upload2Ftp.sh
+        - sudo apt-get install tree
 addons:
   apt:
     update: true
