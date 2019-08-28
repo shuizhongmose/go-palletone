@@ -95,6 +95,7 @@ type iDag interface {
 	ChainThreshold() int
 	GetChainParameters() *core.ChainParameters
 	GetMediators() map[common.Address]bool
+	GetMediator(add common.Address) *core.Mediator
 }
 
 type electionVrf struct {
@@ -188,8 +189,8 @@ func NewContractProcessor(ptn PalletOne, dag iDag, contract *contracts.Contract,
 		mtx:            make(map[common.Hash]*contractTx),
 		mel:            make(map[common.Hash]*electionVrf),
 		lockVrf:        make(map[common.Address][]modules.ElectionInf),
-		electionNum:    contractSigNum, //todo contractSigNum ,cfg.ContractSigNum
-		contractSigNum: contractEleNum, //todo contractEleNum ,cfg.ElectionNum
+		electionNum:    contractEleNum, //todo contractSigNum ,cfg.ContractSigNum
+		contractSigNum: contractSigNum, //todo contractEleNum ,cfg.ElectionNum
 		validator:      validator,
 		errMsgEnable:   true,
 	}
