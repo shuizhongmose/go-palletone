@@ -1,16 +1,28 @@
-kind: pipeline
-name: default
+workspace:
+base: /go
+path: src/repo/goweb-app
 
-steps:
-- name: test
-  image: golang
-  commands:
-  - go test -mod=vendor ./...
+pipeline:
+  test:
+    image: golang:1.12
+    commands:
+      - go test -mod=vendor ./...
+  build:
+    image: golang:1.12
+    commands:
+      - go build
 
-trigger:
-  branch:
-    - master
-    - certbdd
-  event:
-    - pull_request
-    - push
+#kind: pipeline
+#name: default
+#
+#steps:
+#- name: test
+#  image: golang:1.12
+#  commands:
+#  - go test -mod=vendor ./...
+#
+#trigger:
+#  branch:
+#    - certbdd
+#  event:
+#    - push
