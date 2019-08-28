@@ -1,8 +1,13 @@
-kind: pipeline
-name: default
-
-steps:
-- name: UT
-  image: golang:1.12
+build:
+  image: golang:1.12.5
   commands:
-  - go test -mod=vendor ./...
+    - go test -mod=vendor ./...
+
+#kind: pipeline
+#name: default
+#
+#steps:
+#- name: UT
+#  image: golang:1.12
+#  commands:
+#  - go test -mod=vendor ./...
