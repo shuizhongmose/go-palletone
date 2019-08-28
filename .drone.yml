@@ -9,7 +9,8 @@ steps:
 
 trigger:
   branch:
-    - all
+    - master
+    - certbdd
   event:
     - pull_request
     - push
