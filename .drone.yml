@@ -1,28 +1,8 @@
-workspace:
-base: /go
-path: src/repo/goweb-app
+kind: pipeline
+name: default
 
-pipeline:
-  test:
-    image: golang:1.12
-    commands:
-      - go test -mod=vendor ./...
-  build:
-    image: golang:1.12
-    commands:
-      - go build
-
-#kind: pipeline
-#name: default
-#
-#steps:
-#- name: test
-#  image: golang:1.12
-#  commands:
-#  - go test -mod=vendor ./...
-#
-#trigger:
-#  branch:
-#    - certbdd
-#  event:
-#    - push
+steps:
+- name: UT
+  image: golang:1.12
+  commands:
+  - go test -mod=vendor ./...
