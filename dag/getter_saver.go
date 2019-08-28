@@ -53,8 +53,6 @@ func (d *Dag) GetActiveMediatorNodes() map[string]*discover.Node {
 
 	meds := d.GetActiveMediators()
 	for _, add := range meds {
-		// todo albert  待检查
-		//med := d.GetActiveMediator(add)
 		med := d.GetMediator(add)
 		if med == nil {
 			continue
@@ -175,6 +173,10 @@ func (dag *Dag) HeadUnitHash() common.Hash {
 
 func (dag *Dag) GetMediators() map[common.Address]bool {
 	return dag.unstableStateRep.GetMediators()
+}
+
+func (dag *Dag) GetMediatorCount() int {
+	return len(dag.unstableStateRep.GetMediators())
 }
 
 func (dag *Dag) LookupMediatorInfo() []*modules.MediatorInfo {

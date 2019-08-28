@@ -310,12 +310,12 @@ func isFoundationInvoke(stub shim.ChaincodeStubInterface) bool {
 		return false
 	}
 	//  获取
-	cp, err := stub.GetSystemConfig()
+	gp, err := stub.GetSystemConfig()
 	if err != nil {
 		//log.Error("strconv.ParseUint err:", "error", err)
 		return false
 	}
-	foundationAddress := cp.FoundationAddress
+	foundationAddress := gp.ChainParameters.FoundationAddress
 	// 判断当前请求的是否为基金会
 	if invokeAddr.String() != foundationAddress {
 		log.Error("please use foundation address")
@@ -468,11 +468,12 @@ func nodePayToDepositContract(stub shim.ChaincodeStubInterface, role string) pb.
 		return shim.Error(err.Error())
 	}
 
-	cp, err := stub.GetSystemConfig()
+	gp, err := stub.GetSystemConfig()
 	if err != nil {
 		//log.Error("strconv.ParseUint err:", "error", err)
 		return shim.Error(err.Error())
 	}
+	cp := gp.ChainParameters
 	//  交付地址
 	invokeAddr, err := stub.GetInvokeAddress()
 	if err != nil {
@@ -505,7 +506,9 @@ func nodePayToDepositContract(stub shim.ChaincodeStubInterface, role string) pb.
 		balance = &DepositBalance{}
 		//  可以加入列表
 		if invokeTokens.Amount != depositAmount {
-			return shim.Error("Too many or too little.")
+			str := fmt.Errorf("%s needs to pay only %d  deposit.", role, depositAmount)
+			log.Error(str.Error())
+			return shim.Error(str.Error())
 		}
 		//  加入候选列表
 		err = addCandaditeList(stub, invokeAddr, list)
@@ -530,7 +533,9 @@ func nodePayToDepositContract(stub shim.ChaincodeStubInterface, role string) pb.
 		//}
 		all := balance.Balance + invokeTokens.Amount
 		if all != depositAmount {
-			return shim.Error("Too many or too little.")
+			str := fmt.Errorf("%s needs to pay only %d  deposit.", role, depositAmount)
+			log.Error(str.Error())
+			return shim.Error(str.Error())
 		}
 		//这里需要判断是否以及被基金会提前移除候选列表，即在规定时间内该节点没有追缴保证金
 		b, err := isInCandidate(stub, invokeAddr.String(), list)

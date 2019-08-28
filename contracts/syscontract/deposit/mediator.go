@@ -75,11 +75,11 @@ func applyBecomeMediator(stub shim.ChaincodeStubInterface, args []string) pb.Res
 	}
 
 	//  判断该地址是否是第一次申请
-	mdeposit, err := GetMediatorDeposit(stub, mco.AddStr)
+	mDeposit, err := GetMediatorDeposit(stub, mco.AddStr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if mdeposit != nil {
+	if mDeposit != nil {
 		return shim.Error(mco.AddStr + " has applied for become mediator")
 	}
 
@@ -156,15 +156,17 @@ func mediatorPayToDepositContract(stub shim.ChaincodeStubInterface /*, args []st
 	if md.Status != Agree {
 		return shim.Error(invokeAddr.String() + "does not in the agree list")
 	}
-	cp, err := stub.GetSystemConfig()
+	gp, err := stub.GetSystemConfig()
+	cp := gp.ChainParameters
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	//
 	if md.Balance == 0 {
 		if invokeTokens.Amount != cp.DepositAmountForMediator {
-			log.Error("Too many or too little.")
-			return shim.Error("Too many or too little.")
+			str := fmt.Errorf("Mediator needs to pay only %d  deposit.", cp.DepositAmountForMediator)
+			log.Error(str.Error())
+			return shim.Error(str.Error())
 		}
 		//  加入候选列表
 		err = addCandaditeList(stub, invokeAddr, modules.MediatorList)
@@ -196,8 +198,9 @@ func mediatorPayToDepositContract(stub shim.ChaincodeStubInterface /*, args []st
 		}
 		all := invokeTokens.Amount + md.Balance
 		if all != cp.DepositAmountForMediator {
-			log.Error("Too many or too little.")
-			return shim.Error("Too many or too little.")
+			str := fmt.Errorf("Mediator needs to pay only %d  deposit.", cp.DepositAmountForMediator)
+			log.Error(str.Error())
+			return shim.Error(str.Error())
 		}
 		//这里需要判断是否以及被基金会提前移除候选列表，即在规定时间内该节点没有追缴保证金
 		b, err := isInCandidate(stub, invokeAddr.String(), modules.MediatorList)
