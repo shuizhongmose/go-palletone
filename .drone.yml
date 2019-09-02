@@ -6,6 +6,7 @@ pipeline:
   build:
     image: golang:1.12.7
     environment:
+      - pwd
       - BASE_DIR=/go/src/github.com/palletone/go-palletone
       - ALL_LOG_PATH=/go/src/github.com/palletone/go-palletone/bdd/node/log/all.log
       - GAS_TOKEN_ALL_LOG_PATH=/go/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
