@@ -1,8 +1,9 @@
-kind: pipeline
-name: deploy
+worksapce:
+  base: /go
+  path: src/github.com/palletone
 
-steps:
-  - name: hello-world
-    image: docker
+pipeline:
+  build:
+    image: golang:1.12.x
     commands:
-      - echo "hello world"
+      - go build cmd/gptn/
