@@ -1,13 +1,8 @@
-build:
-  image: golang:1.12.5
-  commands:
-    - go test -mod=vendor ./...
+kind: pipeline
+name: deploy
 
-#kind: pipeline
-#name: default
-#
-#steps:
-#- name: UT
-#  image: golang:1.12
-#  commands:
-#  - go test -mod=vendor ./...
+steps:
+  - name: hello-world
+    image: docker
+    commands:
+      - echo "hello world"
