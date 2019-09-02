@@ -4,6 +4,6 @@ worksapce:
 
 pipeline:
   build:
-    image: golang:1.12.x
+    image: golang:1.12.7
     commands:
       - go build cmd/gptn/
