@@ -58,6 +58,7 @@ pipeline:
       - apt-get install lftp -y
       - chmod +x bdd/upload2Ftp.sh
       - apt-get install tree -y
+      - apt-get install net-tools -y
       - cd $GOPATH/src/github.com/
       - mv shuizhongmose palletone
       - cd palletone
