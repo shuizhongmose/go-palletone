@@ -52,7 +52,7 @@ pipeline:
       - pip install pexpect
       - apt-get install jq -y
       - apt-get install lftp -y
-      - chmod +x bdd/upload2Ftp.sh
+      - chmod +x bdd/uploadDrone2Ftp.sh
       - apt-get install tree -y
       - apt-get install net-tools -y
       - cd $GOPATH/src/github.com/
@@ -73,4 +73,4 @@ pipeline:
       - cd ${BASE_DIR}
       - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
       - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-      - ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH}
+      - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
