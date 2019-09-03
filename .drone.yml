@@ -1,7 +1,3 @@
-worksapce:
-  base: /go
-  path: src/github.com/palletone
-
 platform:
   arсh: amd64
   os: linux
@@ -73,4 +69,8 @@ pipeline:
       - netstat -ntl
       - cd $BASE_DIR
       - mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-      - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases;
+      - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases
+      - cd ${BASE_DIR}
+      - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+      - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+      - ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH}
