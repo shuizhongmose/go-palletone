@@ -39,7 +39,7 @@ pipeline:
       - GO111MODULE=on
       - IS_UPLOAD=true
     commands:
-      - cat /etc/redhat-release
+      - cat /etc/issue
       - pip install --upgrade pip
       - pip install robotframework==2.8.5
       - pip install requests
