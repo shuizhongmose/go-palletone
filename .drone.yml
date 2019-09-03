@@ -2,6 +2,10 @@ worksapce:
   base: /go
   path: src/github.com/palletone
 
+platform:
+  arсh: amd64
+  os: linux
+
 pipeline:
   build:
     image: golang:1.12.7
@@ -39,7 +43,7 @@ pipeline:
       - GO111MODULE=on
       - IS_UPLOAD=true
     commands:
-      - cat /etc/issue
+      - apt-get install python2.7 -y
       - pip install --upgrade pip
       - pip install robotframework==2.8.5
       - pip install requests
