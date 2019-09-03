@@ -9,6 +9,7 @@ cd $GOPATH/src
 go get -u github.com/hyperledger/fabric-ca/cmd/...
 cd $GOPATH/src/github.com/hyperledger/fabric-ca/
 make fabric-ca-server
+make fabric-ca-client
 export PATH=$GOPATH/src/github.com/hyperledger/fabric-ca/bin:$PATH
 
 cd ~
