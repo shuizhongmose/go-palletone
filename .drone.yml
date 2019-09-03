@@ -7,10 +7,10 @@ pipeline:
     image: golang:1.12.7
     environment:
       - pwd
-      - BASE_DIR=/go/src/github.com/palletone/go-palletone
-      - ALL_LOG_PATH=/go/src/github.com/palletone/go-palletone/bdd/node/log/all.log
-      - GAS_TOKEN_ALL_LOG_PATH=/go/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
-      - BDD_LOG_PATH=/go/src/github.com/palletone/go-palletone/bdd/logs
+      - BASE_DIR=/drone/src/github.com/palletone/go-palletone
+      - ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
+      - GAS_TOKEN_ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
+      - BDD_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/logs
       - CREATE_TRANS_DIR=createTrans
       - CONTRACT20_DIR=crt20Contract
       - SEQENCE721_DIR=crt721Seqence
@@ -39,7 +39,9 @@ pipeline:
       - GO111MODULE=on
       - IS_UPLOAD=true
     commands:
-      - cd $GOPATH/src/github.com/palletone
+      - cd $GOPATH/src/github.com/
+      - mv shuizhongmose palletone
+      - cd palletone
       - git clone https://github.com/palletone/digital-identity.git
       - cd $BASE_DIR/bdd/Digital-Identity/scripts
       - chmod +x ca-start.sh
