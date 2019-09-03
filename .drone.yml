@@ -39,6 +39,17 @@ pipeline:
       - GO111MODULE=on
       - IS_UPLOAD=true
     commands:
+      - pip install --upgrade pip
+      - pip install robotframework==2.8.5
+      - pip install requests
+      - pip install robotframework-requests
+      - pip install demjson
+      - pip install pexpect
+      - apt-get install expect
+      - apt-get install jq
+      - apt-get install lftp
+      - chmod +x bdd/upload2Ftp.sh
+      - apt-get install tree
       - cd $GOPATH/src/github.com/
       - mv shuizhongmose palletone
       - cd palletone
