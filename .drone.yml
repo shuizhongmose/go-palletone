@@ -44,6 +44,9 @@ pipeline:
       - IS_UPLOAD=true
     commands:
       - apt-get install python2.7 -y
+      - wget https://bootstrap.pypa.io/get-pip.py
+      - python get-pip.py
+      - pip -V
       - pip install --upgrade pip
       - pip install robotframework==2.8.5
       - pip install requests
