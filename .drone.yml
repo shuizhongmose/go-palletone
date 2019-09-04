@@ -48,8 +48,9 @@ pipeline:
       - apt-get install net-tools -y
       - export GO111MODULE=on
       - ${TESTCASE_CMD}
-  uploadLog:
-    image: golang:1.12.7
+  slack:
+    image: plugins/slack
+    channel: dev
     commands: ${UPLOAD_LOG}
     when:
       status: [ success, failure ]
