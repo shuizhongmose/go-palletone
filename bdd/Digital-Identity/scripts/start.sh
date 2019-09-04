@@ -9,7 +9,7 @@ chmod +x one-ptn.sh
 ./ca-start.sh
 tree ~/cawork
 ./one-ptn.sh
-sleep 30
+sleep 60
 netstat -ntl
 cd $BASE_DIR
 mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
