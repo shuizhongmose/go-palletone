@@ -7,7 +7,7 @@ platform:
   os: linux
 
 pipeline:
-  ${BUILD_NAME}:
+  prepare:
     image: golang:1.12.7
     environment:
       GOPATH: /drone
@@ -44,10 +44,12 @@ pipeline:
       - apt-get install lftp -y
       - chmod +x bdd/uploadDrone2Ftp.sh
       - chmod +x bdd/upload2Ftp.sh
-  backend:
+      - apt-get install tree -y
+      - apt-get install net-tools -y
+  ${BUILD_NAME}:
     image: golang:1.12.7
     commands: ${BACKEND_CMD}
-  slack:
+  uploadLog:
     image: golang:1.12.7
     commands: ${UPLOAD_LOG}
     when:
@@ -56,8 +58,7 @@ pipeline:
 matrix:
   include:
     - BUILD_NAME: digital-identity
-      BACKEND_CMD: apt-get install tree -y
-#        - apt-get install net-tools -y
+      BACKEND_CMD:
 #        - cd $GOPATH/src/github.com/
 #        - cd palletone
 #          - git clone https://github.com/palletone/digital-identity.git
