@@ -41,6 +41,7 @@ pipeline:
       - pip install robotframework-requests
       - pip install demjson
       - pip install pexpect
+      - apt-get install expect
       - apt-get install jq -y
       - apt-get install lftp -y
       - chmod +x bdd/uploadDrone2Ftp.sh
