@@ -6,29 +6,28 @@ workspace:
   base: /drone/src
   path: github.com/palletone/go-palletone
 
-environment:
-  GOPATH: /drone
-  BASE_DIR: /drone/src/github.com/palletone/go-palletone
-  ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
-  GAS_TOKEN_ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
-  BDD_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/logs
-  CREATE_TRANS_DIR: createTrans
-  CONTRACT20_DIR: crt20Contract
-  SEQENCE721_DIR: crt721Seqence
-  UDID721_DIR: crt721UDID
-  VOTECONTRACT_DIR: voteContract
-  MULTIPLE_DIR: zMulti-node
-  DIGITAL_IDENTITY_DIR: Digital-IdentityCert
-  DEPOSIT_DIR: deposit
-  GAS_TOKEN_DIR: gasToken
-  MEDIATOR_VOTE_DIR: meidatorvote
-  USER_CONTRACT_DIR: usercontract
-  LOG_NAME: log.html
-  REPORT_NAME: report.html
-
 pipeline:
   build:
     image: golang:1.12.7
+    environment:
+      GOPATH: /drone
+      BASE_DIR: /drone/src/github.com/palletone/go-palletone
+      ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
+      GAS_TOKEN_ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
+      BDD_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/logs
+      CREATE_TRANS_DIR: createTrans
+      CONTRACT20_DIR: crt20Contract
+      SEQENCE721_DIR: crt721Seqence
+      UDID721_DIR: crt721UDID
+      VOTECONTRACT_DIR: voteContract
+      MULTIPLE_DIR: zMulti-node
+      DIGITAL_IDENTITY_DIR: Digital-IdentityCert
+      DEPOSIT_DIR: deposit
+      GAS_TOKEN_DIR: gasToken
+      MEDIATOR_VOTE_DIR: meidatorvote
+      USER_CONTRACT_DIR: usercontract
+      LOG_NAME: log.html
+      REPORT_NAME: report.html
     commands:
       - apt-get update
       - apt-get install python2.7 -y
@@ -48,7 +47,7 @@ pipeline:
   backend:
     image: golang:1.12.7
     commands: ${BACKEND_CMD}
-  uploadLog:
+  slack:
     image: golang:1.12.7
     commands: ${UPLOAD_LOG}
     when:
@@ -79,9 +78,8 @@ matrix:
         - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
         - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
         - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
-
     - BUILD_NAME: usercontract_bdd_3-3
-      OTHER_CMD:
+      BACKEND_CMD:
         - make gptn
         - make golang-baseimage-dev
         - docker images
