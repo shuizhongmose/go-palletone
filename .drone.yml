@@ -7,7 +7,7 @@ platform:
   os: linux
 
 pipeline:
-  prepare:
+  ${BUILD_NAME}:
     image: golang:1.12.7
     environment:
       GOPATH: /drone
@@ -47,9 +47,6 @@ pipeline:
       - apt-get install tree -y
       - apt-get install net-tools -y
       - ${TESTCASE_CMD}
-  ${BUILD_NAME}:
-    image: golang:1.12.7
-    commands: ${BACKEND_CMD}
   uploadLog:
     image: golang:1.12.7
     commands: ${UPLOAD_LOG}
@@ -68,7 +65,7 @@ matrix:
         cp bdd/Digital-Identity/node/nohup.out $BDD_LOG_PATH/$DIGITAL_IDENTITY_DIR &&
         ./bdd/uploadDrone2Ftp.sh $FTP_PWD
     - BUILD_NAME: usercontract_bdd_3-3
-      BACKEND_CMD: make gptn
+      TESTCASE_CMD: make gptn
 #          - make golang-baseimage-dev
 #          - docker images
 #          - cat /proc/sys/net/ipv4/ip_forward
