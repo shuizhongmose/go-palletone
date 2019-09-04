@@ -5,9 +5,9 @@ workspace:
 platform:
   arсh: amd64
   os: linux
-  
+
 pipeline:
-  build:
+  ${BUILD_NAME}:
     image: golang:1.12.7
     environment:
       GOPATH: /drone
