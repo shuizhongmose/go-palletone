@@ -1,11 +1,11 @@
-platform:
-  arсh: amd64
-  os: linux
----
 workspace:
   base: /drone/src
   path: github.com/palletone/go-palletone
 
+platform:
+  arсh: amd64
+  os: linux
+  
 pipeline:
   build:
     image: golang:1.12.7
