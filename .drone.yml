@@ -48,10 +48,11 @@ pipeline:
       - apt-get install net-tools -y
       - export GO111MODULE=on
       - ${TESTCASE_CMD}
+  slack:
+    image: plugins/slack
+    channel: dev
     when:
-      commands: ${UPLOAD_LOG}
       status: [ success, failure ]
-
 matrix:
   include:
     - BUILD_NAME: digital-identity
