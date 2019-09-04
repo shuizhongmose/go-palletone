@@ -41,7 +41,7 @@ pipeline:
       - pip install robotframework-requests
       - pip install demjson
       - pip install pexpect
-      - apt-get install expect
+      - apt-get install expect -y
       - apt-get install jq -y
       - apt-get install lftp -y
       - chmod +x bdd/uploadDrone2Ftp.sh
@@ -51,11 +51,6 @@ pipeline:
       - export GO111MODULE=on
       - ${TESTCASE_CMD}
       - ${UPLOAD_LOG}
-  slack:
-    image: plugins/slack
-    channel: dev
-    when:
-      status: [ success, failure ]
 matrix:
   include:
     - BUILD_NAME: digital-identity
