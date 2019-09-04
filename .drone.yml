@@ -57,18 +57,8 @@ pipeline:
 matrix:
   include:
     - BUILD_NAME: digital-identity
-      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts &&
-        pwd &&
-        chmod +x ./start.sh &&
-        ./start.sh
-      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone &&
-        cp bdd/Digital-Identity/node/log/all.log $BDD_LOG_PATH/$DIGITAL_IDENTITY_DIR &&
-        cp bdd/Digital-Identity/node/nohup.out $BDD_LOG_PATH/$DIGITAL_IDENTITY_DIR &&
-        ./bdd/uploadDrone2Ftp.sh $FTP_PWD
+      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && chmod +x ./start.sh && ./start.sh
+      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && chmod +x ./upload.sh && ./upload.sh
     - BUILD_NAME: usercontract_bdd_3-3
-      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract &&
-        chmod +x ./start.sh &&
-        ./start.sh
-      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract &&
-      chmod +x ./upload.sh &&
-      ./upload.sh
+      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract && chmod +x ./start.sh && ./start.sh
+      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract && chmod +x ./upload.sh && ./upload.sh
