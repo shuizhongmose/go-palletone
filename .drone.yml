@@ -1,47 +1,16 @@
-workspace:
-  base: /drone/src
-  path: github.com/palletone/go-palletone
+---
+kind: pipeline
 
 platform:
   arсh: amd64
   os: linux
 
-pipeline:
-  build:
+steps:
+  - name: digital-identity
+    workspace:
+      base: /drone/src
+      path: github.com/palletone/go-palletone
     image: golang:1.12.7
-    environment:
-      - GOPATH=/drone
-      - BASE_DIR=/drone/src/github.com/palletone/go-palletone
-      - ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
-      - GAS_TOKEN_ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
-      - BDD_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/logs
-      - CREATE_TRANS_DIR=createTrans
-      - CONTRACT20_DIR=crt20Contract
-      - SEQENCE721_DIR=crt721Seqence
-      - UDID721_DIR=crt721UDID
-      - VOTECONTRACT_DIR=voteContract
-      - MULTIPLE_DIR=zMulti-node
-      - DIGITAL_IDENTITY_DIR=Digital-IdentityCert
-      - DEPOSIT_DIR=deposit
-      - GAS_TOKEN_DIR=gasToken
-      - MEDIATOR_VOTE_DIR=meidatorvote
-      - USER_CONTRACT_DIR=usercontract
-      - LOG_NAME=log.html
-      - REPORT_NAME=report.html
-      ##########  control testcase  ##############
-      - IS_RUN_DEPOSIT=true
-      - IS_RUN_TESTCONTRACTCASES=true
-      - IS_RUN_CREATE_TRANS=true
-      - IS_RUN_20CONTRACT=true
-      - IS_RUN_721SEQENCE=true
-      - IS_RUN_721UDID=true
-      - IS_RUN_MULTIPLE=true
-      - IS_RUN_DIGITAL=true
-      - IS_RUN_VOTE=true
-      - IS_RUN_GASTOKEN=true
-      - IS_RUN_MEDIATOR_VOTE=true
-      - GO111MODULE=on
-      - IS_UPLOAD=true
     commands:
       - apt-get update
       - apt-get install python2.7 -y
@@ -77,5 +46,26 @@ pipeline:
       - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
       - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
       - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
+
+    environment:
+      GOPATH=/drone
+      BASE_DIR=/drone/src/github.com/palletone/go-palletone
+      ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
+      GAS_TOKEN_ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
+      BDD_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/logs
+      CREATE_TRANS_DIR=createTrans
+      CONTRACT20_DIR=crt20Contract
+      SEQENCE721_DIR=crt721Seqence
+      UDID721_DIR=crt721UDID
+      VOTECONTRACT_DIR=voteContract
+      MULTIPLE_DIR=zMulti-node
+      DIGITAL_IDENTITY_DIR=Digital-IdentityCert
+      DEPOSIT_DIR=deposit
+      GAS_TOKEN_DIR=gasToken
+      MEDIATOR_VOTE_DIR=meidatorvote
+      USER_CONTRACT_DIR=usercontract
+      LOG_NAME=log.html
+      REPORT_NAME=report.html
+      ##########  control testcase  ##############
     settings:
       script_stop: true
