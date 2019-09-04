@@ -58,8 +58,8 @@ pipeline:
 matrix:
   include:
     - BUILD_NAME: digital-identity
-      BACKEND_CMD: cd ${BASE_DIR} & chmod +x ./bdd/start.sh & ./bdd/start.sh
-      UPLOAD_LOG: cd ${BASE_DIR} & cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
+      BACKEND_CMD: cd /drone/src/github.com/palletone/go-palletone & chmod +x ./bdd/start.sh & ./bdd/start.sh
+      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone & cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
     - BUILD_NAME: usercontract_bdd_3-3
       BACKEND_CMD: make gptn
 #          - make golang-baseimage-dev
