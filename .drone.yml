@@ -60,7 +60,6 @@ pipeline:
       - apt-get install tree -y
       - apt-get install net-tools -y
       - cd $GOPATH/src/github.com/
-      - mv shuizhongmose palletone
       - cd palletone
       - git clone https://github.com/palletone/digital-identity.git
       - cd $BASE_DIR/bdd/Digital-Identity/scripts
