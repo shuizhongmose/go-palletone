@@ -12,59 +12,59 @@ steps:
       path: github.com/palletone/go-palletone
     image: golang:1.12.7
     commands:
-    - apt-get update
-    - apt-get install python2.7 -y
-    - wget https://bootstrap.pypa.io/get-pip.py
-    - python get-pip.py
-    - pip -V
-    - pip install --upgrade pip
-    - pip install robotframework==2.8.5
-    - pip install requests
-    - pip install robotframework-requests
-    - pip install demjson
-    - pip install pexpect
-    - apt-get install jq -y
-    - apt-get install lftp -y
-    - chmod +x bdd/uploadDrone2Ftp.sh
-    - apt-get install tree -y
-    - apt-get install net-tools -y
-    - cd $GOPATH/src/github.com/
-    - cd palletone
-    - git clone https://github.com/palletone/digital-identity.git
-    - cd $BASE_DIR/bdd/Digital-Identity/scripts
-    - chmod +x ca-start.sh
-    - chmod +x one-ptn.sh
-    - ./ca-start.sh
-    - tree ~/cawork
-    - ./one-ptn.sh
-    - sleep 30
-    - netstat -ntl
-    - cd $BASE_DIR
-    - mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-    - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases
-    - cd ${BASE_DIR}
-    - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-    - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-    - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
+      - apt-get update
+      - apt-get install python2.7 -y
+      - wget https://bootstrap.pypa.io/get-pip.py
+      - python get-pip.py
+      - pip -V
+      - pip install --upgrade pip
+      - pip install robotframework==2.8.5
+      - pip install requests
+      - pip install robotframework-requests
+      - pip install demjson
+      - pip install pexpect
+      - apt-get install jq -y
+      - apt-get install lftp -y
+      - chmod +x bdd/uploadDrone2Ftp.sh
+      - apt-get install tree -y
+      - apt-get install net-tools -y
+      - cd $GOPATH/src/github.com/
+      - cd palletone
+      - git clone https://github.com/palletone/digital-identity.git
+      - cd $BASE_DIR/bdd/Digital-Identity/scripts
+      - chmod +x ca-start.sh
+      - chmod +x one-ptn.sh
+      - ./ca-start.sh
+      - tree ~/cawork
+      - ./one-ptn.sh
+      - sleep 30
+      - netstat -ntl
+      - cd $BASE_DIR
+      - mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+      - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases
+      - cd ${BASE_DIR}
+      - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+      - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
+      - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
     environment:
-      GOPATH:/drone
-      BASE_DIR:/drone/src/github.com/palletone/go-palletone
-      - ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
-      - GAS_TOKEN_ALL_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
-      - BDD_LOG_PATH=/drone/src/github.com/palletone/go-palletone/bdd/logs
-      - CREATE_TRANS_DIR=createTrans
-      - CONTRACT20_DIR=crt20Contract
-      - SEQENCE721_DIR=crt721Seqence
-      - UDID721_DIR=crt721UDID
-      - VOTECONTRACT_DIR=voteContract
-      - MULTIPLE_DIR=zMulti-node
-      - DIGITAL_IDENTITY_DIR=Digital-IdentityCert
-      - DEPOSIT_DIR=deposit
-      - GAS_TOKEN_DIR=gasToken
-      - MEDIATOR_VOTE_DIR=meidatorvote
-      - USER_CONTRACT_DIR=usercontract
-      - LOG_NAME=log.html
-      - REPORT_NAME=report.html
+      GOPATH: /drone
+      BASE_DIR: /drone/src/github.com/palletone/go-palletone
+      ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
+      GAS_TOKEN_ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
+      BDD_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/logs
+      CREATE_TRANS_DIR: createTrans
+      CONTRACT20_DIR: crt20Contract
+      SEQENCE721_DIR: crt721Seqence
+      UDID721_DIR: crt721UDID
+      VOTECONTRACT_DIR: voteContract
+      MULTIPLE_DIR: zMulti-node
+      DIGITAL_IDENTITY_DIR: Digital-IdentityCert
+      DEPOSIT_DIR: deposit
+      GAS_TOKEN_DIR: gasToken
+      MEDIATOR_VOTE_DIR: meidatorvote
+      USER_CONTRACT_DIR: usercontract
+      LOG_NAME: log.html
+      REPORT_NAME: report.html
       ##########  control testcase  ##############
     settings:
       script_stop: true
