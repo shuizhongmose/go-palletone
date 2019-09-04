@@ -46,6 +46,7 @@ pipeline:
       - chmod +x bdd/upload2Ftp.sh
       - apt-get install tree -y
       - apt-get install net-tools -y
+      - ${TESTCASE_CMD}
   ${BUILD_NAME}:
     image: golang:1.12.7
     commands: ${BACKEND_CMD}
@@ -58,8 +59,8 @@ pipeline:
 matrix:
   include:
     - BUILD_NAME: digital-identity
-      BACKEND_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && pwd && chmod +x ./start.sh && ./start.sh
-      UPLOAD_LOG: cd $BASE_DIR & cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
+      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && pwd && chmod +x ./start.sh && ./start.sh
+      UPLOAD_LOG: cd $BASE_DIR && cp bdd/Digital-Identity/node/log/all.log $BDD_LOG_PATH/$DIGITAL_IDENTITY_DIR && cp bdd/Digital-Identity/node/nohup.out $BDD_LOG_PATH/$DIGITAL_IDENTITY_DIR && ./bdd/uploadDrone2Ftp.sh $FTP_PWD
     - BUILD_NAME: usercontract_bdd_3-3
       BACKEND_CMD: make gptn
 #          - make golang-baseimage-dev
