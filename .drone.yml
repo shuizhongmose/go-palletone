@@ -27,7 +27,7 @@ environment:
   REPORT_NAME: report.html
 
 pipeline:
-  frontend:
+  build:
     image: golang:1.12.7
     commands:
       - apt-get update
