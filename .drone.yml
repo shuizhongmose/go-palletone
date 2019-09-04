@@ -7,11 +7,12 @@ platform:
   arсh: amd64
   os: linux
 
+workspace:
+  base: /drone/src
+  path: github.com/palletone/go-palletone
+
 steps:
   - name: digital-identity
-    workspace:
-      base: /drone/src
-      path: github.com/palletone/go-palletone
     image: golang:1.12.7
     commands:
       - apt-get update
