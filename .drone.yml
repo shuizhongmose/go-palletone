@@ -48,11 +48,8 @@ pipeline:
       - apt-get install net-tools -y
       - export GO111MODULE=on
       - ${TESTCASE_CMD}
-  slack:
-    image: plugins/slack
-    channel: dev
-    commands: ${UPLOAD_LOG}
     when:
+      commands: ${UPLOAD_LOG}
       status: [ success, failure ]
 
 matrix:
