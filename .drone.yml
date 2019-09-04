@@ -72,6 +72,18 @@ steps:
     settings:
       script_stop: true
 
+---
+kind: pipeline
+type: docker
+name: linux-amd64
+
+platform:
+  arсh: amd64
+  os: linux
+
+workspace:
+  base: /drone/src
+  path: github.com/palletone/go-palletone
   - name: user-contract
     image: golang:1.12.7
     commands:
