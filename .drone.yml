@@ -58,25 +58,8 @@ pipeline:
 matrix:
   include:
     - BUILD_NAME: digital-identity
-      BACKEND_CMD:
-#        - cd $GOPATH/src/github.com/
-#        - cd palletone
-#          - git clone https://github.com/palletone/digital-identity.git
-#          - cd $BASE_DIR/bdd/Digital-Identity/scripts
-#          - chmod +x ca-start.sh
-#          - chmod +x one-ptn.sh
-#          - ./ca-start.sh
-#          - tree ~/cawork
-#          - ./one-ptn.sh
-#          - sleep 30
-#          - netstat -ntl
-#          - cd $BASE_DIR
-#          - mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-#          - python -m robot.run -d ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} ./bdd/Digital-Identity/testcases
-      UPLOAD_LOG: cd ${BASE_DIR}
-#        - cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-#        - cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
-#        - ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
+      BACKEND_CMD: cd $BASEDIR & chmod +x ./bdd/start.sh & ./bdd/start.sh
+      UPLOAD_LOG: cd ${BASE_DIR} & cp bdd/Digital-Identity/node/log/all.log ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & cp bdd/Digital-Identity/node/nohup.out ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR} & ./bdd/uploadDrone2Ftp.sh ${FTP_PWD}
     - BUILD_NAME: usercontract_bdd_3-3
       BACKEND_CMD: make gptn
 #          - make golang-baseimage-dev
