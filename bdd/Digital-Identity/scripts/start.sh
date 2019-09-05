@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir -p ${BDD_LOG_PATH}/${DIGITAL_IDENTITY_DIR}
 cd $GOPATH/src/github.com/
 cd palletone
 git clone https://github.com/palletone/digital-identity.git

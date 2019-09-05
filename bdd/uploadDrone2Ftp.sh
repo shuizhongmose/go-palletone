@@ -20,6 +20,5 @@ cd ${folder}
 mkdir ${number}
 cd ${number}
 mirror -R /drone/src/github.com/palletone/go-palletone/bdd/logs
-echo "upload file done "
 exit
 EOF
