@@ -30,7 +30,8 @@ pipeline:
       USER_CONTRACT_DIR: usercontract
       LOG_NAME: log.html
       REPORT_NAME: report.html
-    envs: [ FTP_PWD ]
+    settings:
+      envs: [ FTP_PWD ]
     commands:
       - set +e
       - apt-get update
