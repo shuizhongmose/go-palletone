@@ -1,5 +1,5 @@
-#!/bin/bash
 #!/usr/bin/expect
+#!/bin/bash
 
 function obtain_git_branch {
   br=`git branch | grep "*"`
