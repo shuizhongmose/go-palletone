@@ -13,8 +13,6 @@ function obtain_git_commit_number {
 
 folder=`obtain_git_branch`
 number=`obtain_git_commit_number`
-echo $folder
-echo $number
 set timeout 120
 #set ftppwd [lindex $argv 1]
 ftppwd=$1
