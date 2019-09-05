@@ -6,15 +6,12 @@ workspace:
   base: /drone/src
   path: github.com/palletone/go-palletone
 
-environment:
-  FTP_PWD:
-    from_secret: FTP_PWD
-envs: [ FTP_PWD ]
-
 pipeline:
   ${BUILD_NAME}:
     image: golang:1.12.7
     environment:
+      FTPPWD:
+        from_secret: FTP_PWD
       GOPATH: /drone
       BASE_DIR: /drone/src/github.com/palletone/go-palletone
       ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
@@ -33,6 +30,7 @@ pipeline:
       USER_CONTRACT_DIR: usercontract
       LOG_NAME: log.html
       REPORT_NAME: report.html
+    envs: [ FTPPWD ]
     commands:
       - set +e
       - apt-get update
@@ -54,8 +52,8 @@ pipeline:
       - apt-get install tree -y
       - apt-get install net-tools -y
       - export GO111MODULE=on
-      - echo ${FTP_PWD}
-      - echo $${FTP_PWD}
+      - echo ${FTPPWD}
+      - echo $${FTPPWD}
       - ${TESTCASE_CMD}
       - ${UPLOAD_LOG}
 matrix:
