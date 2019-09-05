@@ -9,9 +9,10 @@ workspace:
 pipeline:
   ${BUILD_NAME}:
     image: golang:1.12.7
+    secrets: [ FTP_PWD ]
     environment:
-      FTP_PWD:
-        from_secret: FTP_PWD
+#      FTP_PWD:
+#        from_secret: FTP_PWD
       GOPATH: /drone
       BASE_DIR: /drone/src/github.com/palletone/go-palletone
       ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
@@ -30,7 +31,7 @@ pipeline:
       USER_CONTRACT_DIR: usercontract
       LOG_NAME: log.html
       REPORT_NAME: report.html
-#    envs: [ FTP_PWD ]
+    envs: [ FTP_PWD ]
     commands:
       - set +e
       - apt-get update
