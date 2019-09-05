@@ -17,9 +17,9 @@ number=`obtain_git_commit_number`
 set timeout 120
 set ftppwd [lindex $argv 0]
 lftp travis:$ftppwd@47.74.209.46 << EOF
-cd ${folder}
-mkdir ${number}
-cd ${number}
+cd $folder
+mkdir $number
+cd $number
 mirror -R /drone/src/github.com/palletone/go-palletone/bdd/logs
 exit
 EOF
