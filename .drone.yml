@@ -53,6 +53,7 @@ pipeline:
       - apt-get install tree -y
       - apt-get install net-tools -y
       - export GO111MODULE=on
+      - echo ${FTP_PWD}
       - ${TESTCASE_CMD}
       - ${UPLOAD_LOG}
 matrix:
