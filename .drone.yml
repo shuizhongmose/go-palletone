@@ -1,3 +1,6 @@
+kind: pipeline
+name: deploy
+
 workspace:
   base: /drone/src
   path: github.com/palletone/go-palletone
