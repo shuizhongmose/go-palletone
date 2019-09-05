@@ -9,9 +9,8 @@ workspace:
 pipeline:
   ${BUILD_NAME}:
     image: golang:1.12.7
-    secrets: [ FTP_PWD ]
     environment:
-#      FTP_PWD:
+      FTP_PWD: $$FTP_PWD
 #        from_secret: FTP_PWD
       GOPATH: /drone
       BASE_DIR: /drone/src/github.com/palletone/go-palletone
@@ -54,6 +53,7 @@ pipeline:
       - apt-get install net-tools -y
       - export GO111MODULE=on
       - echo ${FTP_PWD}
+      - echo $${FTP_PWD}
       - ${TESTCASE_CMD}
       - ${UPLOAD_LOG}
 matrix:
