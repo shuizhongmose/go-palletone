@@ -16,6 +16,7 @@ number=`obtain_git_commit_number`
 set timeout 120
 #set ftppwd [lindex $argv 1]
 ftppwd=$1
+echo $ftppwd
 lftp travis:$ftppwd@47.74.209.46 << EOF
 cd $folder
 mkdir $number
