@@ -11,7 +11,7 @@ platform:
 
 steps:
   - name: ${BUILD_NAME}
-    images: golang:1.12.7
+    image: golang:1.12.7
     environment:
       FTP_PWD:
         from_secret: FTP_PWD
