@@ -28,6 +28,8 @@ pipeline:
       USER_CONTRACT_DIR: usercontract
       LOG_NAME: log.html
       REPORT_NAME: report.html
+      FTP_PWD:
+        from_secret: ftp_pwd
     commands:
       - set +e
       - apt-get update
