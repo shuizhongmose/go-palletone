@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/context"
 	"time"
 
-	"github.com/fsouza/go-dockerclient"
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/crypto"
 	"github.com/palletone/go-palletone/common/log"
@@ -18,6 +17,7 @@ import (
 	"github.com/palletone/go-palletone/contracts/scc"
 	"github.com/palletone/go-palletone/contracts/ucc"
 
+	"github.com/fsouza/go-dockerclient"
 	"github.com/palletone/go-palletone/common/util"
 	"github.com/palletone/go-palletone/contracts/contractcfg"
 	"github.com/palletone/go-palletone/contracts/utils"
@@ -199,18 +199,18 @@ func Deploy(rwM rwset.TxManager, idag dag.IDag, chainID string, templateId []byt
 		Language: usrcc.Language,
 		SysCC:    false,
 	}
-	if depId.IsSystemContractAddress() {
-		cc.SysCC = true
-		err = cclist.SetChaincode(chainID, 0, cc)
-		if err != nil {
-			log.Error("Deploy", "SetChaincode fail, chainId", chainID, "name", cc.Name)
-		}
-	} else {
-		err = saveChaincode(idag, depId, cc)
-		if err != nil {
-			log.Error("Deploy saveChaincodeSet", "SetChaincode fail, channel", chainID, "name", cc.Name, "error", err.Error())
-		}
+	//if depId.IsSystemContractAddress() {
+	//	cc.SysCC = true
+	//	err = cclist.SetChaincode(chainID, 0, cc)
+	//	if err != nil {
+	//		log.Error("Deploy", "SetChaincode fail, chainId", chainID, "name", cc.Name)
+	//	}
+	//} else {
+	err = saveChaincode(idag, depId, cc)
+	if err != nil {
+		log.Error("Deploy saveChaincodeSet", "SetChaincode fail, channel", chainID, "name", cc.Name, "error", err.Error())
 	}
+	//}
 	unit, err := RwTxResult2DagDeployUnit(txsim, templateId, cc.Name, cc.Id, args, timeout)
 	if err != nil {
 		log.Errorf("chainID[%s] converRwTxResult2DagUnit failed", chainID)
@@ -347,20 +347,21 @@ func StopByName(contractid []byte, chainID string, txid string, usercc *cclist.C
 	return stopResult, nil
 }
 
-func GetAllContainers(client *docker.Client) {
-	//
-	addrs, err := utils.GetAllExitedContainer(client)
+func RestartContainers(client *docker.Client, dag dag.IDag) {
+	//  获取所有容器
+	cons, err := utils.GetAllContainers(client)
+	if err != nil {
+		log.Errorf("utils.GetAllContainers error %s", err.Error())
+		return
+	}
+	//  获取所有退出容器
+	addrs, err := utils.GetAllExitedContainer(cons)
 	if err != nil {
 		log.Infof("client.ListContainers err: %s\n", err.Error())
 		return
 	}
 	if len(addrs) > 0 {
 		for _, v := range addrs {
-			dag, err := db.GetCcDagHand()
-			if err != nil {
-				log.Infof("db.GetCcDagHand err: %s", err.Error())
-				return
-			}
 			rd, _ := crypto.GetRandomBytes(32)
 			txid := util.RlpHash(rd)
 			log.Infof("==============需要重启====容器地址为--->%s", hex.EncodeToString(v.Bytes21()))
@@ -368,6 +369,25 @@ func GetAllContainers(client *docker.Client) {
 			if err != nil {
 				log.Infof("RestartContainer err: %s", err.Error())
 				return
+			}
+		}
+	}
+}
+
+//删除所有过期容器
+func RemoveExpiredConatiners(client *docker.Client, dag dag.IDag, rmExpConFromSysParam bool) {
+	con, err := utils.GetAllContainers(client)
+	if err != nil {
+		log.Errorf("utils.GetAllContainers error: %s", err.Error())
+		return
+	}
+
+	conIdSlice := utils.RetrieveExpiredContainers(dag, con, rmExpConFromSysParam)
+	if len(conIdSlice) > 0 {
+		for _, id := range conIdSlice {
+			err := client.RemoveContainer(docker.RemoveContainerOptions{ID: id, Force: true})
+			if err != nil {
+				log.Errorf("client.RemoveContainer id=%s error=%s", id, err.Error())
 			}
 		}
 	}

@@ -39,6 +39,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/palletone/go-palletone/contracts/comm"
 	"github.com/palletone/go-palletone/contracts/contractcfg"
 	"github.com/palletone/go-palletone/contracts/manger"
 	dagerrors "github.com/palletone/go-palletone/dag/errors"
@@ -292,7 +293,7 @@ func (pm *ProtocolManager) newFetcher() *fetcher.Fetcher {
 			pm.txpool.SetPendingTxs(hash, u.NumberU64(), u.Transactions())
 		}
 
-		account, err := pm.dag.InsertDag(blocks, pm.txpool)
+		account, err := pm.dag.InsertDag(blocks, pm.txpool, false)
 		if err == nil {
 			go func() {
 				var (
@@ -402,9 +403,10 @@ func (pm *ProtocolManager) Start(srvr *p2p.Server, maxPeers int, syncCh chan boo
 	}
 	//  是否为linux系統
 	if runtime.GOOS == "linux" {
+		//创建 docker client
 		client, err := util.NewDockerClient()
 		if err != nil {
-			log.Infof("util.NewDockerClient err: %s\n", err.Error())
+			log.Error("util.NewDockerClient", "error", err)
 			return
 		}
 		//创建gptn-net网络
@@ -417,11 +419,22 @@ func (pm *ProtocolManager) Start(srvr *p2p.Server, maxPeers int, syncCh chan boo
 				return
 			}
 		}
+		//拉取gptn发布版本对应的goimg基础镜像，防止卡住
+		go func() {
+			goimg := contractcfg.Goimg + ":" + contractcfg.GptnVersion
+			_, err = client.InspectImage(goimg)
+			if err != nil {
+				log.Debugf("Image %s does not exist locally, attempt pull", goimg)
+				err = client.PullImage(docker.PullImageOptions{Repository: contractcfg.Goimg, Tag: contractcfg.GptnVersion}, docker.AuthConfiguration{})
+				if err != nil {
+					log.Debugf("Failed to pull %s: %s", goimg, err)
+				}
+			}
+		}()
 		//  是否为jury
-		if contractcfg.GetConfig().IsJury {
-			log.Debugf("starting docker loop")
-			go pm.dockerLoop(client)
-		}
+		//if contractcfg.GetConfig().IsJury {
+		go pm.dockerLoop(client)
+		//}
 	}
 }
 
@@ -494,14 +507,17 @@ func (pm *ProtocolManager) LocalHandle(p *peer) error {
 	var (
 		number = &modules.ChainIndex{}
 		hash   = common.Hash{}
+		stable = &modules.ChainIndex{}
 	)
 	if head := pm.dag.CurrentHeader(pm.mainAssetId); head != nil {
 		number = head.Number
 		hash = head.Hash()
+		stable = pm.dag.GetStableChainIndex(pm.mainAssetId)
 	}
-	log.Debug("ProtocolManager LocalHandle pre Handshake", "index", number.Index)
+
+	log.Debug("ProtocolManager LocalHandle pre Handshake", "index", number.Index, "stable", stable)
 	// Execute the PalletOne handshake
-	if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash); err != nil {
+	if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash, stable); err != nil {
 		log.Debug("PalletOne handshake failed", "err", err)
 		return err
 	}
@@ -766,6 +782,12 @@ func (pm *ProtocolManager) ceBroadcastLoop() {
 }
 
 func (pm *ProtocolManager) dockerLoop(client *docker.Client) {
+	log.Debugf("starting docker loop")
+	dag, err := comm.GetCcDagHand()
+	if err != nil {
+		log.Infof("db.GetCcDagHand err: %s", err.Error())
+		return
+	}
 	for {
 		select {
 		case <-pm.dockerQuitSync:
@@ -773,7 +795,10 @@ func (pm *ProtocolManager) dockerLoop(client *docker.Client) {
 			return
 		case <-time.After(time.Duration(30) * time.Second):
 			log.Debugf("each 30 second to get all containers")
-			manger.GetAllContainers(client)
+			//  重启退出容器
+			manger.RestartContainers(client, dag)
+			//  删除过期容器
+			manger.RemoveExpiredConatiners(client, dag, dag.GetChainParameters().RmExpConFromSysParam)
 		}
 	}
 }

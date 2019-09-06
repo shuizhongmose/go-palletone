@@ -21,6 +21,7 @@
 package dag
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/palletone/go-palletone/common"
@@ -40,11 +41,12 @@ type IDag interface {
 	SaveCommon(key, val []byte) error
 
 	IsEmpty() bool
+	GetStableChainIndex(token modules.AssetId) *modules.ChainIndex
 	CurrentUnit(token modules.AssetId) *modules.Unit
 	GetCurrentUnit(assetId modules.AssetId) *modules.Unit
 	GetMainCurrentUnit() *modules.Unit
 	GetCurrentMemUnit(assetId modules.AssetId, index uint64) *modules.Unit
-	InsertDag(units modules.Units, txpool txspool.ITxPool) (int, error)
+	InsertDag(units modules.Units, txpool txspool.ITxPool, is_stable bool) (int, error)
 	GetUnitByHash(hash common.Hash) (*modules.Unit, error)
 	HasHeader(common.Hash, uint64) bool
 	GetHeaderByNumber(number *modules.ChainIndex) (*modules.Header, error)
@@ -182,4 +184,15 @@ type IDag interface {
 	StoreDataVersion(dv *modules.DataVersion) error
 	QueryProofOfExistenceByReference(ref []byte) ([]*modules.ProofOfExistence, error)
 	GetAssetReference(asset []byte) ([]*modules.ProofOfExistence, error)
+
+	IsActiveJury(addr common.Address) bool
+	JuryCount() uint
+	GetContractDevelopers() ([]common.Address, error)
+	IsContractDeveloper(addr common.Address) bool
+	GetActiveJuries() []common.Address
+	CreateGenericTransaction(from, to common.Address, daoAmount, daoFee uint64, certID *big.Int,
+		msg *modules.Message, txPool txspool.ITxPool) (*modules.Transaction, uint64, error)
+	CreateTokenTransaction(from, to, toToken common.Address, daoAmount, daoFee, daoAmountToken uint64, assetToken string,
+		msg *modules.Message, txPool txspool.ITxPool) (*modules.Transaction, uint64, error)
+	ChainThreshold() int
 }
