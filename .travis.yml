@@ -17,6 +17,7 @@ env:
     - GAS_TOKEN_DIR=gasToken
     - MEDIATOR_VOTE_DIR=meidatorvote
     - USER_CONTRACT_DIR=usercontract
+    - BLACKLIST_DIR=blacklist
     - LOG_NAME=log.html
     - REPORT_NAME=report.html
     ##########  control testcase  ##############
@@ -31,6 +32,7 @@ env:
     - IS_RUN_VOTE=true
     - IS_RUN_GASTOKEN=true
     - IS_RUN_MEDIATOR_VOTE=true
+    - IS_RUN_BLACKLIST=true
     - GO111MODULE=on
     - IS_UPLOAD=true
 #    - 'SFTP_KEY=[base64-encoded-rsa-key]'

@@ -84,6 +84,7 @@ type IStateRepository interface {
 	SaveSysConfigContract(key string, val []byte, ver *modules.StateVersion) error
 	//GetSysConfig(name string) ([]byte, *modules.StateVersion, error)
 	//GetAllConfig() (map[string]*modules.ContractStateValue, error)
+	GetBlacklistAddress() ([]common.Address, *modules.StateVersion, error)
 }
 
 type StateRepository struct {
@@ -123,7 +124,9 @@ func (rep *StateRepository) GetSysParamWithoutVote() (map[string]string, error) 
 func (rep *StateRepository) GetSysParamsWithVotes() (*modules.SysTokenIDInfo, error) {
 	return rep.statedb.GetSysParamsWithVotes()
 }
-
+func (rep *StateRepository)GetBlacklistAddress() ([]common.Address, *modules.StateVersion, error){
+	return rep.statedb.GetBlacklistAddress()
+}
 func (rep *StateRepository) GetContractStatesById(id []byte) (map[string]*modules.ContractStateValue, error) {
 	return rep.statedb.GetContractStatesById(id)
 }
@@ -285,10 +288,10 @@ func (rep *StateRepository) GetMediatorVotedResults() (map[string]uint64, error)
 		log.Warn("GetPledgeListWithNew error" + err.Error())
 		return nil, err
 	}
-	log.DebugDynamic(func() string {
-		data, _ := json.Marshal(pledgeList)
-		return "GetPledgeListWithNew result:\r\n" + string(data)
-	})
+	//log.DebugDynamic(func() string {
+	//	data, _ := json.Marshal(pledgeList)
+	//	return "GetPledgeListWithNew result:\r\n" + string(data)
+	//})
 
 	mediatorVoteCount := make(map[string]uint64)
 	//先将所有mediator的投票数量设为0， 防止某个mediator未被任何账户投票
