@@ -19,6 +19,6 @@ lftp travis:$ftppwd@47.74.209.46 << EOF
 cd ${folder}
 mkdir ${number}
 cd ${number}
-mirror -R $BASE_DIR/bdd/logs
+mirror -R /home/data/jenkins/workspace/go-palletone/src/github.com/palletone/go-palletone/bdd/logs
 exit
 EOF
