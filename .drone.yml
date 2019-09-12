@@ -1,14 +1,62 @@
-kind: pipeline
-name: default
+platform:
+  arсh: amd64
+  os: linux
 
-steps:
-- name: test
-  image: golang:1.12
-  commands:
-  - go test -mod=vendor ./...
-- name: lint
-  image: golang:1.12
-  commands:
-  - go version
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
-  - golangci-lint run ./...
+workspace:
+  base: /drone/src
+  path: github.com/palletone/go-palletone
+
+pipeline:
+  ${BUILD_NAME}:
+    image: golang:1.12.7
+    environment:
+      GOPATH: /drone
+      BASE_DIR: /drone/src/github.com/palletone/go-palletone
+      ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/node/log/all.log
+      GAS_TOKEN_ALL_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
+      BDD_LOG_PATH: /drone/src/github.com/palletone/go-palletone/bdd/logs
+      CREATE_TRANS_DIR: createTrans
+      CONTRACT20_DIR: crt20Contract
+      SEQENCE721_DIR: crt721Seqence
+      UDID721_DIR: crt721UDID
+      VOTECONTRACT_DIR: voteContract
+      MULTIPLE_DIR: zMulti-node
+      DIGITAL_IDENTITY_DIR: Digital-IdentityCert
+      DEPOSIT_DIR: deposit
+      GAS_TOKEN_DIR: gasToken
+      MEDIATOR_VOTE_DIR: meidatorvote
+      USER_CONTRACT_DIR: usercontract
+      LOG_NAME: log.html
+      REPORT_NAME: report.html
+    secrets: [ FTP_PWD ]
+    commands:
+      - set +e
+      - apt-get update
+      - apt-get install python2.7 -y
+      - wget https://bootstrap.pypa.io/get-pip.py
+      - python get-pip.py
+      - pip -V
+      - pip install --upgrade pip
+      - pip install robotframework==2.8.5
+      - pip install requests
+      - pip install robotframework-requests
+      - pip install demjson
+      - pip install pexpect
+      - apt-get install expect -y
+      - apt-get install jq -y
+      - apt-get install lftp -y
+      - chmod +x bdd/uploadDrone2Ftp.sh
+      - chmod +x bdd/upload2Ftp.sh
+      - apt-get install tree -y
+      - apt-get install net-tools -y
+      - export GO111MODULE=on
+      - ${TESTCASE_CMD}
+      - ${UPLOAD_LOG}
+matrix:
+  include:
+    - BUILD_NAME: digital-identity
+      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && chmod +x ./start.sh && ./start.sh
+      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone/bdd/Digital-Identity/scripts && chmod +x ./upload.sh && ./upload.sh
+    - BUILD_NAME: usercontract_bdd_3-3
+      TESTCASE_CMD: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract && chmod +x ./start.sh && ./start.sh
+      UPLOAD_LOG: cd /drone/src/github.com/palletone/go-palletone/bdd/UserContract && chmod +x ./upload.sh && ./upload.sh
