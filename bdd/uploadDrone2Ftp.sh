@@ -15,10 +15,12 @@ number=`obtain_git_commit_number`
 ftppwd=$1
 echo $ftppwd
 
+LOG_PATH=$BDD_LOG_PATH
+
 lftp travis:$ftppwd@47.74.209.46 << EOF
 cd ${folder}
 mkdir ${number}
 cd ${number}
-mirror -R /home/data/jenkins/workspace/go-palletone/src/github.com/palletone/go-palletone/bdd/logs
+mirror -R  $LOG_PATH
 exit
 EOF
