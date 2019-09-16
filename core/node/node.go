@@ -337,7 +337,7 @@ func (n *Node) startRPC(services map[reflect.Type]Service) error {
 
 	// 2. 启动 IPC，用于节点内进程间的通信
 	if err := n.startIPC(apis); err != nil {
-		log.Error("startRPC startIPC err:", err.Error())
+		log.Error("startRPC startIPC err:", "error", err.Error())
 		n.stopInProc()
 		return err
 	}
@@ -392,7 +392,7 @@ func (n *Node) startIPC(apis []rpc.API) error {
 	}
 	listener, handler, err := rpc.StartIPCEndpoint(n.ipcEndpoint, apis)
 	if err != nil {
-		log.Info("startIPC StartIPCEndpoint err:", err.Error())
+		log.Info("startIPC StartIPCEndpoint", "error", err.Error())
 		return err
 	}
 	n.ipcListener = listener
