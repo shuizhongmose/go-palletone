@@ -16,7 +16,8 @@ ftppwd=$1
 echo $ftppwd
 
 LOG_PATH=$BDD_LOG_PATH
-
+echo $folder
+echo $number
 lftp travis:$ftppwd@47.74.209.46 << EOF
 cd ${folder}
 mkdir ${number}
