@@ -13,7 +13,6 @@ function obtain_git_commit_number {
 folder=`obtain_git_branch`
 number=`obtain_git_commit_number`
 ftppwd=$1
-echo $ftppwd
 
 LOG_PATH=$BDD_LOG_PATH
 echo $folder
