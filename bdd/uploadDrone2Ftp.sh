@@ -1,9 +1,9 @@
 #!/bin/bash
 
-function obtain_git_branch {
-  br=`git branch | grep "*"`
-  echo ${br/* /}
-}
+#function obtain_git_branch {
+#  br=`git branch | grep "*"`
+#  echo ${br/* /}
+#}
 
 function obtain_git_commit_number {
   br=`git rev-list --count HEAD`
@@ -11,6 +11,7 @@ function obtain_git_commit_number {
 }
 
 folder=$GIT_BRANCH
+folder=echo ${folder//origin\//}
 number=`obtain_git_commit_number`
 ftppwd=$1
 
