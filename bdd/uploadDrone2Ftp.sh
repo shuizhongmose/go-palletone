@@ -21,7 +21,7 @@ lftp travis:$ftppwd@47.74.209.46 << EOF
 cd ${folder}
 mkdir ${number}
 cd ${number}
-mirror -R --parallel=3 /home/jenkinsgo/src/github.com/palletone/go-palletone/bdd/logs/
+mirror -R /home/jenkinsgo/src/github.com/palletone/go-palletone/bdd/logs/ ./
 echo "mirror done"
 bye
 EOF
