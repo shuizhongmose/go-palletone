@@ -24,4 +24,3 @@ cd ${number}
 mirror -R  /home/jenkinsgo/src/github.com/palletone/go-palletone/bdd/logs
 exit
 EOF
-
