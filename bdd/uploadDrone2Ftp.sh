@@ -22,5 +22,6 @@ cd ${folder}
 mkdir ${number}
 cd ${number}
 mirror -R  /home/jenkinsgo/src/github.com/palletone/go-palletone/bdd/logs
+echo "mirror done"
 bye
 EOF
