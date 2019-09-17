@@ -10,7 +10,7 @@ function obtain_git_commit_number {
   echo ${br/ /}
 }
 
-folder=echo ${GIT_BRANCH//origin\//}
+folder="${GIT_BRANCH//origin\//}"
 number=`obtain_git_commit_number`
 ftppwd=$1
 
