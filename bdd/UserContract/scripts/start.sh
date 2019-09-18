@@ -1,10 +1,12 @@
 #!/bin/bash
 
+cd $BASE_DIR
 make gptn
 make golang-baseimage-dev
 docker images
 cat /proc/sys/net/ipv4/ip_forward
-../../../../jurySec.sh
+chmod +x jurySec
+./jurySec.sh
 cat /etc/docker/daemon.json
 cd ./cmd/deployment
 chmod +x ./deploy.sh
