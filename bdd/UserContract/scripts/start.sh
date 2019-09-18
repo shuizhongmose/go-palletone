@@ -5,7 +5,7 @@ make gptn
 make golang-baseimage-dev
 docker images
 cat /proc/sys/net/ipv4/ip_forward
-chmod +x jurySec
+chmod +x jurySec.sh
 ./jurySec.sh
 cat /etc/docker/daemon.json
 cd ./cmd/deployment
