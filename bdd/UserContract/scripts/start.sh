@@ -9,12 +9,12 @@ cat /etc/docker/daemon.json
 cd ./cmd/deployment
 chmod +x ./deploy.sh
 chmod +x ./start.sh
-cp $BASE_DIR/bdd/UserContract/editConfig.sh ./
+cp $BASE_DIR/bdd/UserContract/scripts/editConfig.sh ./
 chmod +x editConfig.sh
 docker network ls
 ./deploy.sh 3 3
-./editConfig.sh 3 3
-./start.sh 3
+editConfig.sh 3 3
+start.sh 3
 sleep 30
 docker network ls
 cd $BASE_DIR
