@@ -77,8 +77,7 @@ createaccount=`./createaccount.sh`
 tempinfo=`echo $createaccount | sed -n '$p'| awk '{print $NF}'`
 #accountlength=35
 #accounttemp=${tempinfo:0:$accountlength}
-account=`echo ${tempinfo//
-/}`
+account=`echo ${tempinfo///}`
 
 
 newAddress="Address=\"$account\""
@@ -95,16 +94,14 @@ key=`echo $info`
 privatekeylength=44
 private=${key#*private key: }
 privatekeytemp=${private:0:$privatekeylength}
-privatekey=`echo ${privatekeytemp//
-/}`
+privatekey=`echo ${privatekeytemp///}`
 #echo $privatekey
 
 
 publickeylength=175
 public=${key#*public key: }
 publickeytemp=${public:0:$publickeylength}
-publickey=`echo ${publickeytemp//
-/}`
+publickey=`echo ${publickeytemp///}`
 #echo $publickey
 
 
@@ -122,8 +119,7 @@ info=`./gptn nodeInfo`
 tempinfo=`echo $info | sed -n '$p'| awk '{print $NF}'`
 length=`echo ${#tempinfo}`
 nodeinfotemp=${tempinfo:0:$length}
-nodeinfo=`echo ${nodeinfotemp//
-/}`
+nodeinfo=`echo ${nodeinfotemp///}`
 length=`echo ${#nodeinfo}`
 b=140
 if [ "$length" -lt "$b" ]
