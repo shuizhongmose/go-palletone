@@ -161,7 +161,6 @@ function addBootstrapNodes()
 	if [ $acount -ne $index ];then
 	    #echo $acount
 	    nodeinfo=`echo $content | jq ".initialMediatorCandidates[ $[$acount-1] ].node"`
-	    echo "nodeinfo:"+$nodeinfo
 	    array="$array$nodeinfo,"
         fi
 	let ++acount;
