@@ -19,7 +19,7 @@
           - Digital-Identity
           - UserContract
     builders:
-      - shell:'''
+      - shell: sh '''
         # not exit while error
         set +e
 
