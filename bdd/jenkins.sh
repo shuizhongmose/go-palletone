@@ -3,13 +3,8 @@
 # not exit while error
 set +e
 
-# base environment
-export GOPATH=/home/jenkinsgo
-export GOCACHE=/home/jenkinsgo/caches/go
-export PATH=$GOPATH:$PATH
-
 # project environment
-export BASE_DIR=$GOPATH/src/github.com/palletone/go-palletone
+# you can use BASE_DIR, it points $GOPATH/src/github.com/palletone/go-palletone
 export ALL_LOG_PATH=$GOPATH/src/github.com/palletone/go-palletone/bdd/node/log/all.log
 export GAS_TOKEN_ALL_LOG_PATH=$GOPATH/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log
 export BDD_LOG_PATH=$GOPATH/src/github.com/palletone/go-palletone/bdd/logs
