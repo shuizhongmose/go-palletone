@@ -1,15 +1,22 @@
-build_name:
-  - digital-identity
-  - usercontract_bdd_3-3
-test_dir:
-  - Digital-Identity
-  - UserContract
-
-exclude:
-  - build_name: digital-identity
-    test_dir: UserContract
-  - build_name: usercontract_bdd_3-3
-    test_dir: UserContract
-
-builders:
-  - shell: cd $BASE_DIR/bdd && chmod +x jenkins.sh && ./jenkins.sh
+- job:
+  name: palletone-matrixtest
+  project-type: matrix
+  execution-strategy:
+  combination-filter: |
+    (build_name == "digital-identity" &&  test_dir == "Digital-Identity") || (build_name=="usercontract_bdd_3-3" && test_dir == "UserContract")
+  sequential: true
+  axes:
+    - axis:
+       type: user-defined
+       name: build_name
+       values:
+        - digital-identity
+        - usercontract_bdd_3-3
+    - axis:
+       type: user-defined
+       name: test_dir
+       values:
+        - Digital-Identity
+        - UserContract
+  builders:
+    - shell: cd $BASE_DIR/bdd && chmod +x jenkins.sh && ./jenkins.sh
