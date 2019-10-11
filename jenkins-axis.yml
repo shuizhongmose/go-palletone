@@ -12,5 +12,6 @@ exclude:
     test_dir: UserContract
 
 sequential: true
-script:
-  - cd $BASE_DIR/bdd && chmod +x jenkins.sh && ./jenkins.sh
+
+builders:
+  - shell: cd $BASE_DIR/bdd && chmod +x jenkins.sh && ./jenkins.sh
