@@ -11,7 +11,8 @@ exclude:
   - build_name: usercontract_bdd_3-3
     test_dir: UserContract
 
-sequential: true
+execution-strategy:
+  - sequential: true
 
 builders:
   - shell: cd $BASE_DIR/bdd && chmod +x jenkins.sh && ./jenkins.sh
