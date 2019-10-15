@@ -30,7 +30,6 @@ pipeline {
     stages {
         stage('UT') {
             options {
-                disableConcurrentBuilds()
                 checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
             }
             steps{
