@@ -28,41 +28,42 @@ pipeline {
         FTP_PWD = 'Pallet2018'
     }
     stages {
-        stage('UT') {
-            try {
-                sh 'set +e'
-                sh 'export PATH=${GOPATH}:${PATH}'
-                sh 'cd ${BASE_DIR}'
-                sh 'go build -mod=vendor ./cmd/gptn'
-                sh 'make gptn'
-                sh 'go test -mod=vendor ./...'
-            }
-            catch(exc) {
-                echo 'UI failed'
-            }
-        }
-        stage('User Contract BDD') {
-            steps {
-                sh 'cd ${BASE_DIR}/bdd/UserContract/scripts'
-                sh 'chmod +x start.sh'
-                sh './start.sh'
+        stage('BDD In Sequential') {
+            parallel {
+                stage('UT') {
+                    steps {
+                        sh 'export PATH=${GOPATH}:${PATH}'
+                        sh 'cd ${BASE_DIR}'
+                        sh 'go build -mod=vendor ./cmd/gptn'
+                        sh 'make gptn'
+                        sh 'go test -mod=vendor ./...'
+                    }
+                }
+                stage('User Contract BDD') {
+                    steps {
+                        sh 'cd ${BASE_DIR}/bdd/UserContract/scripts'
+                        sh 'chmod +x start.sh'
+                        sh './start.sh'
 
-                sh 'chmod +x upload.sh'
-                sh './upload.sh'
+                        sh 'chmod +x upload.sh'
+                        sh './upload.sh'
 
-                sh 'pkill gptn'
-            }
-        }
-        stage('Digital Identity BDD') {
-            steps {
-                sh 'cd ${BASE_DIR}/bdd/DigitalIdentityCert/scripts'
-                sh 'chmod +x start.sh'
-                sh './start.sh'
+                        sh 'pkill gptn'
+                    }
+                }
+                stage('Digital Identity BDD') {
+                    steps {
+                        sh 'cd ${BASE_DIR}/bdd/DigitalIdentityCert/scripts'
+                        sh 'chmod +x start.sh'
+                        sh './start.sh'
 
-                sh 'chmod +x upload.sh'
-                sh './upload.sh'
+                        sh 'chmod +x upload.sh'
+                        sh './upload.sh'
 
-                sh 'pkill gptn'
+                        sh 'pkill gptn'
+                    }
+                }
+
             }
         }
     }
