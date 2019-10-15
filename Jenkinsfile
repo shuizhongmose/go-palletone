@@ -29,6 +29,10 @@ pipeline {
     }
     stages {
         stage('UT') {
+            options {
+                disableConcurrentBuilds()
+                checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
+            }
             steps{
                 sh 'cd $BASE_DIR'
                 sh 'go build -mod=vendor ./cmd/gptn'
