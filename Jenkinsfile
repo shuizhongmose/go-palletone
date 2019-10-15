@@ -28,20 +28,20 @@ pipeline {
         FTP_PWD = 'Pallet2018'
     }
     stages {
+        stage('Install Requirements') {
+            sh 'sudo -H pip install --upgrade pip'
+            sh 'sudo -H pip install robotframework==2.8.5'
+            sh 'sudo -H pip install requests'
+            sh 'sudo -H pip install robotframework-requests'
+            sh 'sudo -H pip install demjson'
+            sh 'sudo -H pip install pexpect'
+            sh 'sudo -H apt-get install expect'
+            sh 'sudo -H apt-get install jq'
+            sh 'sudo -H apt-get install lftp'
+            sh 'chmod +x bdd/upload2Ftp.sh'
+            sh 'sudo apt-get install tree'
+        }
         stage('BDD In Sequential') {
-            stage('Install Requirements') {
-                sh 'sudo -H pip install --upgrade pip'
-                sh 'sudo -H pip install robotframework==2.8.5'
-                sh 'sudo -H pip install requests'
-                sh 'sudo -H pip install robotframework-requests'
-                sh 'sudo -H pip install demjson'
-                sh 'sudo -H pip install pexpect'
-                sh 'sudo -H apt-get install expect'
-                sh 'sudo -H apt-get install jq'
-                sh 'sudo -H apt-get install lftp'
-                sh 'chmod +x bdd/upload2Ftp.sh'
-                sh 'sudo apt-get install tree'
-            }
             parallel {
                 stage('UT') {
                     steps {
