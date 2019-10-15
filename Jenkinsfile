@@ -39,7 +39,6 @@ pipeline {
                     sh 'go test -mod=vendor ./...'
                 } catch(exc) {
                     echo 'UI failed'
-                    throw
                 }
             }
         }
