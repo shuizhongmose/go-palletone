@@ -29,6 +29,19 @@ pipeline {
     }
     stages {
         stage('BDD In Sequential') {
+            stage('Install Requirements') {
+                sh 'sudo -H pip install --upgrade pip'
+                sh 'sudo -H pip install robotframework==2.8.5'
+                sh 'sudo -H pip install requests'
+                sh 'sudo -H pip install robotframework-requests'
+                sh 'sudo -H pip install demjson'
+                sh 'sudo -H pip install pexpect'
+                sh 'sudo -H apt-get install expect'
+                sh 'sudo -H apt-get install jq'
+                sh 'sudo -H apt-get install lftp'
+                sh 'chmod +x bdd/upload2Ftp.sh'
+                sh 'sudo apt-get install tree'
+            }
             parallel {
                 stage('UT') {
                     steps {
@@ -53,17 +66,14 @@ pipeline {
                 }
                 stage('Digital Identity BDD') {
                     steps {
-                        sh 'cd ${BASE_DIR}/bdd/DigitalIdentityCert/scripts'
+                        sh 'cd ${BASE_DIR}/bdd/Digital-Identity/scripts'
                         sh 'chmod +x start.sh'
                         sh './start.sh'
-
+                        sh ''
                         sh 'chmod +x upload.sh'
                         sh './upload.sh'
-
-                        sh 'pkill gptn'
                     }
                 }
-
             }
         }
     }
