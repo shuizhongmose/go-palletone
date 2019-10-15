@@ -25,8 +25,8 @@ pipeline {
     }
     stages {
         stage('UT') {
-            agent { label 'UT' }
             steps{
+                sh 'cd $BASE_DIR'
                 sh 'go build -mod=vendor ./cmd/gptn'
                 sh 'make gptn'
                 sh 'go test -mod=vendor ./...'
