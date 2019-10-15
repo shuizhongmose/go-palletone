@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    options {
+        disableConcurrentBuilds()
+        checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
+    }
     environment {
         GOPATH = '/home/jenkinsgo'
         GOCACHE = '/home/jenkinsgo/caches/go'
