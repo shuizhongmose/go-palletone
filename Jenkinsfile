@@ -3,6 +3,7 @@ pipeline {
     options {
         disableConcurrentBuilds()
         checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
+        parallelsAlwaysFailFast()
     }
     environment {
         GOPATH = '/home/JGithubgo'
