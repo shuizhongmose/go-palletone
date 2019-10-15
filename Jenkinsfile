@@ -7,7 +7,6 @@ pipeline {
     environment {
         GOPATH = '/home/jenkinsgo'
         GOCACHE = '/home/jenkinsgo/caches/go'
-        env.PATH = '$GOPATH:$PATH'
 
         BASE_DIR = '$GOPATH/src/github.com/palletone/go-palletone'
         ALL_LOG_PATH = '$GOPATH/src/github.com/palletone/go-palletone/bdd/node/log/all.log'
@@ -30,6 +29,7 @@ pipeline {
     stages {
         stage('UT') {
             steps{
+                sh 'export PATH=$GOPATH:$PATH'
                 sh 'cd $BASE_DIR'
                 sh 'go build -mod=vendor ./cmd/gptn'
                 sh 'make gptn'
