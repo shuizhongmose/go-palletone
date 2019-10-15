@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
     environment {
         GOPATH = '/home/jenkinsgo'
         GOCACHE = '/home/jenkinsgo/caches/go'
