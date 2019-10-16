@@ -3,7 +3,6 @@ pipeline {
     options {
         disableConcurrentBuilds()
         checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
-        parallelsAlwaysFailFast()
     }
     environment {
         GOPATH = '/home/JGithubgo'
@@ -33,46 +32,42 @@ pipeline {
                 echo 'hello world'
             }
         }
-        stage('BDD In Sequential') {
-            parallel {
-                stage('UT') {
-                    steps {
-                        sh 'export PATH=${GOPATH}:${PATH}'
-                        sh 'cd ${BASE_DIR}'
-                        sh 'go build -mod=vendor ./cmd/gptn'
-                        sh 'make gptn'
-                        sh 'go test -mod=vendor ./...'
-                    }
-                }
-                stage('User Contract BDD') {
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/UserContract/scripts
-                            ls
-                            chmod +x start.sh
-                            ./start.sh
+        stage('UT') {
+            steps {
+                sh 'export PATH=${GOPATH}:${PATH}'
+                sh 'cd ${BASE_DIR}'
+                sh 'go build -mod=vendor ./cmd/gptn'
+                sh 'make gptn'
+                sh 'go test -mod=vendor ./...'
+            }
+        }
+        stage('User Contract BDD') {
+            steps {
+                sh '''
+                    cd ${BASE_DIR}/bdd/UserContract/scripts
+                    ls
+                    chmod +x start.sh
+                    ./start.sh
 
-                            chmod +x upload.sh
-                            ./upload.sh
-                        '''
+                    chmod +x upload.sh
+                    ./upload.sh
+                '''
 
-                        sh 'pkill gptn'
-                    }
-                }
-                stage('Digital Identity BDD') {
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/Digital-Identity/scripts
-                            chmod +x start.sh
-                            ./start.sh
+                sh 'pkill gptn'
+            }
+        }
+        stage('Digital Identity BDD') {
+            steps {
+                sh '''
+                    cd ${BASE_DIR}/bdd/Digital-Identity/scripts
+                    chmod +x start.sh
+                    ./start.sh
 
-                            chmod +x upload.sh
-                            ./upload.sh
-                        '''
+                    chmod +x upload.sh
+                    ./upload.sh
+                '''
 
-                        sh 'pkill gptn'
-                    }
-                }
+                sh 'pkill gptn'
             }
         }
     }
