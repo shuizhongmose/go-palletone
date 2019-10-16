@@ -49,24 +49,28 @@ pipeline {
                         sh '''
                             cd ${BASE_DIR}/bdd/UserContract/scripts
                             ls
-                        '''
-                        sh 'chmod +x start.sh'
-                        sh './start.sh'
+                            chmod +x start.sh
+                            ./start.sh
 
-                        sh 'chmod +x upload.sh'
-                        sh './upload.sh'
+                            chmod +x upload.sh
+                            ./upload.sh
+                        '''
 
                         sh 'pkill gptn'
                     }
                 }
                 stage('Digital Identity BDD') {
                     steps {
-                        sh 'cd ${BASE_DIR}/bdd/Digital-Identity/scripts'
-                        sh 'chmod +x start.sh'
-                        sh './start.sh'
-                        sh ''
-                        sh 'chmod +x upload.sh'
-                        sh './upload.sh'
+                        sh '''
+                            cd ${BASE_DIR}/bdd/Digital-Identity/scripts
+                            chmod +x start.sh
+                            ./start.sh
+
+                            chmod +x upload.sh
+                            ./upload.sh
+                        '''
+
+                        sh 'pkill gptn'
                     }
                 }
             }
