@@ -33,6 +33,7 @@ pipeline {
             }
         }
         stage('UT') {
+            failFast false
             steps {
                 sh 'export PATH=${GOPATH}:${PATH}'
                 sh 'cd ${BASE_DIR}'
@@ -42,6 +43,7 @@ pipeline {
             }
         }
         stage('User Contract BDD') {
+            failFast false
             steps {
                 sh '''
                     cd ${BASE_DIR}/bdd/UserContract/scripts
@@ -57,6 +59,7 @@ pipeline {
             }
         }
         stage('Digital Identity BDD') {
+            failFast false
             steps {
                 sh '''
                     cd ${BASE_DIR}/bdd/Digital-Identity/scripts
