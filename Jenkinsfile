@@ -43,7 +43,6 @@ pipeline {
         IS_RUN_APPLICATION = 'true'
         IS_RUN_LIGHT = 'false'
         IS_RUN_BLACKLIST = 'true'
-        GO111MODULE = 'on'
         IS_UPLOAD = 'true'
     }
     stages {
@@ -101,18 +100,20 @@ pipeline {
         }
         stage('One Node BDD') {
             stage('Build') {
-                sh '''
-                    go build -mod=vendor ./cmd/gptn
-                    cp gptn bdd/node
-                    mkdir bdd/GasToken/node
-                    cp gptn bdd/GasToken/node
-                    cd bdd/node
-                    chmod +x gptn
-                    python init.py
-                    nohup ./gptn &
-                    sleep 15
-                    netstat -ap | grep gptn
-                '''
+                steps {
+                    sh '''
+                        go build -mod=vendor ./cmd/gptn
+                        cp gptn bdd/node
+                        mkdir bdd/GasToken/node
+                        cp gptn bdd/GasToken/node
+                        cd bdd/node
+                        chmod +x gptn
+                        python init.py
+                        nohup ./gptn &
+                        sleep 15
+                        netstat -ap | grep gptn
+                    '''
+                }
             }
             stage('Deposit') {
                 when {
@@ -241,21 +242,23 @@ pipeline {
         }
         stage('Multiple Nodes BDD') {
             stage('Running') {
-                sh '''
-                    make gptn
-                    cp build/bin/gptn bdd/node
-                    cd bdd/node
-                    chmod -R +x *
-                    sudo -H chmod +w /etc/hosts
-                    sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
-                    sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
-                    ./launchMultipleNodes.sh
-                    netstat -ap | grep gptn
-                    grep "mediator_interval" node1/ptn-genesis.json
-                    grep "maintenance_skip_slots" node1/ptn-genesis.json
-                    cd ${BASE_DIR}/bdd
-                    mkdir -p ${BDD_LOG_PATH}
-                '''
+                steps {
+                    sh '''
+                        make gptn
+                        cp build/bin/gptn bdd/node
+                        cd bdd/node
+                        chmod -R +x *
+                        sudo -H chmod +w /etc/hosts
+                        sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
+                        sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
+                        ./launchMultipleNodes.sh
+                        netstat -ap | grep gptn
+                        grep "mediator_interval" node1/ptn-genesis.json
+                        grep "maintenance_skip_slots" node1/ptn-genesis.json
+                        cd ${BASE_DIR}/bdd
+                        mkdir -p ${BDD_LOG_PATH}
+                    '''
+                }
             }
             stage('Run Multiple') {
                 when {
