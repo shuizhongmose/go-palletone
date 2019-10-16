@@ -34,13 +34,14 @@ pipeline {
         }
         stage('UT') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError {
                     sh 'export PATH=${GOPATH}:${PATH}'
                     sh 'cd ${BASE_DIR}'
                     sh 'go build -mod=vendor ./cmd/gptn'
                     sh 'make gptn'
                     sh 'go test -mod=vendor ./...'
                 }
+                echo stageResult.result
             }
         }
         stage('User Contract BDD') {
