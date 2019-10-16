@@ -22,31 +22,53 @@ pipeline {
         DEPOSIT_DIR = 'deposit'
         GAS_TOKEN_DIR = 'gasToken'
         MEDIATOR_VOTE_DIR = 'meidatorvote'
+        APPLICATION_DIR='application'
         USER_CONTRACT_DIR = 'usercontract'
+        BLACKLIST_DIR='blacklist'
         GO111MODULE = 'on'
-        FTP_PWD = 'Pallet2018'
+        LOG_NAME='log.html'
+        REPORT_NAME='report.html'
+
+        IS_RUN_DEPOSIT = 'true'
+        IS_RUN_TESTCONTRACTCASES = 'true'
+        IS_RUN_CREATE_TRANS = 'true'
+        IS_RUN_20CONTRACT = 'true'
+        IS_RUN_721SEQENCE = 'true'
+        IS_RUN_721UDID = 'true'
+        IS_RUN_MULTIPLE = 'true'
+        IS_RUN_DIGITAL = 'false'
+        IS_RUN_VOTE = 'true'
+        IS_RUN_GASTOKEN = 'true'
+        IS_RUN_MEDIATOR_VOTE = 'true'
+        IS_RUN_APPLICATION = 'true'
+        IS_RUN_LIGHT = 'false'
+        IS_RUN_BLACKLIST = 'true'
+        GO111MODULE = 'on'
+        IS_UPLOAD = 'true'
     }
     stages {
         stage('Install Requirements') {
             steps{
-                echo 'hello world'
+                sh '''
+                    pip install --upgrade pip
+                    pip install robotframework==2.8.5
+                    pip install requests
+                    pip install robotframework-requests
+                    pip install demjson
+                    pip install pexpect
+                    apt-get install expect
+                    apt-get install lftp
+                    chmod +x bdd/upload2Ftp.sh
+                '''
             }
         }
-        try {
-            stage('UT') {
-                steps {
-                    catchError {
-                        sh 'export PATH=${GOPATH}:${PATH}'
-                        sh 'cd ${BASE_DIR}'
-                        sh 'go build -mod=vendor ./cmd/gptn'
-                        sh 'make gptn'
-                        sh 'go test -mod=vendor ./...'
-                    }
-                    echo stageResult.result
-                }
+        stage('UT') {
+            steps {
+                sh 'export PATH=${GOPATH}:${PATH}'
+                sh 'go build -mod=vendor ./cmd/gptn'
+                sh 'make gptn'
+                sh 'go test -mod=vendor ./...'
             }
-        } catch (Exception e) {
-            echo 'Stage failed, but we continue'
         }
         stage('User Contract BDD') {
             steps {
@@ -75,6 +97,244 @@ pipeline {
                 '''
 
                 sh 'pkill gptn'
+            }
+        }
+        stage('One Node BDD') {
+            stage('Build') {
+                sh '''
+                    go build -mod=vendor ./cmd/gptn
+                    cp gptn bdd/node
+                    mkdir bdd/GasToken/node
+                    cp gptn bdd/GasToken/node
+                    cd bdd/node
+                    chmod +x gptn
+                    python init.py
+                    nohup ./gptn &
+                    sleep 15
+                    netstat -ap | grep gptn
+                '''
+            }
+            stage('Deposit') {
+                when {
+                    environment name: 'IS_RUN_DEPOSIT', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/dct
+                        ./deposit_test.sh 7
+                    '''
+                }
+            }
+            stage('Blacklist') {
+                when {
+                    environment name: 'IS_RUN_BLACKLIST', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/blacklist
+                        ./blacklist_test.sh
+                    '''
+                }
+            }
+            stage('ContractTestcases') {
+                when {
+                    environment name: 'IS_RUN_TESTCONTRACTCASES', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/contract/testcases
+                        chmod +x ./test_start.sh
+                        ./test_start.sh
+                    '''
+                }
+            }
+            stage('Create Transaction') {
+                when {
+                    environment name: 'IS_RUN_CREATE_TRANS', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans
+                    '''
+                }
+            }
+            stage('PRC720 Contract') {
+                when {
+                    environment name: 'IS_RUN_20CONTRACT', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract
+                    '''
+                }
+            }
+            stage('PRC721 Contract') {
+                when {
+                    environment name: 'IS_RUN_721SEQENCE', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${SEQENCE721_DIR} -i normal ./testcase/crt721Seqence
+                    '''
+                }
+            }
+            stage('PRC721 UDID') {
+                when {
+                    environment name: 'IS_RUN_721UDID', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${UDID721_DIR} -i normal ./testcase/crt721UDID
+                    '''
+                }
+            }
+            stage('Vote') {
+                when {
+                    environment name: 'IS_RUN_VOTE', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract
+                    '''
+                }
+            }
+            stage('Gas Token') {
+                when {
+                    environment name: 'IS_RUN_GASTOKEN', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        chmod +x ./init_gas_token.sh
+                        ./init_gas_token.sh
+                        sleep 15
+                        python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases
+                    '''
+                }
+            }
+            stage('After Running') {
+                steps {
+                    sh '''
+                        killall gptn
+                        sleep 2
+                    '''
+                }
+            }
+            stage('Upload Logs') {
+                when {
+                    environment name: 'IS_UPLOAD', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}
+                        zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
+                        zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
+                        ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+        stage('Multiple Nodes BDD') {
+            stage('Running') {
+                sh '''
+                    make gptn
+                    cp build/bin/gptn bdd/node
+                    cd bdd/node
+                    chmod -R +x *
+                    sudo -H chmod +w /etc/hosts
+                    sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
+                    sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
+                    ./launchMultipleNodes.sh
+                    netstat -ap | grep gptn
+                    grep "mediator_interval" node1/ptn-genesis.json
+                    grep "maintenance_skip_slots" node1/ptn-genesis.json
+                    cd ${BASE_DIR}/bdd
+                    mkdir -p ${BDD_LOG_PATH}
+                '''
+            }
+            stage('Run Multiple') {
+                when {
+                    environment name: 'IS_RUN_MULTIPLE', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}
+                        python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node
+                    '''
+                }
+            }
+            stage('Run Light') {
+                when {
+                    environment name: 'IS_RUN_LIGHT', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/light
+                        chmod +x ./bddstart.sh
+                        ./bddstart.sh
+                    '''
+                }
+            }
+            stage('After Running') {
+                steps {
+                    sh '''
+                        killall gptn
+                        sleep 2
+                    '''
+                }
+            }
+            stage('Upload Logs') {
+                when {
+                    environment name: 'IS_UPLOAD', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}
+                        zip -j ./bdd/logs/zMulti-node.zip ./logs/zMulti-node/*
+                        ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        cd ${BASE_DIR}/bdd
+                        source ./targz_node.sh
+                        ./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+        stage('Application BDD') {
+            when {
+                environment name: 'IS_RUN_APPLICATION', value: 'true'
+            }
+            stage('Running') {
+                steps {
+                    sh '''
+                        go build -mod=vendor ./cmd/gptn
+                        mkdir bdd/application/node
+                        cp gptn bdd/application/node
+                        cd ./bdd/application
+                        chmod +x ./init.sh
+                        ./init.sh
+                        sleep 15
+                        python -m robot.run -d ${BDD_LOG_PATH}/${APPLICATION_DIR} .
+                        killall gptn
+                        sleep 2
+                    '''
+                }
+            }
+            stage('Upload Logs') {
+                when {
+                    environment name: 'IS_UPLOAD', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}
+                        zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
+                        ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                    '''
+                }
             }
         }
     }
