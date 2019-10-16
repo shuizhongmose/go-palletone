@@ -32,17 +32,18 @@ pipeline {
                 echo 'hello world'
             }
         }
-        stage('UT') {
-            steps {
-                catchError {
+        try {
+            stage('UT') {
+                steps {
                     sh 'export PATH=${GOPATH}:${PATH}'
                     sh 'cd ${BASE_DIR}'
                     sh 'go build -mod=vendor ./cmd/gptn'
                     sh 'make gptn'
                     sh 'go test -mod=vendor ./...'
                 }
-                echo stageResult.result
             }
+        } catch (Exception e) {
+            echo 'Stage failed, but we continue'
         }
         stage('User Contract BDD') {
             steps {
