@@ -34,6 +34,7 @@ pipeline {
         }
         stage('UT') {
             steps {
+                sh returnStatus: true
                 sh 'export PATH=${GOPATH}:${PATH}'
                 sh 'cd ${BASE_DIR}'
                 sh 'go build -mod=vendor ./cmd/gptn'
