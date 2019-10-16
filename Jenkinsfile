@@ -34,12 +34,13 @@ pipeline {
         }
         stage('UT') {
             steps {
-                sh returnStatus: true
-                sh 'export PATH=${GOPATH}:${PATH}'
-                sh 'cd ${BASE_DIR}'
-                sh 'go build -mod=vendor ./cmd/gptn'
-                sh 'make gptn'
-                sh 'go test -mod=vendor ./...'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'export PATH=${GOPATH}:${PATH}'
+                    sh 'cd ${BASE_DIR}'
+                    sh 'go build -mod=vendor ./cmd/gptn'
+                    sh 'make gptn'
+                    sh 'go test -mod=vendor ./...'
+                }
             }
         }
         stage('User Contract BDD') {
