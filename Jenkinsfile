@@ -35,11 +35,17 @@ pipeline {
         try {
             stage('UT') {
                 steps {
-                    sh 'export PATH=${GOPATH}:${PATH}'
-                    sh 'cd ${BASE_DIR}'
-                    sh 'go build -mod=vendor ./cmd/gptn'
-                    sh 'make gptn'
-                    sh 'go test -mod=vendor ./...'
+                    script {
+                        try {
+                            sh 'export PATH=${GOPATH}:${PATH}'
+                            sh 'cd ${BASE_DIR}'
+                            sh 'go build -mod=vendor ./cmd/gptn'
+                            sh 'make gptn'
+                            sh 'go test -mod=vendor ./...'
+                        } catch (err) {
+                            echo err
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
