@@ -50,8 +50,6 @@ pipeline {
                             cd ${BASE_DIR}/bdd/UserContract/scripts
                             ls
                         '''
-                        #sh 'cd ${BASE_DIR}/bdd/UserContract/scripts'
-                        #sh 'ls'
                         sh 'chmod +x start.sh'
                         sh './start.sh'
 
