@@ -73,31 +73,35 @@ pipeline {
         }
         stage('User Contract BDD') {
             steps {
-                sh '''
-                    cd ${BASE_DIR}/bdd/UserContract/scripts
-                    ls
-                    chmod +x start.sh
-                    ./start.sh
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/UserContract/scripts
+                        ls
+                        chmod +x start.sh
+                        ./start.sh
 
-                    chmod +x upload.sh
-                    ./upload.sh
-                '''
+                        chmod +x upload.sh
+                        ./upload.sh
+                    '''
 
-                sh 'pkill gptn'
+                    sh 'pkill gptn'
+                }
             }
         }
         stage('Digital Identity BDD') {
             steps {
-                sh '''
-                    cd ${BASE_DIR}/bdd/Digital-Identity/scripts
-                    chmod +x start.sh
-                    ./start.sh
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/Digital-Identity/scripts
+                        chmod +x start.sh
+                        ./start.sh
 
-                    chmod +x upload.sh
-                    ./upload.sh
-                '''
+                        chmod +x upload.sh
+                        ./upload.sh
+                    '''
 
-                sh 'pkill gptn'
+                    sh 'pkill gptn'
+                }
             }
         }
         stage('One Node BDD') {
@@ -123,10 +127,12 @@ pipeline {
                         environment name: 'IS_RUN_DEPOSIT', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/dct
-                            ./deposit_test.sh 7
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd/dct
+                                ./deposit_test.sh 7
+                            '''
+                        }
                     }
                 }
                 stage('Blacklist') {
@@ -134,10 +140,12 @@ pipeline {
                         environment name: 'IS_RUN_BLACKLIST', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/blacklist
-                            ./blacklist_test.sh
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd/blacklist
+                                ./blacklist_test.sh
+                            '''
+                        }
                     }
                 }
                 stage('ContractTestcases') {
@@ -145,11 +153,14 @@ pipeline {
                         environment name: 'IS_RUN_TESTCONTRACTCASES', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/contract/testcases
-                            chmod +x ./test_start.sh
-                            ./test_start.sh
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd/contract/testcases
+                                chmod +x ./test_start.sh
+                                ./test_start.sh
+                            '''
+                        }
+
                     }
                 }
                 stage('Create Transaction') {
@@ -157,10 +168,12 @@ pipeline {
                         environment name: 'IS_RUN_CREATE_TRANS', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd
+                                python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans
+                            '''
+                        }
                     }
                 }
                 stage('PRC720 Contract') {
@@ -168,10 +181,12 @@ pipeline {
                         environment name: 'IS_RUN_20CONTRACT', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd
+                                python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract
+                            '''
+                        }
                     }
                 }
                 stage('PRC721 Contract') {
@@ -179,10 +194,12 @@ pipeline {
                         environment name: 'IS_RUN_721SEQENCE', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${SEQENCE721_DIR} -i normal ./testcase/crt721Seqence
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd
+                                python -m robot.run -d ${BDD_LOG_PATH}/${SEQENCE721_DIR} -i normal ./testcase/crt721Seqence
+                            '''
+                        }
                     }
                 }
                 stage('PRC721 UDID') {
@@ -190,10 +207,12 @@ pipeline {
                         environment name: 'IS_RUN_721UDID', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${UDID721_DIR} -i normal ./testcase/crt721UDID
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd
+                                python -m robot.run -d ${BDD_LOG_PATH}/${UDID721_DIR} -i normal ./testcase/crt721UDID
+                            '''
+                        }
                     }
                 }
                 stage('Vote') {
@@ -201,10 +220,12 @@ pipeline {
                         environment name: 'IS_RUN_VOTE', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}/bdd
+                        		python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract
+                        	'''
+                        }
                     }
                 }
                 stage('Gas Token') {
@@ -212,13 +233,15 @@ pipeline {
                         environment name: 'IS_RUN_GASTOKEN', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            chmod +x ./init_gas_token.sh
-                            ./init_gas_token.sh
-                            sleep 15
-                            python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}/bdd
+                        		chmod +x ./init_gas_token.sh
+                        		./init_gas_token.sh
+                        		sleep 15
+                        		python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases
+                        	'''
+                        }
                     }
                 }
                 stage('After Running') {
@@ -270,10 +293,12 @@ pipeline {
                         environment name: 'IS_RUN_MULTIPLE', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}
-                            python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}
+                        		python -m robot.run -d ${BDD_LOG_PATH}/${MULTIPLE_DIR} -i normal ./testcase/zMulti-node
+                        	'''
+                        }
                     }
                 }
                 stage('Run Light') {
@@ -281,11 +306,13 @@ pipeline {
                         environment name: 'IS_RUN_LIGHT', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}/light
-                            chmod +x ./bddstart.sh
-                            ./bddstart.sh
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}/light
+                        		chmod +x ./bddstart.sh
+                        		./bddstart.sh
+                        	'''
+                        }
                     }
                 }
                 stage('After Running') {
