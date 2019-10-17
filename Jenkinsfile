@@ -30,10 +30,8 @@ pipeline {
             }
         }
         stage('Sequential2') {
-            stage('In Sequential 2') {
-                steps {
-                    echo "In Sequential 2"
-                }
+            steps {
+                echo "In Sequential 2"
             }
         }
         stage('Sequential3') {
