@@ -35,7 +35,7 @@ pipeline {
             }
         }
         stage('Two') {
-            stages {
+            steps {
                 stage('In Sequential 11') {
                     steps {
                         echo "In Sequential 1"
