@@ -7,7 +7,7 @@ pipeline {
             }
         }
         stage('Sequential') {
-            stages {
+            steps {
                 stage('In Sequential 1') {
                     steps {
                         echo "In Sequential 1"
