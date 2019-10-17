@@ -1,6 +1,11 @@
 pipeline {
     agent none
     stages {
+        stage('One') {
+            steps{
+                echo 'this is one'
+            }
+        }
         stage('Sequential') {
             stages {
                 stage('In Sequential 1') {
@@ -27,11 +32,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-        stage('One') {
-            steps{
-                echo 'this is one'
             }
         }
     }
