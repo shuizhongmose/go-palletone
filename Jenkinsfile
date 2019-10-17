@@ -35,8 +35,31 @@ pipeline {
             }
         }
         stage('Two') {
-            steps {
-                echo 'this is two'
+            stages {
+                stage('In Sequential 11') {
+                    steps {
+                        echo "In Sequential 1"
+                    }
+                }
+                stage('In Sequential 21') {
+                    steps {
+                        echo "In Sequential 2"
+                    }
+                }
+                stage('Parallel In Sequential 11') {
+                    parallel {
+                        stage('In Parallel 11') {
+                            steps {
+                                echo "In Parallel 11"
+                            }
+                        }
+                        stage('In Parallel 21') {
+                            steps {
+                                echo "In Parallel 21"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
