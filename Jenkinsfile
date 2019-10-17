@@ -2,6 +2,8 @@ pipeline {
     agent none
     stages {
         stage('Sequential') {
+            steps {
+            }
             stages {
                 stage('In Sequential 1') {
                     steps {
