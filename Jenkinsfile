@@ -128,7 +128,7 @@ pipeline {
                         sh '''
                             cd ${BASE_DIR}/bdd/dct
                             ./deposit_test.sh 7
-                        '''pp
+                        '''
                     }
                 }
                 stage('Blacklist') {
