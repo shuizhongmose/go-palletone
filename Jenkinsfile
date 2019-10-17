@@ -98,150 +98,145 @@ pipeline {
                 sh 'pkill gptn'
             }
         }
-        stage('One Node BDD') {
-            steps{
-                echo 'In One Node BDD'
+        stages('One Node BDD') {
+            stage('Build') {
+                steps {
+                    sh '''
+                        go build -mod=vendor ./cmd/gptn
+                        cp gptn bdd/node
+                        mkdir bdd/GasToken/node
+                        cp gptn bdd/GasToken/node
+                        cd bdd/node
+                        chmod +x gptn
+                        python init.py
+                        nohup ./gptn &
+                        sleep 15
+                        netstat -ap | grep gptn
+                    '''
+                }
             }
-            stages {
-                stage('Build') {
-                    steps {
-                        sh '''
-                            go build -mod=vendor ./cmd/gptn
-                            cp gptn bdd/node
-                            mkdir bdd/GasToken/node
-                            cp gptn bdd/GasToken/node
-                            cd bdd/node
-                            chmod +x gptn
-                            python init.py
-                            nohup ./gptn &
-                            sleep 15
-                            netstat -ap | grep gptn
-                        '''
-                    }
+            stage('Deposit') {
+                when {
+                    environment name: 'IS_RUN_DEPOSIT', value: 'true'
                 }
-                stage('Deposit') {
-                    when {
-                        environment name: 'IS_RUN_DEPOSIT', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/dct
-                            ./deposit_test.sh 7
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/dct
+                        ./deposit_test.sh 7
+                    '''
                 }
-                stage('Blacklist') {
-                    when {
-                        environment name: 'IS_RUN_BLACKLIST', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/blacklist
-                            ./blacklist_test.sh
-                        '''
-                    }
+            }
+            stage('Blacklist') {
+                when {
+                    environment name: 'IS_RUN_BLACKLIST', value: 'true'
                 }
-                stage('ContractTestcases') {
-                    when {
-                        environment name: 'IS_RUN_TESTCONTRACTCASES', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd/contract/testcases
-                            chmod +x ./test_start.sh
-                            ./test_start.sh
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/blacklist
+                        ./blacklist_test.sh
+                    '''
                 }
-                stage('Create Transaction') {
-                    when {
-                        environment name: 'IS_RUN_CREATE_TRANS', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans
-                        '''
-                    }
+            }
+            stage('ContractTestcases') {
+                when {
+                    environment name: 'IS_RUN_TESTCONTRACTCASES', value: 'true'
                 }
-                stage('PRC720 Contract') {
-                    when {
-                        environment name: 'IS_RUN_20CONTRACT', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd/contract/testcases
+                        chmod +x ./test_start.sh
+                        ./test_start.sh
+                    '''
                 }
-                stage('PRC721 Contract') {
-                    when {
-                        environment name: 'IS_RUN_721SEQENCE', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${SEQENCE721_DIR} -i normal ./testcase/crt721Seqence
-                        '''
-                    }
+            }
+            stage('Create Transaction') {
+                when {
+                    environment name: 'IS_RUN_CREATE_TRANS', value: 'true'
                 }
-                stage('PRC721 UDID') {
-                    when {
-                        environment name: 'IS_RUN_721UDID', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${UDID721_DIR} -i normal ./testcase/crt721UDID
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${CREATE_TRANS_DIR} -i normal ./testcase/createTrans
+                    '''
                 }
-                stage('Vote') {
-                    when {
-                        environment name: 'IS_RUN_VOTE', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract
-                        '''
-                    }
+            }
+            stage('PRC720 Contract') {
+                when {
+                    environment name: 'IS_RUN_20CONTRACT', value: 'true'
                 }
-                stage('Gas Token') {
-                    when {
-                        environment name: 'IS_RUN_GASTOKEN', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}/bdd
-                            chmod +x ./init_gas_token.sh
-                            ./init_gas_token.sh
-                            sleep 15
-                            python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${CONTRACT20_DIR} -i normal ./testcase/crt20Contract
+                    '''
                 }
-                stage('After Running') {
-                    steps {
-                        sh '''
-                            killall gptn
-                            sleep 2
-                        '''
-                    }
+            }
+            stage('PRC721 Contract') {
+                when {
+                    environment name: 'IS_RUN_721SEQENCE', value: 'true'
                 }
-                stage('Upload Logs') {
-                    when {
-                        environment name: 'IS_UPLOAD', value: 'true'
-                    }
-                    steps {
-                        sh '''
-                            cd ${BASE_DIR}
-                            zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
-                            zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
-                            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                        '''
-                    }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${SEQENCE721_DIR} -i normal ./testcase/crt721Seqence
+                    '''
+                }
+            }
+            stage('PRC721 UDID') {
+                when {
+                    environment name: 'IS_RUN_721UDID', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${UDID721_DIR} -i normal ./testcase/crt721UDID
+                    '''
+                }
+            }
+            stage('Vote') {
+                when {
+                    environment name: 'IS_RUN_VOTE', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        python -m robot.run -d ${BDD_LOG_PATH}/${VOTECONTRACT_DIR} -i normal ./testcase/voteContract
+                    '''
+                }
+            }
+            stage('Gas Token') {
+                when {
+                    environment name: 'IS_RUN_GASTOKEN', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}/bdd
+                        chmod +x ./init_gas_token.sh
+                        ./init_gas_token.sh
+                        sleep 15
+                        python -m robot.run -d ${BDD_LOG_PATH}/${GAS_TOKEN_DIR} ./testcases
+                    '''
+                }
+            }
+            stage('After Running') {
+                steps {
+                    sh '''
+                        killall gptn
+                        sleep 2
+                    '''
+                }
+            }
+            stage('Upload Logs') {
+                when {
+                    environment name: 'IS_UPLOAD', value: 'true'
+                }
+                steps {
+                    sh '''
+                        cd ${BASE_DIR}
+                        zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
+                        zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
+                        ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                    '''
                 }
             }
         }
