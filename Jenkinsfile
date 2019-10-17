@@ -34,5 +34,10 @@ pipeline {
                 }
             }
         }
+        stage('Two') {
+            steps {
+                echo 'this is two'
+            }
+        }
     }
 }
