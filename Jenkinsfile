@@ -99,6 +99,9 @@ pipeline {
             }
         }
         stage('One Node BDD') {
+            steps{
+                echo 'In One Node BDD'
+            }
             stages {
                 stage('Build') {
                     steps {
