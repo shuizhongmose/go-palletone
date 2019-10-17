@@ -63,10 +63,14 @@ pipeline {
         }
         stage('UT') {
             steps {
-                sh 'export PATH=${GOPATH}:${PATH}'
-                sh 'go build -mod=vendor ./cmd/gptn'
-                sh 'make gptn'
-                sh 'go test -mod=vendor ./...'
+                sh '''
+                    set +e
+                    export PATH=${GOPATH}:${PATH}
+                    go build -mod=vendor ./cmd/gptn
+                    make gptn
+                    go test -mod=vendor ./...
+                '''
+
             }
         }
         stage('User Contract BDD') {
@@ -100,7 +104,7 @@ pipeline {
         }
         stage('One Node BDD') {
 			stages {
-                stage('Build') {
+                stage('One Node Build') {
                     steps {
                         sh '''
                             go build -mod=vendor ./cmd/gptn
@@ -124,7 +128,7 @@ pipeline {
                         sh '''
                             cd ${BASE_DIR}/bdd/dct
                             ./deposit_test.sh 7
-                        '''
+                        '''pp
                     }
                 }
                 stage('Blacklist') {
@@ -244,7 +248,7 @@ pipeline {
         }
         stage('Multiple Nodes BDD') {
             stages {
-                stage('Running') {
+                stage('Multi-Node BDD Prepare') {
                     steps {
                         sh '''
                             make gptn
@@ -316,7 +320,7 @@ pipeline {
                 environment name: 'IS_RUN_APPLICATION', value: 'true'
             }
             stages{
-                stage('Running') {
+                stage('Application BDD Running') {
                     steps {
                         sh '''
                             go build -mod=vendor ./cmd/gptn
