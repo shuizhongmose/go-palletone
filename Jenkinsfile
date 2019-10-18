@@ -108,18 +108,20 @@ pipeline {
 			stages {
                 stage('Build') {
                     steps {
-                        sh '''
-                            go build -mod=vendor ./cmd/gptn
-                            cp gptn bdd/node
-                            mkdir bdd/GasToken/node
-                            cp gptn bdd/GasToken/node
-                            cd bdd/node
-                            chmod +x gptn
-                            python init.py
-                            nohup ./gptn &
-                            sleep 15
-                            netstat -ap | grep gptn
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        		sh '''
+                        		go build -mod=vendor ./cmd/gptn
+                        		cp gptn bdd/node
+                        		mkdir bdd/GasToken/node
+                        		cp gptn bdd/GasToken/node
+                        		cd bdd/node
+                        		chmod +x gptn
+                        		python init.py
+                        		nohup ./gptn &
+                        		sleep 15
+                        		netstat -ap | grep gptn
+                        	'''
+                        }
                     }
                 }
                 stage('Deposit') {
@@ -257,12 +259,14 @@ pipeline {
                         environment name: 'IS_UPLOAD', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}
-                            zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
-                            zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
-                            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}
+                        		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
+                        		zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
+                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        	'''
+                        }
                     }
                 }
 			}
@@ -271,21 +275,23 @@ pipeline {
             stages {
                 stage('Running') {
                     steps {
-                        sh '''
-                            make gptn
-                            cp build/bin/gptn bdd/node
-                            cd bdd/node
-                            chmod -R +x *
-                            sudo -H chmod +w /etc/hosts
-                            sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
-                            sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
-                            ./launchMultipleNodes.sh
-                            netstat -ap | grep gptn
-                            grep "mediator_interval" node1/ptn-genesis.json
-                            grep "maintenance_skip_slots" node1/ptn-genesis.json
-                            cd ${BASE_DIR}/bdd
-                            mkdir -p ${BDD_LOG_PATH}
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                make gptn
+                                cp build/bin/gptn bdd/node
+                                cd bdd/node
+                                chmod -R +x *
+                                sudo -H chmod +w /etc/hosts
+                                sudo -H sed -i 's/127.0.0.1 localhost/127.0.0.1/g' /etc/hosts
+                                sudo -H sed -i '$a0.0.0.0 localhost' /etc/hosts
+                                ./launchMultipleNodes.sh
+                                netstat -ap | grep gptn
+                                grep "mediator_interval" node1/ptn-genesis.json
+                                grep "maintenance_skip_slots" node1/ptn-genesis.json
+                                cd ${BASE_DIR}/bdd
+                                mkdir -p ${BDD_LOG_PATH}
+                            '''
+                        }
                     }
                 }
                 stage('Run Multiple') {
@@ -328,14 +334,16 @@ pipeline {
                         environment name: 'IS_UPLOAD', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}
-                            zip -j ./bdd/logs/zMulti-node.zip ./logs/zMulti-node/*
-                            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                            cd ${BASE_DIR}/bdd
-                            source ./targz_node.sh
-                            ./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}
+                        		zip -j ./bdd/logs/zMulti-node.zip ./logs/zMulti-node/*
+                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        		cd ${BASE_DIR}/bdd
+                        		source ./targz_node.sh
+                        		./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        	'''
+                        }
                     }
                 }
             }
@@ -347,18 +355,20 @@ pipeline {
             stages{
                 stage('Running') {
                     steps {
-                        sh '''
-                            go build -mod=vendor ./cmd/gptn
-                            mkdir bdd/application/node
-                            cp gptn bdd/application/node
-                            cd ./bdd/application
-                            chmod +x ./init.sh
-                            ./init.sh
-                            sleep 15
-                            python -m robot.run -d ${BDD_LOG_PATH}/${APPLICATION_DIR} .
-                            killall gptn
-                            sleep 2
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		go build -mod=vendor ./cmd/gptn
+                        		mkdir bdd/application/node
+                        		cp gptn bdd/application/node
+                        		cd ./bdd/application
+                        		chmod +x ./init.sh
+                        		./init.sh
+                        		sleep 15
+                        		python -m robot.run -d ${BDD_LOG_PATH}/${APPLICATION_DIR} .
+                        		killall gptn
+                        		sleep 2
+                        	'''
+                        }
                     }
                 }
                 stage('Upload Logs') {
@@ -366,11 +376,13 @@ pipeline {
                         environment name: 'IS_UPLOAD', value: 'true'
                     }
                     steps {
-                        sh '''
-                            cd ${BASE_DIR}
-                            zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
-                            ./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        	sh '''
+                        		cd ${BASE_DIR}
+                        		zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
+                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        	'''
+                        }
                     }
                 }
             }
