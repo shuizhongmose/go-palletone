@@ -3,7 +3,7 @@
 ./test_case_setup.sh $1
 
 sleep 1
-
+ls
 listAccounts=`../node/gptn --exec 'personal.listAccounts' attach ../node/palletone/gptn.ipc` 
 key=`echo $listAccounts `
 echo $key
