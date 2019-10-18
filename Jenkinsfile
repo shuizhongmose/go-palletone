@@ -126,6 +126,7 @@ pipeline {
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
 
+                                export GO111MODULE=on
                         		go build -mod=vendor ./cmd/gptn
                         		ls ./
                         		cp gptn bdd/node
