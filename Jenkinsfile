@@ -124,7 +124,7 @@ pipeline {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         		sh '''
                         		go build -mod=vendor ./cmd/gptn
-                        		cp gptn bdd/node
+                        		cp ./cmd/gptn bdd/node
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
                         		mkdir bdd/GasToken/node
