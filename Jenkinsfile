@@ -30,7 +30,7 @@ pipeline {
         REPORT_NAME='report.html'
 
         IS_RUN_UT='false'
-        IS_RUN_USER_CONTRACT='false'
+        IS_RUN_USER_CONTRACT='true'
         IS_RUN_DIGITAL = 'true'
         IS_RUN_DEPOSIT = 'false'
         IS_RUN_APPLICATION = 'true'
