@@ -25,7 +25,7 @@ pipeline {
         APPLICATION_DIR='application'
         USER_CONTRACT_DIR = 'usercontract'
         BLACKLIST_DIR='blacklist'
-        GO111MODULE = 'on'
+        GO111MODULE = on
         LOG_NAME='log.html'
         REPORT_NAME='report.html'
 
@@ -127,9 +127,10 @@ pipeline {
                         		rm -rf bdd/node/palletone
 
                         		go build -mod=vendor ./cmd/gptn
-                        		cp ./cmd/gptn/gptn bdd/node
+                        		ls ./
+                        		cp gptn bdd/node
                         		mkdir bdd/GasToken/node
-                        		cp ./cmd/gptn/gptn bdd/GasToken/node
+                        		cp gptn bdd/GasToken/node
                         		cd bdd/node
                         		chmod +x gptn
                         		python init.py
