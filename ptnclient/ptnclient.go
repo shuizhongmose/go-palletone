@@ -741,3 +741,28 @@ func (ec *Client) GetTxHashByReqId(ctx context.Context, hex string) (string, err
 	err := ec.c.CallContext(ctx, &result, "dag_getTxHashByReqId", hex)
 	return result, err
 }
+
+// GetTxHashByReqId
+func (ec *Client) Contract_CcQuery(ctx context.Context, contractAddr string,param []string) (string, error) {
+	var result string
+	err := ec.c.CallContext(ctx, &result, "contract_Ccquery", contractAddr,param)
+	return result, err
+}
+
+
+func (ec *Client) Contract_Ccstop(ctx context.Context, contractAddr string) (string, error) {
+	var result string
+	err := ec.c.CallContext(ctx, &result, "contract_Ccstop", contractAddr)
+	return result, err
+}
+
+func (ec *Client) Contract_Ccinvoke(ctx context.Context, contractAddr string,param []string) (string, error) {
+	var result string
+	err := ec.c.CallContext(ctx, &result, "contract_Ccinvoke", contractAddr,param)
+	return result, err
+}
+func (ec *Client) Contract_Ccinstall(ctx context.Context, ccname, ccpath, ccversion, ccdescription, ccabi, cclanguage string) (hexutil.Bytes, error) {
+	var result hexutil.Bytes
+	err := ec.c.CallContext(ctx, &result, "contract_Ccinstall", ccname, ccpath, ccversion, ccdescription, ccabi, cclanguage)
+	return result, err
+}

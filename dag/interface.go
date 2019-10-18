@@ -30,15 +30,16 @@ import (
 	"github.com/palletone/go-palletone/contracts/list"
 	"github.com/palletone/go-palletone/core"
 	"github.com/palletone/go-palletone/dag/modules"
-	"github.com/palletone/go-palletone/dag/txspool"
+	"github.com/palletone/go-palletone/txspool"
 )
 
 type IDag interface {
 	Close()
 
-	GetCommon(key []byte) ([]byte, error)
-	GetCommonByPrefix(prefix []byte) map[string][]byte
+	GetCommon(key []byte, stableDb bool) ([]byte, error)
+	GetCommonByPrefix(prefix []byte, stableDb bool) map[string][]byte
 	SaveCommon(key, val []byte) error
+	GetAllData() ([][]byte, [][]byte)
 
 	IsEmpty() bool
 	GetStableChainIndex(token modules.AssetId) *modules.ChainIndex
@@ -51,6 +52,7 @@ type IDag interface {
 	HasHeader(common.Hash, uint64) bool
 	GetHeaderByNumber(number *modules.ChainIndex) (*modules.Header, error)
 	GetHeaderByHash(common.Hash) (*modules.Header, error)
+	GetHeadersByAuthor(authorAddr common.Address, startHeight, count uint64) ([]*modules.Header, error)
 	GetUnstableUnits() []*modules.Unit
 
 	CurrentHeader(token modules.AssetId) *modules.Header
@@ -142,7 +144,8 @@ type IDag interface {
 	GetLightChainHeight(assetId modules.AssetId) uint64
 	InsertLightHeader(headers []*modules.Header) (int, error)
 	GetAllLeafNodes() ([]*modules.Header, error)
-	ClearUtxo(addr common.Address) error
+	ClearUtxo() error
+	ClearAddrUtxo(addr common.Address) error
 	SaveUtxoView(view map[modules.OutPoint]*modules.Utxo) error
 
 	HeadUnitTime() int64
@@ -157,7 +160,6 @@ type IDag interface {
 	GetMainChain() (*modules.MainChain, error)
 
 	RefreshAddrTxIndex() error
-	GetMinFee() (*modules.AmountAsset, error)
 
 	GenVoteMediatorTx(voter common.Address, mediators map[string]bool,
 		txPool txspool.ITxPool) (*modules.Transaction, uint64, error)
@@ -171,6 +173,7 @@ type IDag interface {
 	GetAccountVotedMediators(addr common.Address) map[string]bool
 	GetMediatorInfo(address common.Address) *modules.MediatorInfo
 
+	GetVotingForMediator(addStr string) (map[string]uint64, error)
 	MediatorVotedResults() (map[string]uint64, error)
 	LookupMediatorInfo() []*modules.MediatorInfo
 	IsActiveMediator(add common.Address) bool
@@ -198,6 +201,8 @@ type IDag interface {
 		msg *modules.Message, txPool txspool.ITxPool) (*modules.Transaction, uint64, error)
 	ChainThreshold() int
 	CheckHeaderCorrect(number int) error
+	CheckUnitsCorrect(assetId string, number int) error
 	GetBlacklistAddress() ([]common.Address, *modules.StateVersion, error)
-
+	RebuildAddrTxIndex() error
+	GetJurorByAddrHash(hash common.Hash) (*modules.JurorDeposit, error)
 }

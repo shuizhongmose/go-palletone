@@ -30,7 +30,7 @@ import (
 	"github.com/palletone/go-palletone/dag/constants"
 	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/modules"
-	"github.com/palletone/go-palletone/dag/txspool"
+	"github.com/palletone/go-palletone/txspool"
 )
 
 type Txo4Greedy struct {
@@ -51,13 +51,7 @@ func newTxo4Greedy(outPoint modules.OutPoint, amount uint64) *Txo4Greedy {
 
 func (dag *Dag) createBaseTransaction(from, to common.Address, daoAmount, daoFee uint64, certID *big.Int,
 	txPool txspool.ITxPool) (*modules.Transaction, error) {
-	// 条件判断
-	if daoFee == 0 {
-		return nil, fmt.Errorf("transaction fee cannot be 0")
-	}
-
 	daoTotal := daoAmount + daoFee
-
 	// 1. 获取转出账户所有的PTN utxo
 	//allUtxos, err := dag.GetAddrUtxos(from)
 	coreUtxos, err := dag.getAddrCoreUtxos(from, txPool)

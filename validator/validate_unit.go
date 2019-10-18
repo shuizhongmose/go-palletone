@@ -28,9 +28,11 @@ import (
 	"github.com/palletone/go-palletone/common/log"
 	"github.com/palletone/go-palletone/configure"
 	"github.com/palletone/go-palletone/core"
-	// "github.com/palletone/go-palletone/dag/dagconfig"
+	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/modules"
 )
+
+const ENABLE_TX_FEE_CHECK_TIME = 1570870800
 
 /**
 验证unit的签名，需要比对见证人列表
@@ -112,36 +114,37 @@ func (validate *Validate) validateUnitAuthor(h *modules.Header) ValidationCode {
 	return TxValidationCode_VALID
 }
 
-// func (validate *Validate) validateMediatorSchedule(header *modules.Header) ValidationCode {
-// 	if validate.propquery == nil {
-// 		log.Warn("Validator don't have propquery, cannot validate mediator schedule")
-// 		return TxValidationCode_VALID
-// 	}
+// 验证该单元是否是满足调度顺序的mediator生产的
+func (validate *Validate) validateMediatorSchedule(header *modules.Header) ValidationCode {
+	if validate.propquery == nil {
+		log.Warn("Validator don't have propquery, cannot validate mediator schedule")
+		return TxValidationCode_VALID
+	}
 
-// 	gasToken := dagconfig.DagConfig.GetGasToken()
-// 	ts, _ := validate.propquery.GetNewestUnitTimestamp(gasToken)
-// 	if ts >= header.Time {
-// 		errStr := "invalidated unit's timestamp"
-// 		log.Warnf("%s,db newest unit timestamp=%d,current unit[%s] timestamp=%d", errStr, ts,
-// 			header.Hash().String(), header.Time)
-// 		return UNIT_STATE_INVALID_HEADER_TIME
-// 	}
+	gasToken := dagconfig.DagConfig.GetGasToken()
+	ts, _ := validate.propquery.GetNewestUnitTimestamp(gasToken)
+	if !(header.Time > ts) {
+		errStr := "invalidated unit's timestamp"
+		log.Warnf("%s,db newest unit timestamp=%d,current unit[%s] timestamp=%d", errStr, ts,
+			header.Hash().String(), header.Time)
+		return UNIT_STATE_INVALID_HEADER_TIME
+	}
 
-// 	slotNum := validate.propquery.GetSlotAtTime(time.Unix(header.Time, 0))
-// 	if slotNum <= 0 {
-// 		log.Info("invalidated unit's slot")
-// 		return UNIT_STATE_INVALID_MEDIATOR_SCHEDULE
-// 	}
+	slotNum := validate.propquery.GetSlotAtTime(time.Unix(header.Time, 0))
+	if slotNum == 0 {
+		log.Info("invalidated unit's slot")
+		return UNIT_STATE_INVALID_MEDIATOR_SCHEDULE
+	}
 
-// 	scheduledMediator := validate.propquery.GetScheduledMediator(slotNum)
-// 	if !scheduledMediator.Equal(header.Author()) {
-// 		errStr := fmt.Sprintf("mediator(%v) produced unit at wrong time", header.Author().Str())
-// 		log.Warn(errStr)
-// 		return UNIT_STATE_INVALID_MEDIATOR_SCHEDULE
-// 	}
+	scheduledMediator := validate.propquery.GetScheduledMediator(slotNum)
+	if !scheduledMediator.Equal(header.Author()) {
+		errStr := fmt.Sprintf("mediator(%v) produced unit at wrong time", header.Author().Str())
+		log.Warn(errStr)
+		return UNIT_STATE_INVALID_MEDIATOR_SCHEDULE
+	}
 
-// 	return TxValidationCode_VALID
-// }
+	return TxValidationCode_VALID
+}
 
 //不基于数据库，进行Unit最基本的验证
 func ValidateUnitBasic(unit *modules.Unit) error {
@@ -185,7 +188,7 @@ func validateUnitBasic(unit *modules.Unit) ValidationCode {
 	//validate tx root
 	root := core.DeriveSha(unit.Txs)
 	if root != unit.UnitHeader.TxRoot {
-		log.Debugf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
+		log.Warnf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
 		return UNIT_STATE_INVALID_HEADER_TXROOT
 	}
 
@@ -213,33 +216,36 @@ func (validate *Validate) ValidateUnitExceptGroupSig(unit *modules.Unit) Validat
 		unitHeaderValidateResult != UNIT_STATE_AUTHOR_SIGNATURE_PASSED &&
 		unitHeaderValidateResult != UNIT_STATE_ORPHAN {
 		log.Debug("Validate unit's header failed.", "error code", unitHeaderValidateResult)
-		return (unitHeaderValidateResult)
+		return unitHeaderValidateResult
 	}
 
 	//validate tx root
 	root := core.DeriveSha(unit.Txs)
 	if root != unit.UnitHeader.TxRoot {
-		log.Debugf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
-		return (UNIT_STATE_INVALID_HEADER_TXROOT)
+		log.Warnf("Validate unit's header failed, root:[%#x],  unit.UnitHeader.TxRoot:[%#x], txs:[%#x]", root, unit.UnitHeader.TxRoot, unit.Txs.GetTxIds())
+		return UNIT_STATE_INVALID_HEADER_TXROOT
 	}
 
 	// step2. check transactions in unit
 	medAdd := unit.Author()
 	med := validate.statequery.GetMediator(medAdd)
 	if med == nil {
-		log.Debugf("validate.statequery.RetrieveMediator %v err", medAdd.Str())
+		log.Warnf("validate.statequery.RetrieveMediator %v err", medAdd.Str())
 		return UNIT_STATE_INVALID_AUTHOR_SIGNATURE
 	}
-
+	validate.enableTxFeeCheck = unit.Timestamp() > ENABLE_TX_FEE_CHECK_TIME // 1.0.3升级，支持交易费检查
+	//if validate.enableTxFeeCheck{
+	//	log.Infof("Enable tx fee check since %d",unit.Timestamp())
+	//}
 	code := validate.validateTransactions(unit.Txs, unit.Timestamp(), med.GetRewardAdd())
 	if code != TxValidationCode_VALID {
 		msg := fmt.Sprintf("Validate unit(%s) transactions failed: %v", unit.UnitHash.String(), code)
 		log.Debug(msg)
-		return (code)
+		return code
 	}
 	//maybe orphan unit
 	if unitHeaderValidateResult != TxValidationCode_VALID {
-		return (unitHeaderValidateResult)
+		return unitHeaderValidateResult
 	}
 	validate.cache.AddUnitValidateResult(unitHash, TxValidationCode_VALID)
 	return TxValidationCode_VALID
@@ -298,11 +304,21 @@ func (validate *Validate) validateHeaderExceptGroupSig(header *modules.Header) V
 		if parentHeader.Number.Index+1 != header.Number.Index {
 			return UNIT_STATE_INVALID_HEADER_NUMBER
 		}
-		//TODO temp remove mediator schedule validate
-		//vcode := validate.validateMediatorSchedule(header)
-		//if vcode != TxValidationCode_VALID {
-		//	return vcode
-		//}
+
+		// 1568197800 2019-09-11 18:30:00 testNet分叉修复后，统一的leveldb
+		// 2019-07-11 12:56:46 849c2cb5c7b3fbd37b2ac5f318716f90613259f2 将洗牌算法的种子由时间戳改成hash
+		// 并在 1.0.1 版本升级后，在主网和测试网中使用新的调度策略
+
+		// 1565085600 2019-08-06 18:00:00 1.0.1 版本主网升级完成
+		//if header.Time > 1565085600 { //之前的mediator schedule可能验证通不过
+
+		//1570870800 20191012 17:00:00
+		if header.Time > 1570870800 { //之前的mediator schedule可能验证通不过
+			vcode := validate.validateMediatorSchedule(header)
+			if vcode != TxValidationCode_VALID {
+				return vcode
+			}
+		}
 	}
 	return TxValidationCode_VALID
 }

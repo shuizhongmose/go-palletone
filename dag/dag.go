@@ -35,6 +35,7 @@ import (
 	"github.com/palletone/go-palletone/configure"
 	"github.com/palletone/go-palletone/contracts/list"
 	"github.com/palletone/go-palletone/contracts/syscontract"
+	"github.com/palletone/go-palletone/core"
 	"github.com/palletone/go-palletone/core/types"
 	dagcommon "github.com/palletone/go-palletone/dag/common"
 	"github.com/palletone/go-palletone/dag/dagconfig"
@@ -44,8 +45,8 @@ import (
 	"github.com/palletone/go-palletone/dag/modules"
 	"github.com/palletone/go-palletone/dag/palletcache"
 	"github.com/palletone/go-palletone/dag/storage"
-	"github.com/palletone/go-palletone/dag/txspool"
 	"github.com/palletone/go-palletone/tokenengine"
+	"github.com/palletone/go-palletone/txspool"
 )
 
 type Dag struct {
@@ -204,14 +205,26 @@ func (d *Dag) GetUnstableUnits() []*modules.Unit {
 
 // return the header by hash in dag
 func (d *Dag) GetHeaderByHash(hash common.Hash) (*modules.Header, error) {
+	//rep, _, _, _, _ := d.Memdag.GetUnstableRepositories()
+	//uHeader, err := rep.GetHeaderByHash(hash)
 	uHeader, err := d.unstableUnitRep.GetHeaderByHash(hash)
+
 	if errors.IsNotFoundError(err) {
 		uHeader, err = d.getHeaderByHashFromPMemDag(hash)
 	}
+
+	//if err != nil {
+	//	uHeader, err = d.stableUnitRep.GetHeaderByHash(hash)
+	//}
+
 	if err != nil {
 		return nil, err
 	}
+
 	return uHeader, nil
+}
+func (d *Dag) GetHeadersByAuthor(authorAddr common.Address, startHeight, count uint64) ([]*modules.Header, error) {
+	return d.unstableUnitRep.GetHeadersByAuthor(authorAddr, startHeight, count)
 }
 
 // return the header by hash in memdag
@@ -299,7 +312,7 @@ func (d *Dag) InsertDag(units modules.Units, txpool txspool.ITxPool, is_stable b
 				//return count, err
 				log.Errorf("Memdag addUnit[%s] #%d signed by %v error:%s",
 					u.UnitHash.String(), u.NumberU64(), u.Author().Str(), err.Error())
-				return count, nil
+				return count, err
 			} else {
 				if a != nil {
 					d.unstableUnitRep = a
@@ -365,7 +378,10 @@ func (d *Dag) CurrentHeader(token modules.AssetId) *modules.Header {
 	}
 	// 从memdag 获取最新的header
 	unit := memdag.GetLastMainChainUnit()
-	return unit.Header()
+	if unit != nil {
+		return unit.Header()
+	}
+	return nil
 }
 
 // return unit's body , all transactions of unit by hash
@@ -424,7 +440,7 @@ func (d *Dag) InsertHeaderDag(headers []*modules.Header) (int, error) {
 }
 
 // refresh partition memdag when newdag or system contract state be changed.
-func (d *Dag) refreshPartitionMemDag() {
+func (d *Dag) RefreshPartitionMemDag() {
 	db := d.Db
 	unitRep := d.stableUnitRep
 	propRep := d.stablePropRep
@@ -564,10 +580,10 @@ func NewDag(db ptndb.Database, cache palletcache.ICache, light bool) (*Dag, erro
 	dag.stableUnitRep.SubscribeSysContractStateChangeEvent(dag.AfterSysContractStateChangeEvent)
 	dag.stableUnitProduceRep.SubscribeChainMaintenanceEvent(dag.AfterChainMaintenanceEvent)
 
-	hash, chainIndex, _ := dag.stablePropRep.GetNewestUnit(gasToken)
-	log.Infof("newDag success, current unit[%s], chain index info[%d]", hash.String(), chainIndex.Index)
+	//hash, chainIndex, _ := dag.stablePropRep.GetNewestUnit(gasToken)
+	log.Infof("newDag success, current unit, chain info[%s]", gasToken.String())
 	// init partition memdag
-	dag.refreshPartitionMemDag()
+	dag.RefreshPartitionMemDag()
 	return dag, nil
 }
 
@@ -626,7 +642,7 @@ func (dag *Dag) AfterSysContractStateChangeEvent(arg *modules.SysContractStateCh
 	log.Debug("Process AfterSysContractStateChangeEvent")
 	if bytes.Equal(arg.ContractId, syscontract.PartitionContractAddress.Bytes()) {
 		//分区合约进行了修改，刷新PartitionMemDag
-		dag.refreshPartitionMemDag()
+		dag.RefreshPartitionMemDag()
 	}
 }
 
@@ -663,7 +679,10 @@ func NewDag4GenesisInit(db ptndb.Database) (*Dag, error) {
 		stableStateRep:       stateRep,
 		stableUnitProduceRep: statleUnitProduceRep,
 		ChainHeadFeed:        new(event.Feed),
-		//Mutex:                *mutex,
+		unstableUnitRep:      unitRep,
+		unstablePropRep:      propRep,
+		unstableStateRep:     stateRep,
+		unstableUtxoRep:      utxoRep,
 	}
 	return dag, nil
 }
@@ -882,6 +901,7 @@ func (d *Dag) GetAddrStableUtxos(addr common.Address) (map[modules.OutPoint]*mod
 
 	return all, err
 }
+
 // refresh system parameters
 func (d *Dag) RefreshSysParameters() {
 	d.unstableUnitProduceRep.RefreshSysParameters()
@@ -975,6 +995,7 @@ func (d *Dag) SaveUnit(unit *modules.Unit, txpool txspool.ITxPool, isGenesis boo
 	}
 	if isGenesis {
 		d.stableUnitRep.SaveUnit(unit, true)
+		// set memdag state
 		return nil
 	}
 
@@ -1021,13 +1042,22 @@ func (d *Dag) GetCurrentUnitIndex(token modules.AssetId) (*modules.ChainIndex, e
 }
 
 // dag's common geter, return the key's value
-func (d *Dag) GetCommon(key []byte) ([]byte, error) {
+func (d *Dag) GetCommon(key []byte, stableDb bool) ([]byte, error) {
+	if stableDb {
+		return d.stableUnitRep.GetCommon(key)
+	}
 	return d.unstableUnitRep.GetCommon(key)
 }
 
 // return the prefix's all key && value.
-func (d *Dag) GetCommonByPrefix(prefix []byte) map[string][]byte {
+func (d *Dag) GetCommonByPrefix(prefix []byte, stableDb bool) map[string][]byte {
+	if stableDb {
+		return d.stableUnitRep.GetCommonByPrefix(prefix)
+	}
 	return d.unstableUnitRep.GetCommonByPrefix(prefix)
+}
+func (d *Dag) GetAllData() ([][]byte, [][]byte) {
+	return d.stableUnitRep.GetAllData()
 }
 
 // save the key, value
@@ -1213,11 +1243,6 @@ func (d *Dag) GetContractsByTpl(tplId []byte) ([]*modules.Contract, error) {
 	return d.unstableStateRep.GetContractsByTpl(tplId)
 }
 
-// return the min transaction fee
-func (d *Dag) GetMinFee() (*modules.AmountAsset, error) {
-	return d.unstableStateRep.GetMinFee()
-}
-
 // subscribe active mediators updated event
 func (d *Dag) SubscribeActiveMediatorsUpdatedEvent(ch chan<- modules.ActiveMediatorsUpdatedEvent) event.Subscription {
 	return d.unstableUnitProduceRep.SubscribeActiveMediatorsUpdatedEvent(ch)
@@ -1234,11 +1259,6 @@ func (d *Dag) Close() {
 
 	d.Db.Close()
 	log.Debug("Close all dag database connections")
-}
-
-// return a mediator voted results
-func (d *Dag) MediatorVotedResults() (map[string]uint64, error) {
-	return d.unstableStateRep.GetMediatorVotedResults()
 }
 
 // store a data version in dag
@@ -1294,6 +1314,85 @@ func (d *Dag) CheckHeaderCorrect(number int) error {
 	}
 	return nil
 }
-func (d *Dag) GetBlacklistAddress() ([]common.Address, *modules.StateVersion, error){
+func (d *Dag) CheckUnitsCorrect(assetId string, number int) error {
+	asset, _, err := modules.String2AssetId(assetId)
+	if err != nil {
+		return err
+	}
+
+	if number == 0 {
+		newestUnitHash, newestIndex, _ := d.stablePropRep.GetNewestUnit(asset)
+		log.Infof("Newest unit[%s] height:%d", newestUnitHash.String(), newestIndex.Index)
+		number = int(newestIndex.Index)
+	}
+
+	header, err := d.stableUnitRep.GetHeaderByNumber(modules.NewChainIndex(asset, uint64(number)))
+	if err != nil {
+		return fmt.Errorf("Unit height:%d not exits", number)
+	}
+
+	txs, err1 := d.stableUnitRep.GetUnitTransactions(header.Hash())
+	if err1 != nil {
+		return fmt.Errorf("unit height:%d 's body not exist, maybe the txroot is incorrect.", number)
+	}
+
+	// check txroot
+	root := core.DeriveSha(txs)
+	if root != header.TxRoot {
+		return fmt.Errorf("unit height:%d 's txroot:%s is not equal to %s",
+			number, header.TxRoot.String(), root.String())
+	}
+	parentHash := header.ParentsHash[0]
+	parentNumber := header.NumberU64() - 1
+
+	var incorrect_num string
+	var incorrect_root bool
+	for {
+		header, err = d.stableUnitRep.GetHeaderByHash(parentHash)
+		if err != nil {
+			return fmt.Errorf("Unit :%s not exits", parentHash.String())
+		}
+		if header.NumberU64() != parentNumber {
+			return fmt.Errorf("Number not correct,%d,%d", header.NumberU64(), parentNumber)
+		}
+		txs, err1 := d.stableUnitRep.GetUnitTransactions(header.Hash())
+		if err1 != nil {
+			return fmt.Errorf("unit height:%d 's body not exist, maybe the txroot is incorrect.",
+				header.NumberU64())
+		}
+		// check txroot
+		root := core.DeriveSha(txs)
+		if root != header.TxRoot {
+			incorrect_root = true
+			incorrect_num += fmt.Sprintf("%d,", header.NumberU64())
+			log.Debugf("unit height[%d] 's txroot[%s] is not equal the correct[%s].", header.NumberU64(),
+				header.TxRoot.String(), root.String())
+		}
+
+		if len(header.ParentsHash) > 0 {
+			parentHash = header.ParentsHash[0]
+			parentNumber = header.NumberU64() - 1
+		} else {
+			log.Infof("Check complete!%d", header.NumberU64())
+			break
+		}
+		if header.NumberU64()%1000 == 0 {
+			log.Infof("Check header correct:%d", header.NumberU64())
+		}
+	}
+
+	if incorrect_root {
+		return fmt.Errorf("unit height[%s] 's txroot is not equal the correct.", incorrect_num)
+	}
+
+	return nil
+}
+func (d *Dag) GetBlacklistAddress() ([]common.Address, *modules.StateVersion, error) {
 	return d.unstableStateRep.GetBlacklistAddress()
+}
+func (d *Dag) RebuildAddrTxIndex() error {
+	return d.stableUnitRep.RebuildAddrTxIndex()
+}
+func (d *Dag) GetJurorByAddrHash(hash common.Hash) (*modules.JurorDeposit, error) {
+	return d.stableStateRep.GetJurorByAddrHash(hash)
 }

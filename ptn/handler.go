@@ -19,6 +19,7 @@ package ptn
 import (
 	"errors"
 	"fmt"
+	"github.com/palletone/go-palletone/contracts"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -41,7 +42,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 	"github.com/palletone/go-palletone/common/crypto"
 	util2 "github.com/palletone/go-palletone/common/util"
-	"github.com/palletone/go-palletone/contracts/comm"
+	"github.com/palletone/go-palletone/configure"
 	"github.com/palletone/go-palletone/contracts/contractcfg"
 	"github.com/palletone/go-palletone/contracts/manger"
 	"github.com/palletone/go-palletone/contracts/utils"
@@ -51,6 +52,8 @@ import (
 	"github.com/palletone/go-palletone/ptn/fetcher"
 	"github.com/palletone/go-palletone/validator"
 	"github.com/palletone/go-palletone/vm/common"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -151,13 +154,14 @@ type ProtocolManager struct {
 
 	toGroupSignCh  chan modules.ToGroupSignEvent
 	toGroupSignSub event.Subscription
+	contract       *contracts.Contract
 }
 
 // NewProtocolManager returns a new PalletOne sub protocol manager. The PalletOne sub protocol manages peers capable
 // with the PalletOne network.
 func NewProtocolManager(mode downloader.SyncMode, networkId uint64, gasToken modules.AssetId, txpool txPool,
 	dag dag.IDag, mux *event.TypeMux, producer producer, genesis *modules.Unit,
-	contractProc consensus.ContractInf, engine core.ConsensusEngine) (*ProtocolManager, error) {
+	contractProc consensus.ContractInf, engine core.ConsensusEngine, contract *contracts.Contract) (*ProtocolManager, error) {
 	// Create the protocol manager with the base fields
 	manager := &ProtocolManager{
 		networkId: networkId,
@@ -178,6 +182,7 @@ func NewProtocolManager(mode downloader.SyncMode, networkId uint64, gasToken mod
 		contractProc:   contractProc,
 		lightSync:      uint32(1),
 		receivedCache:  freecache.NewCache(5 * 1024 * 1024),
+		contract:       contract,
 	}
 	symbol, _, _, _, _ := gasToken.ParseAssetId()
 	protocolName := symbol
@@ -406,58 +411,77 @@ func (pm *ProtocolManager) Start(srvr *p2p.Server, maxPeers int, syncCh chan boo
 	}
 	//  是否为linux系統
 	if runtime.GOOS == "linux" {
+		dockerBool := true
 		//创建 docker client
 		client, err := util.NewDockerClient()
 		if err != nil {
-			log.Error("util.NewDockerClient", "error", err)
-			return
+			log.Info("util.NewDockerClient", "error", err)
+			dockerBool = false
 		}
-		//创建gptn-net网络
-		_, err = client.NetworkInfo(core.DefaultUccNetworkMode)
-		if err != nil {
-			log.Debugf("client.NetworkInfo error: %s", err.Error())
-			_, err := client.CreateNetwork(docker.CreateNetworkOptions{Name: core.DefaultUccNetworkMode, Driver: "bridge"})
+		if client == nil {
+			log.Info("client is nil")
+			dockerBool = false
+		} else {
+			_, err = client.Info()
 			if err != nil {
-				log.Debugf("client.CreateNetwork error: %s", err.Error())
-				return
+				log.Info("client.Info", "error", err)
+				dockerBool = false
 			}
 		}
-		//拉取gptn发布版本对应的goimg基础镜像，防止卡住
-		go func() {
-			goimg := contractcfg.Goimg + ":" + contractcfg.GptnVersion
-			_, err = client.InspectImage(goimg)
-			if err != nil {
-				log.Debugf("Image %s does not exist locally, attempt pull", goimg)
-				err = client.PullImage(docker.PullImageOptions{Repository: contractcfg.Goimg, Tag: contractcfg.GptnVersion}, docker.AuthConfiguration{})
+		if dockerBool {
+			log.Info("docker service starting...")
+			//创建gptn程序默认网络
+			utils.CreateGptnNet(client)
+			//拉取gptn发布版本对应的goimg基础镜像，防止卡住
+			go func() {
+				log.Info("docker start...")
+				goimg := contractcfg.Goimg + ":" + contractcfg.GptnVersion
+				_, err = client.InspectImage(goimg)
 				if err != nil {
-					log.Debugf("Failed to pull %s: %s", goimg, err)
+					log.Debugf("Image %s does not exist locally, attempt pull", goimg)
+					err = client.PullImage(docker.PullImageOptions{Repository: contractcfg.Goimg, Tag: contractcfg.GptnVersion}, docker.AuthConfiguration{})
+					if err != nil {
+						log.Debugf("Failed to pull %s: %s", goimg, err)
+					}
 				}
-			}
-			//  获取本地列表，迁移服务器的重启容器，容器不存在且不过期
-			dag, err := comm.GetCcDagHand()
-			if err != nil {
-				log.Debugf("get contract dag error %s", err.Error())
-				return
-			}
-			ccs, err := manger.GetChaincodes(dag)
-			if err != nil {
-				log.Debugf("get chaincodes error %s", err.Error())
-				return
-			}
-			//启动退出的容器，包括本地有的和本地没有的
-			for _, c := range ccs {
-				//conName := c.Name+c.Version+":"+contractcfg.GetConfig().ContractAddress
-				rd, _ := crypto.GetRandomBytes(32)
-				txid := util2.RlpHash(rd)
-				//  启动gptn时启动Jury对应的没有过期的用户合约容器
-				if !c.IsExpired {
-					manger.RestartContainer(dag, "palletone", c.Id, txid.String())
+				//  获取本地列表，迁移服务器的重启容器，容器不存在且不过期
+				//dag, err := comm.GetCcDagHand()
+				//if err != nil {
+				//	log.Debugf("get contract dag error %s", err.Error())
+				//	return
+				//}
+				//  获取本地用户合约列表
+				log.Info("get local user contracts")
+				ccs, err := manger.GetChaincodes(pm.dag)
+				if err != nil {
+					log.Debugf("get chaincodes error %s", err.Error())
+					return
 				}
-			}
-		}()
-
-		go pm.dockerLoop(client)
-
+				//启动退出的容器，包括本地有的和本地没有的
+				for _, c := range ccs {
+					//  判断是否是担任jury地址
+					juryAddrs := pm.contract.GetLocalJuryAddrs()
+					juryAddr := ""
+					if len(juryAddrs) != 0 {
+						juryAddr = juryAddrs[0].String()
+					}
+					if juryAddr != c.Address {
+						log.Infof("the local jury address %s was not equal address %s in the dag", juryAddr, c.Address)
+						continue
+					}
+					//conName := c.Name+c.Version+":"+contractcfg.GetConfig().ContractAddress
+					rd, _ := crypto.GetRandomBytes(32)
+					txid := util2.RlpHash(rd)
+					//  启动gptn时启动Jury对应的没有过期的用户合约容器
+					if !c.IsExpired {
+						log.Infof("restart container %s with jury address %s", c.Name, c.Address)
+						address := common.NewAddress(c.Id, common.ContractHash)
+						manger.RestartContainer(pm.dag, "palletone", address, txid.String())
+					}
+				}
+			}()
+			go pm.dockerLoop(client)
+		}
 	}
 }
 
@@ -516,6 +540,22 @@ func (pm *ProtocolManager) handle(p *peer) error {
 	return pm.LocalHandle(p)
 
 }
+func (pm *ProtocolManager) processversion(name string) (int, error) {
+	arr := strings.Split(name, "/")
+	arr = strings.Split(arr[1], "-")
+	version := arr[0]
+	version = version[1:]
+	arr = strings.Split(version, ".")
+	var number int
+	for _, n := range arr {
+		if int, err := strconv.Atoi(n); err != nil {
+			return 0, err
+		} else {
+			number = number*10 + int
+		}
+	}
+	return number, nil
+}
 
 func (pm *ProtocolManager) LocalHandle(p *peer) error {
 	// Ignore maxPeers if this is a trusted peer
@@ -540,10 +580,33 @@ func (pm *ProtocolManager) LocalHandle(p *peer) error {
 
 	log.Debug("ProtocolManager LocalHandle pre Handshake", "index", number.Index, "stable", stable)
 	// Execute the PalletOne handshake
-	if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash, stable); err != nil {
-		log.Debug("PalletOne handshake failed", "err", err)
+	if version, err := pm.processversion(p.Name()); err != nil {
+		log.Debug("PalletOne processversion failed", "err", err)
 		return err
+	} else {
+		localversion := configure.VersionMajor*100 + configure.VersionMinor*10 + configure.VersionPatch
+		var minversion int
+		if version > localversion {
+			minversion = localversion
+		} else {
+			minversion = version
+		}
+		if minversion > 103 {
+			if err := p.Handshakev103(pm.networkId, number, pm.genesis.Hash(), hash, stable); err != nil {
+				log.Debug("PalletOne handshakev103 failed", "err", err)
+				return err
+			}
+		} else {
+			if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash, stable); err != nil {
+				log.Debug("PalletOne handshake failed", "err", err)
+				return err
+			}
+		}
 	}
+	//if err := p.Handshake(pm.networkId, number, pm.genesis.Hash(), hash, stable); err != nil {
+	//	log.Debug("PalletOne handshake failed", "err", err)
+	//	return err
+	//}
 
 	if rw, ok := p.rw.(*meteredMsgReadWriter); ok {
 		rw.Init(p.version)
@@ -725,7 +788,12 @@ func (pm *ProtocolManager) ElectionBroadcast(event jury.ElectionEvent, local boo
 		}
 	}
 	if local {
-		go pm.contractProc.ProcessElectionEvent(&event)
+		go func() {
+			err := pm.contractProc.ProcessElectionEvent(&event)
+			if err != nil {
+				log.Error("ElectionBroadcast", "error:", err.Error())
+			}
+		}()
 	}
 }
 
@@ -747,7 +815,7 @@ func (pm *ProtocolManager) ContractBroadcast(event jury.ContractEvent, local boo
 	}
 	if local {
 		go func() {
-			err := pm.contractProc.ProcessContractEvent(&event)
+			_, err := pm.contractProc.ProcessContractEvent(&event)
 			if err != nil {
 				log.Errorf("[%s]ContractBroadcast, error:%s", reqId.String()[0:8], err.Error())
 			}
@@ -806,11 +874,6 @@ func (pm *ProtocolManager) ceBroadcastLoop() {
 
 func (pm *ProtocolManager) dockerLoop(client *docker.Client) {
 	log.Debugf("starting docker loop")
-	dag, err := comm.GetCcDagHand()
-	if err != nil {
-		log.Infof("db.GetCcDagHand err: %s", err.Error())
-		return
-	}
 	for {
 		select {
 		case <-pm.dockerQuitSync:
@@ -825,9 +888,9 @@ func (pm *ProtocolManager) dockerLoop(client *docker.Client) {
 				log.Errorf("utils.GetAllContainers error %s", err.Error())
 			}
 			//  重启退出且不过期容器
-			manger.RestartContainers(client, dag, cons)
+			manger.RestartContainers(pm.dag, cons, pm.contract.IAdapterJury)
 			//  删除过期容器
-			manger.RemoveExpiredConatiners(client, dag, dag.GetChainParameters().RmExpConFromSysParam, cons)
+			manger.RemoveExpiredContainers(client, pm.dag, pm.dag.GetChainParameters().RmExpConFromSysParam, cons)
 		}
 	}
 }

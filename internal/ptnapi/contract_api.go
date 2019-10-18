@@ -31,7 +31,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/shopspring/decimal"
+
 	"github.com/palletone/go-palletone/common"
 	"github.com/palletone/go-palletone/common/crypto"
 	"github.com/palletone/go-palletone/common/hexutil"
@@ -44,6 +44,7 @@ import (
 	"github.com/palletone/go-palletone/core/vmContractPub/protos/peer"
 	"github.com/palletone/go-palletone/dag/modules"
 	"github.com/palletone/go-palletone/ptnjson"
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -575,7 +576,7 @@ func (s *PrivateContractAPI) DepositContractInvoke(ctx context.Context, from, to
 			return "", fmt.Errorf("param error(%v), please use mediator.apply()", err.Error())
 		} else {
 			// 参数验证
-			_, err := args.Validate()
+			_, _, err := args.Validate()
 			if err != nil {
 				return "", fmt.Errorf("error(%v), please use mediator.apply()", err.Error())
 			}
@@ -584,9 +585,7 @@ func (s *PrivateContractAPI) DepositContractInvoke(ctx context.Context, from, to
 				return "", fmt.Errorf("invalid args, is null")
 			}
 
-			if from != args.AddStr /*|| from != args.RewardAdd*/ {
-				//return "", fmt.Errorf("the calling account(%v) is not produce account(%v) or "+
-				//	"reward account(%v), please use mediator.apply()", from, args.AddStr, args.RewardAdd)
+			if from != args.AddStr {
 				return "", fmt.Errorf("the calling account(%v) is not applying account(%v), "+
 					"please use mediator.apply()", from, args.AddStr)
 			}
@@ -635,14 +634,15 @@ func (s *PrivateContractAPI) SysConfigContractInvoke(ctx context.Context, from, 
 		}
 
 		field, value := param[1], param[2]
-		err := core.CheckSysConfigArgs(field, value)
+		err := core.CheckSysConfigArgType(field, value)
 		if err != nil {
 			log.Debugf(err.Error())
 			return "", err
 		}
 
 		dag := s.b.Dag()
-		err = core.ImmutableChainParameterCheck(field, value, &dag.GetGlobalProp().ImmutableParameters,
+		gp := s.b.Dag().GetGlobalProp()
+		err = core.CheckChainParameterValue(field, value, &gp.ImmutableParameters, &gp.ChainParameters,
 			dag.GetMediatorCount)
 		if err != nil {
 			log.Debugf(err.Error())
@@ -664,15 +664,16 @@ func (s *PrivateContractAPI) SysConfigContractInvoke(ctx context.Context, from, 
 
 		for _, oneTopic := range voteTopics {
 			for _, oneOption := range oneTopic.SelectOptions {
-				err := core.CheckSysConfigArgs(oneTopic.TopicTitle, oneOption)
+				err := core.CheckSysConfigArgType(oneTopic.TopicTitle, oneOption)
 				if err != nil {
 					log.Debugf(err.Error())
 					return "", err
 				}
 
 				dag := s.b.Dag()
-				err = core.ImmutableChainParameterCheck(oneTopic.TopicTitle, oneOption,
-					&dag.GetGlobalProp().ImmutableParameters, dag.GetMediatorCount)
+				gp := s.b.Dag().GetGlobalProp()
+				err = core.CheckChainParameterValue(oneTopic.TopicTitle, oneOption, &gp.ImmutableParameters,
+					&gp.ChainParameters, dag.GetMediatorCount)
 				if err != nil {
 					log.Debugf(err.Error())
 					return "", err
@@ -687,11 +688,19 @@ func (s *PrivateContractAPI) SysConfigContractInvoke(ctx context.Context, from, 
 	return rsp.ReqId, err
 }
 
-//  TODO
-func (s *PublicContractAPI) GetContractState(contractid []byte, key string) ([]byte, *modules.StateVersion, error) {
-	return s.b.GetContractState(contractid, key)
+func (s *PublicContractAPI) GetContractState(ctx context.Context,
+	contractAddr, prefix string) (string, error) {
+	addr, err := common.StringToAddress(contractAddr)
+	if err != nil {
+		return "", err
+	}
+	mvalue, err := s.b.GetContractStateJsonByPrefix(addr.Bytes(), prefix)
+	if err != nil {
+		return "", err
+	}
+	data, _ := json.Marshal(mvalue)
+	return string(data), nil
 }
-
 func (s *PublicContractAPI) GetContractFeeLevel(ctx context.Context) (*ContractFeeLevelRsp, error) {
 	cp := s.b.Dag().GetChainParameters()
 	feeLevel := &ContractFeeLevelRsp{

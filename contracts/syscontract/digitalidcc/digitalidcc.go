@@ -43,16 +43,16 @@ func (d *DigitalIdentityChainCode) Init(stub shim.ChaincodeStubInterface) pb.Res
 func (d *DigitalIdentityChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	funcName, args := stub.GetFunctionAndParameters()
 	switch funcName {
-	// æ·»åŠ ä¸­é—´Serverè¯ä¹¦
+	// Ìí¼ÓÖĞ¼äServerÖ¤Êé
 	case "addServerCert":
 		return d.addCert(stub, args, true)
-	// æ·»åŠ ç”¨æˆ·è¯ä¹¦
+	// Ìí¼ÓÓÃ»§Ö¤Êé
 	case "addMemberCert":
 		return d.addCert(stub, args, false)
-	// è·å¾—æŒæœ‰è€…çš„æ‰€æœ‰è¯ä¹¦ID
+	// »ñµÃ³ÖÓĞÕßµÄËùÓĞÖ¤ÊéID
 	case "getHolderCertIDs":
 		return d.getAddressCertIDs(stub, args)
-	// è·å¾—è¯ä¹¦é¢å‘æœºæ„é¢å‘çš„æ‰€æœ‰è¯ä¹¦ä¿¡æ¯ï¼ˆæŒæœ‰è€…ï¼Œæ˜¯å¦æ˜¯ä¸­é—´è¯ä¹¦ï¼Œè¯ä¹¦IDï¼‰
+	// »ñµÃÖ¤Êé°ä·¢»ú¹¹°ä·¢µÄËùÓĞÖ¤ÊéĞÅÏ¢£¨³ÖÓĞÕß£¬ÊÇ·ñÊÇÖĞ¼äÖ¤Êé£¬Ö¤ÊéID£©
 	case "getIssuerCertsInfo":
 		return d.getIssuerCertsInfo(stub, args)
 	case "getCertFormateInfo":
@@ -65,10 +65,10 @@ func (d *DigitalIdentityChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.R
 		return d.getRootCACertBytes(stub, args)
 	//case "getRootCAHoler":
 	//	return d.getRootCAHolder(stub, args)
-	// æ·»åŠ CRLè¯ä¹¦
+	// Ìí¼ÓCRLÖ¤Êé
 	case "addCRL":
 		return d.addCRLCert(stub, args)
-	// è·å¾—crlçš„byteæ•°æ®
+	// »ñµÃcrlµÄbyteÊı¾İ
 	case "getCRL":
 		return d.getIssuerCRL(stub, args)
 	default:

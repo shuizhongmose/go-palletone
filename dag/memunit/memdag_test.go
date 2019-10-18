@@ -38,7 +38,7 @@ import (
 	"github.com/palletone/go-palletone/core"
 	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/palletcache"
-	"github.com/palletone/go-palletone/dag/txspool"
+	"github.com/palletone/go-palletone/txspool"
 	"github.com/palletone/go-palletone/validator"
 	"testing"
 )
@@ -288,4 +288,7 @@ func (v mockValidate) ValidateUnitGroupSign(h *modules.Header) error {
 }
 func (v mockValidate) CheckTxIsExist(tx *modules.Transaction) bool {
 	return false
+}
+func (v mockValidate) ValidateTxFeeEnough(tx *modules.Transaction, extSize float64, extTime float64) bool {
+	return true
 }

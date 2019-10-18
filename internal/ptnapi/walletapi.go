@@ -22,7 +22,6 @@ import (
 	"github.com/palletone/go-palletone/common/math"
 	"github.com/palletone/go-palletone/core"
 	"github.com/palletone/go-palletone/core/accounts"
-	"github.com/palletone/go-palletone/core/certficate"
 	"github.com/palletone/go-palletone/dag/dagconfig"
 	"github.com/palletone/go-palletone/dag/modules"
 	"github.com/palletone/go-palletone/ptnjson"
@@ -775,7 +774,7 @@ func WalletCreateProofTransaction( /*s *rpcServer*/ c *ptnjson.CreateProofTransa
 		ptnAmt := addramt.Amount
 		amount := ptnjson.Ptn2Dao(ptnAmt)
 		// Ensure amount is in the valid range for monetary amounts.
-		if amount <= 0 /*|| amount > ptnjson.MaxDao*/ {
+		if amount == 0 /*|| amount > ptnjson.MaxDao*/ {
 			return "", &ptnjson.RPCError{
 				Code:    ptnjson.ErrRPCType,
 				Message: "Invalid amount",
@@ -850,7 +849,17 @@ func (s *PublicWalletAPI) GetAddrUtxos(ctx context.Context, addr string) (string
 	return string(result_json), nil
 
 }
+func (s *PublicWalletAPI) GetAddrUtxos2(ctx context.Context, addr string) (string, error) {
+	utxos, err := s.b.GetAddrUtxos2(addr)
+	if err != nil {
+		return "", err
+	}
 
+	info := NewPublicReturnInfo("address_utxos", utxos)
+	result_json, _ := json.Marshal(info)
+	return string(result_json), nil
+
+}
 func (s *PublicWalletAPI) GetBalance(ctx context.Context, address string) (map[string]decimal.Decimal, error) {
 	utxos, err := s.b.GetAddrUtxos(address)
 	if err != nil {
@@ -868,17 +877,23 @@ func (s *PublicWalletAPI) GetBalance(ctx context.Context, address string) (map[s
 	return result, nil
 }
 func (s *PublicWalletAPI) GetBalance2(ctx context.Context, address string) (*walletjson.StableUnstable, error) {
-	stbutxos,unstbUtxos, err := s.b.GetAddrUtxos2(address)
+	utxos, err := s.b.GetAddrUtxos2(address)
 	if err != nil {
 		return nil, err
 	}
-	balance1:=utxos2Balance(stbutxos)
-	balance2:=utxos2Balance(unstbUtxos)
-	return &walletjson.StableUnstable{Stable:balance1,Unstable:balance2}, nil
+	balance1 := utxos2Balance(utxos, true)
+	balance2 := utxos2Balance(utxos, false)
+	return &walletjson.StableUnstable{Stable: balance1, Unstable: balance2}, nil
 }
-func utxos2Balance(utxos []*ptnjson.UtxoJson)  map[string]decimal.Decimal{
+func utxos2Balance(utxos []*ptnjson.UtxoJson, stable bool) map[string]decimal.Decimal {
 	result := make(map[string]decimal.Decimal)
 	for _, utxo := range utxos {
+		if stable && utxo.FlagStatus == "Unstable" {
+			continue
+		}
+		if !stable && utxo.FlagStatus != "Unstable" {
+			continue
+		}
 		asset, _ := modules.StringToAsset(utxo.Asset)
 		if bal, ok := result[utxo.Asset]; ok {
 			result[utxo.Asset] = bal.Add(ptnjson.AssetAmt2JsonAmt(asset, utxo.Amount))
@@ -888,6 +903,7 @@ func utxos2Balance(utxos []*ptnjson.UtxoJson)  map[string]decimal.Decimal{
 	}
 	return result
 }
+
 //func (s *PublicWalletAPI) GetTranscations(ctx context.Context, address string) (string, error) {
 //	txs, err := s.b.GetAddrTransactions(address)
 //	if err != nil {
@@ -949,6 +965,16 @@ func (s *PublicWalletAPI) GetAddrTxHistory(ctx context.Context, addr string) ([]
 
 	return result, err
 }
+func (s *PublicWalletAPI) GetContractInvokeHistory(ctx context.Context, contractAddr string) ([]*ptnjson.ContractInvokeHistoryJson, error) {
+	result, err := s.b.GetContractInvokeHistory(contractAddr)
+	return result, err
+}
+
+//获得某地址的通证流水
+func (s *PublicWalletAPI) GetAddrTokenFlow(ctx context.Context, addr string, token string) ([]*ptnjson.TokenFlowJson, error) {
+	result, err := s.b.GetAddrTokenFlow(addr, token)
+	return result, err
+}
 
 //sign rawtranscation
 //create raw transction
@@ -972,10 +998,18 @@ func (s *PublicWalletAPI) GetPtnTestCoin(ctx context.Context, from string, to st
 	}
 	utxos := core.Utxos{}
 	ptn := dagconfig.DagConfig.GetGasToken()
-	for _, json := range utxoJsons {
+	for _, jsonu := range utxoJsons {
 		//utxos = append(utxos, &json)
-		if json.Asset == ptn.String() {
-			utxos = append(utxos, &ptnjson.UtxoJson{TxHash: json.TxHash, MessageIndex: json.MessageIndex, OutIndex: json.OutIndex, Amount: json.Amount, Asset: json.Asset, PkScriptHex: json.PkScriptHex, PkScriptString: json.PkScriptString, LockTime: json.LockTime})
+		if jsonu.Asset == ptn.String() {
+			utxos = append(utxos, &ptnjson.UtxoJson{
+				TxHash:         jsonu.TxHash,
+				MessageIndex:   jsonu.MessageIndex,
+				OutIndex:       jsonu.OutIndex,
+				Amount:         jsonu.Amount,
+				Asset:          jsonu.Asset,
+				PkScriptHex:    jsonu.PkScriptHex,
+				PkScriptString: jsonu.PkScriptString,
+				LockTime:       jsonu.LockTime})
 		}
 	}
 	fee, err := decimal.NewFromString("1")
@@ -1299,9 +1333,7 @@ func (s *PrivateWalletAPI) CreateProofOfExistenceTx(ctx context.Context, addr st
 
 //创建一笔溯源交易，调用721合约
 func (s *PrivateWalletAPI) CreateTraceability(ctx context.Context, addr, uid, symbol, mainData, extraData, reference string) (common.Hash, error) {
-	password := "1"
-	caddr := "PCGTta3M4t3yXu8uRgkKvaWd2d8DRijspoq"
-	contractAddr, _ := common.StringToAddress(caddr)
+	contractAddr, _ := common.StringToAddress("PCGTta3M4t3yXu8uRgkKvaWd2d8DRijspoq")
 	str := "[{\"TokenID\":\"" + uid + "\",\"MetaData\":\"\"}]"
 	gasToken := dagconfig.DagConfig.GasToken
 	ptn1 := decimal.New(1, 0)
@@ -1346,7 +1378,7 @@ func (s *PrivateWalletAPI) CreateTraceability(ctx context.Context, addr, uid, sy
 	if err != nil {
 		return common.Hash{}, err
 	}
-	err = s.unlockKS(fromAddr, password, nil)
+	err = s.unlockKS(fromAddr, "1", nil)
 	if err != nil {
 		return common.Hash{}, err
 	}
@@ -1361,44 +1393,40 @@ func (s *PrivateWalletAPI) CreateTraceability(ctx context.Context, addr, uid, sy
 	return submitTransaction(ctx, s.b, rawTx)
 }
 
-func (s *PublicWalletAPI) getFileInfo(filehash string) (string, error) {
+//根据maindata信息 查询存证结果  filehash  --> maindata
+func (s *PublicWalletAPI) getFileInfo(filehash string) ([]*ptnjson.ProofOfExistenceJson, error) {
 	//get fileinfos
 	files, err := s.b.GetFileInfo(filehash)
 	if err != nil {
-		return "null", err
+		return nil, err
 	}
-	var timestamp int64
-	gets := []walletjson.GetFileInfos{}
+    result := []*ptnjson.ProofOfExistenceJson{}
 	for _, file := range files {
-		get := walletjson.GetFileInfos{}
-		get.ParentsHash = file.ParentsHash.String()
-		get.FileHash = file.MainData
-		get.ExtraData = file.ExtraData
-		get.Reference = file.Reference
-		timestamp = int64(file.Timestamp)
-		tm := time.Unix(timestamp, 0)
-		get.Timestamp = tm.String()
-		get.TransactionHash = file.Txid.String()
-		get.UintHeight = file.UintHeight
-		get.UnitHash = file.UnitHash.String()
-		gets = append(gets, get)
+		poe,err := s.b.QueryProofOfExistenceByReference(file.Reference)
+		if err != nil {
+			return nil,err
+		}
+		result = append(result,poe...)
 	}
-
-	result := walletjson.ConvertGetFileInfos2Json(gets)
 
 	return result, nil
 }
 
-func (s *PublicWalletAPI) GetFileInfoByTxid(ctx context.Context, txid string) (string, error) {
-	if len(txid) == 66 {
-		result, err := s.getFileInfo(txid)
-		return result, err
+//根据交易哈希 查询存证结果
+func (s *PublicWalletAPI) GetFileInfoByTxid(ctx context.Context, txid common.Hash) ([]*ptnjson.ProofOfExistenceJson, error) {
+	tx,err := s.b.GetTxByHash(txid)
+	result := []*ptnjson.ProofOfExistenceJson{}
+	for _,data := range tx.Data {
+		poe,err :=s.b.QueryProofOfExistenceByReference(data.Reference)
+		if err != nil {
+			return nil,err
+		}
+		result = append(result,poe...)
 	}
-	err := errors.New("Parameter input error")
-	return "", err
+	return result, err
 }
 
-func (s *PublicWalletAPI) GetFileInfoByFileHash(ctx context.Context, filehash string) (string, error) {
+func (s *PublicWalletAPI) GetFileInfoByFileHash(ctx context.Context, filehash string) ([]*ptnjson.ProofOfExistenceJson, error) {
 	result, err := s.getFileInfo(filehash)
 	return result, err
 }
@@ -1439,130 +1467,6 @@ func (s *PublicWalletAPI) GetProofOfExistencesByRef(ctx context.Context, referen
 
 func (s *PublicWalletAPI) GetProofOfExistencesByAsset(ctx context.Context, asset string) ([]*ptnjson.ProofOfExistenceJson, error) {
 	return s.b.GetAssetExistence(asset)
-}
-
-//affiliation  gptn.mediator1
-func (s *PrivateWalletAPI) GenCert(ctx context.Context, caAddress, userAddress, passwd, name, data, roleType, affiliation string) (*ContractDeployRsp, error) {
-	contractAddr := "PCGTta3M4t3yXu8uRgkKvaWd2d8DRv2vsEk"
-	// 参数检查
-	_, err := common.StringToAddress(userAddress)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", userAddress)
-	}
-	caAddr, err := common.StringToAddress(caAddress)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", userAddress)
-	}
-	cAddr, err := common.StringToAddress(contractAddr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", userAddress)
-	}
-
-	ks := s.b.GetKeyStore()
-	account, err := MakeAddress(ks, userAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	//导出私钥 用于证书的生成
-	privKey, err := ks.DumpPrivateKey(account, passwd)
-	if err != nil {
-		return nil, err
-	}
-	err = s.unlockKS(caAddr, "1", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	ca := certficate.CertINfo{}
-	ca.Address = userAddress
-	ca.Name = name
-	ca.Data = data
-	ca.Type = roleType
-	ca.Affiliation = affiliation
-	ca.Key = privKey
-	//生成证书 获取证书byte
-	certBytes, err := certficate.GenCert(ca)
-	log.Infof("GenCert Success! CertBytes[%s]", certBytes)
-	if err != nil {
-		return nil, err
-	}
-	//调用系统合约 将证书byte存入到数字身份系统合约中
-	args := make([][]byte, 3)
-	args[0] = []byte("addMemberCert")
-	args[1] = []byte(userAddress)
-	args[2] = certBytes
-
-	reqId, err := s.b.ContractInvokeReqTx(caAddr, caAddr, 10000, 10000, nil, cAddr, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("GenCert reqId[%s]", hex.EncodeToString(reqId[:]))
-	rsp := &ContractDeployRsp{
-		ReqId:      hex.EncodeToString(reqId[:]),
-		ContractId: contractAddr,
-	}
-
-	return rsp, nil
-}
-
-//吊销证书  将crl存入到数字身份系统合约中
-func (s *PrivateWalletAPI) RevokeCert(ctx context.Context, caAddress, passwd, userAddress string) (*ContractDeployRsp, error) {
-	contractAddr := "PCGTta3M4t3yXu8uRgkKvaWd2d8DRv2vsEk"
-	// 参数检查
-	_, err := common.StringToAddress(userAddress)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", userAddress)
-	}
-	caAddr, err := common.StringToAddress(caAddress)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", caAddress)
-	}
-	cAddr, err := common.StringToAddress(contractAddr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid account address: %v", contractAddr)
-	}
-	//导出ca私钥用于吊销用户证书
-	ks := s.b.GetKeyStore()
-	account, err := MakeAddress(ks, caAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	privKey, err := ks.DumpPrivateKey(account, passwd)
-	if err != nil {
-		return nil, err
-	}
-	err = s.unlockKS(caAddr, passwd, nil)
-	if err != nil {
-		return nil, err
-	}
-	reason := "PalletOne system administrator revokes certificate!"
-
-	ca := certficate.CertINfo{}
-	ca.Address = userAddress
-	ca.Key = privKey
-	crlByte, err := certficate.RevokeCert(ca, reason)
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("RevokeCert Success!  CrlByte[%s]", crlByte)
-
-	//调用系统合约 将CrlByte存入到数字身份系统合约中
-	args := make([][]byte, 2)
-	args[0] = []byte("addCRL")
-	args[1] = crlByte
-
-	reqId, err := s.b.ContractInvokeReqTx(caAddr, caAddr, 10000, 10000, nil, cAddr, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("RevokeCert reqId[%s]", hex.EncodeToString(reqId[:]))
-	rsp := &ContractDeployRsp{
-		ReqId:      hex.EncodeToString(reqId[:]),
-		ContractId: contractAddr,
-	}
-	return rsp, nil
 }
 
 //好像某个UTXO是被那个交易花费的
@@ -1676,7 +1580,7 @@ func (s *PrivateWalletAPI) AggregateUtxo(ctx context.Context,
 			if err != nil {
 				return nil, err
 			}
-			log.Infof("Try to send aggregate UTXO tx[%s]",tx.Hash().String())
+			log.Infof("Try to send aggregate UTXO tx[%s]", tx.Hash().String())
 			err = s.b.SendTx(ctx, tx)
 			inputAmtSum = 0
 			payment = nil
@@ -1695,7 +1599,7 @@ func (s *PrivateWalletAPI) AggregateUtxo(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
-		log.Infof("Try to send aggregate UTXO tx[%s]",tx.Hash().String())
+		log.Infof("Try to send aggregate UTXO tx[%s]", tx.Hash().String())
 		err = s.b.SendTx(ctx, tx)
 		if err != nil {
 			return nil, err
