@@ -9,6 +9,7 @@ chmod +x jurySec.sh
 ./jurySec.sh
 cat /etc/docker/daemon.json
 cd ./cmd/deployment
+rm -rf ./node*
 chmod +x ./deploy.sh
 chmod +x ./start.sh
 cp $BASE_DIR/bdd/UserContract/scripts/editConfig.sh ./
