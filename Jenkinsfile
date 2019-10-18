@@ -128,7 +128,6 @@ pipeline {
 
                                 export GO111MODULE=on
                         		go build -mod=vendor ./cmd/gptn
-                        		ls ./
                         		cp gptn bdd/node
                         		mkdir bdd/GasToken/node
                         		cp gptn bdd/GasToken/node
