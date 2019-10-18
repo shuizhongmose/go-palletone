@@ -25,7 +25,7 @@ pipeline {
         APPLICATION_DIR='application'
         USER_CONTRACT_DIR = 'usercontract'
         BLACKLIST_DIR='blacklist'
-        GO111MODULE = on
+        GO111MODULE = 'on'
         LOG_NAME='log.html'
         REPORT_NAME='report.html'
 
