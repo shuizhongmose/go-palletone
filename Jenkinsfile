@@ -30,21 +30,23 @@ pipeline {
         REPORT_NAME='report.html'
 
         IS_RUN_UT='false'
-        IS_RUN_USER_CONTRACT='true'
-        IS_RUN_DIGITAL = 'true'
-        IS_RUN_DEPOSIT = 'false'
+        IS_RUN_USER_CONTRACT='false'
+        IS_RUN_DIGITAL = 'false'
         IS_RUN_APPLICATION = 'true'
-        IS_RUN_TESTCONTRACTCASES = 'false'
-        IS_RUN_CREATE_TRANS = 'false'
-        IS_RUN_20CONTRACT = 'false'
-        IS_RUN_721SEQENCE = 'false'
-        IS_RUN_721UDID = 'false'
-        IS_RUN_GASTOKEN = 'false'
-        IS_RUN_MULTIPLE = 'false'
-        IS_RUN_VOTE = 'false'
         IS_RUN_MEDIATOR_VOTE = 'false'
-        IS_RUN_LIGHT = 'true'
+        # one node
+        IS_RUN_DEPOSIT = 'true'
+        IS_RUN_TESTCONTRACTCASES = 'true'
+        IS_RUN_CREATE_TRANS = 'true'
+        IS_RUN_20CONTRACT = 'true'
+        IS_RUN_721SEQENCE = 'true'
+        IS_RUN_721UDID = 'true'
+        IS_RUN_GASTOKEN = 'true'
+        IS_RUN_VOTE = 'true'
+        IS_RUN_MULTIPLE = 'true' #多节点测试例-多节点
+        IS_RUN_LIGHT = 'true'   # 单节点测试例-轻节点
         IS_RUN_BLACKLIST = 'false'
+
         IS_UPLOAD = 'false'
     }
     stages {
