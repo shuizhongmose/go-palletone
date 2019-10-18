@@ -29,22 +29,22 @@ pipeline {
         LOG_NAME='log.html'
         REPORT_NAME='report.html'
 
-        IS_RUN_UI='false'
+        IS_RUN_UT='false'
+        IS_RUN_USER_CONTRACT='false'
+        IS_RUN_DIGITAL = 'true'
         IS_RUN_DEPOSIT = 'false'
+        IS_RUN_APPLICATION = 'true'
         IS_RUN_TESTCONTRACTCASES = 'false'
         IS_RUN_CREATE_TRANS = 'false'
         IS_RUN_20CONTRACT = 'false'
         IS_RUN_721SEQENCE = 'false'
         IS_RUN_721UDID = 'false'
-        IS_RUN_MULTIPLE = 'false'
-        IS_RUN_DIGITAL = 'false'
-        IS_RUN_VOTE = 'false'
         IS_RUN_GASTOKEN = 'false'
+        IS_RUN_MULTIPLE = 'false'
+        IS_RUN_VOTE = 'false'
         IS_RUN_MEDIATOR_VOTE = 'false'
-        IS_RUN_APPLICATION = 'false'
-        IS_RUN_LIGHT = 'false'
+        IS_RUN_LIGHT = 'true'
         IS_RUN_BLACKLIST = 'false'
-        IS_RUN_USER_CONTRACT='true'
         IS_UPLOAD = 'false'
     }
     stages {
@@ -65,7 +65,7 @@ pipeline {
         }
         stage('UT') {
             when {
-                environment name: 'IS_RUN_UI', value: 'true'
+                environment name: 'IS_RUN_UT', value: 'true'
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
