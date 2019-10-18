@@ -126,7 +126,7 @@ pipeline {
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
 
-                        		go build -mod=vendor ./cmd/gptn/gptn
+                        		go build -mod=vendor ./cmd/gptn
                         		cp ./cmd/gptn/gptn bdd/node
                         		mkdir bdd/GasToken/node
                         		cp ./cmd/gptn/gptn bdd/GasToken/node
