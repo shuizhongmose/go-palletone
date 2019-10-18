@@ -34,7 +34,7 @@ pipeline {
         IS_RUN_DIGITAL = 'false'
         IS_RUN_APPLICATION = 'true'
         IS_RUN_MEDIATOR_VOTE = 'false'
-        # one node
+
         IS_RUN_DEPOSIT = 'true'
         IS_RUN_TESTCONTRACTCASES = 'true'
         IS_RUN_CREATE_TRANS = 'true'
@@ -43,8 +43,8 @@ pipeline {
         IS_RUN_721UDID = 'true'
         IS_RUN_GASTOKEN = 'true'
         IS_RUN_VOTE = 'true'
-        IS_RUN_MULTIPLE = 'true' #多节点测试例-多节点
-        IS_RUN_LIGHT = 'true'   # 单节点测试例-轻节点
+        IS_RUN_MULTIPLE = 'true'
+        IS_RUN_LIGHT = 'false'
         IS_RUN_BLACKLIST = 'false'
 
         IS_UPLOAD = 'false'
