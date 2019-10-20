@@ -50,21 +50,6 @@ pipeline {
         IS_UPLOAD = 'false'
     }
     stages {
-        stage('Install Requirements') {
-            steps{
-                sh '''
-                    pip install --upgrade pip
-                    pip install robotframework==2.8.5
-                    pip install requests
-                    pip install robotframework-requests
-                    pip install demjson
-                    pip install pexpect
-                    apt-get install expect
-                    apt-get install lftp
-                    chmod +x bdd/upload2Ftp.sh
-                '''
-            }
-        }
         stage('UT') {
             when {
                 environment name: 'IS_RUN_UT', value: 'true'
