@@ -122,6 +122,7 @@ pipeline {
                         		nohup ./gptn &
                         		sleep 15
                         		ls ./
+                        		pwd
                         	'''
                         	sh 'ls ${BASE_DIR}/bdd/node'
                             sh 'netstat -ap | grep gptn'
