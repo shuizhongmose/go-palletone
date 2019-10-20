@@ -284,7 +284,7 @@ pipeline {
                         	sh '''
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
-                        		echo env.FTP_PWD
+                        		echo ${FTP_PWD}
                         		./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
