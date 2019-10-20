@@ -107,7 +107,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
-                                cd ${BASE_DIR}/bdd
+                                cd ${BASE_DIR}
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
 
