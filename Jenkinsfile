@@ -78,9 +78,11 @@ pipeline {
                     '''
                     script {
                         if (env.IS_UPLOAD=='true') {
-                            cd ${BASE_DIR}/bdd/UserContract/scripts
-                            chmod +x upload.sh
-                            ./upload.sh
+                            sh '''
+                                cd ${BASE_DIR}/bdd/UserContract/scripts
+                                chmod +x upload.sh
+                                ./upload.sh
+                            '''
                         }
                     }
                 }
