@@ -50,13 +50,6 @@ pipeline {
         IS_UPLOAD = 'true'
     }
     stages {
-        stage('Prepare') {
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'UPLOAD_TO_FTP_ID', passwordVariable: 'FTP_PWD', usernameVariable: 'FTP_USNAME')]) {
-                        sh 'export FTP_PWD = ${FTP_PWD}'
-                }
-            }
-        }
         stage('UT') {
             when {
                 environment name: 'IS_RUN_UT', value: 'true'
