@@ -131,6 +131,7 @@ pipeline {
                         	            cd ${BASE_DIR}/bdd/dct
                         	            pwd
                         	            ls ../
+                        	            ls ../node
                                         ./deposit_test.sh 7
                                     '''
                         	    }
