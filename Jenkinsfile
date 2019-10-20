@@ -122,7 +122,7 @@ pipeline {
                 stage('Build') {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        		sh '''
+                            sh '''
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
 
@@ -139,6 +139,15 @@ pipeline {
                         		sleep 15
                         		netstat -ap | grep gptn
                         	'''
+
+                        	script {
+                        	    if (env.IS_RUN_DEPOSIT == 'true') {
+                        	        sh '''
+                                        cd ${BASE_DIR}/bdd/dct
+                                        ./deposit_test.sh 7
+                                    '''
+                        	    }
+                        	}
                         }
                     }
                 }
