@@ -73,12 +73,16 @@ pipeline {
                         cd ${BASE_DIR}/bdd/UserContract/scripts
                         chmod +x start.sh
                         ./start.sh
-
-                        chmod +x upload.sh
-                        ./upload.sh
+                        pkill gptn
+                        sleep 2
                     '''
-
-                    sh 'pkill gptn'
+                    script {
+                        if (env.IS_UPLOAD=='true') {
+                            cd ${BASE_DIR}/bdd/UserContract/scripts
+                            chmod +x upload.sh
+                            ./upload.sh
+                        }
+                    }
                 }
             }
         }
@@ -92,12 +96,18 @@ pipeline {
                         cd ${BASE_DIR}/bdd/Digital-Identity/scripts
                         chmod +x start.sh
                         ./start.sh
-
-                        chmod +x upload.sh
-                        ./upload.sh
+                        pkill gptn
+                        sleep 2
                     '''
-
-                    sh 'pkill gptn'
+                    script {
+                        if (env.IS_UPLOAD=='true') {
+                            sh '''
+                                cd ${BASE_DIR}/bdd/Digital-Identity/scripts
+                                chmod +x upload.sh
+                                ./upload.sh
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -268,7 +278,7 @@ pipeline {
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
                         		zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
-                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
                     }
@@ -342,10 +352,10 @@ pipeline {
                         	sh '''
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/zMulti-node.zip ./logs/zMulti-node/*
-                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         		cd ${BASE_DIR}/bdd
                         		source ./targz_node.sh
-                        		./upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
+                        		./upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
                     }
@@ -356,36 +366,29 @@ pipeline {
             when {
                 environment name: 'IS_RUN_APPLICATION', value: 'true'
             }
-            stages{
-                stage('Running') {
-                    steps {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        	sh '''
-                        		go build -mod=vendor ./cmd/gptn
-                        		mkdir bdd/application/node
-                        		cp gptn bdd/application/node
-                        		cd ./bdd/application
-                        		chmod +x ./init.sh
-                        		./init.sh
-                        		sleep 15
-                        		python -m robot.run -d ${BDD_LOG_PATH}/${APPLICATION_DIR} .
-                        		killall gptn
-                        		sleep 2
-                        	'''
-                        }
-                    }
-                }
-                stage('Upload Logs') {
-                    when {
-                        environment name: 'IS_UPLOAD', value: 'true'
-                    }
-                    steps {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        	sh '''
-                        		cd ${BASE_DIR}
-                        		zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
-                        		./bdd/upload2Ftp.sh ${FTP_PWD} ${TRAVIS_BRANCH} ${TRAVIS_BUILD_NUMBER}
-                        	'''
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''
+                        go build -mod=vendor ./cmd/gptn
+                        mkdir bdd/application/node
+                        cp gptn bdd/application/node
+                        cd ./bdd/application
+                        chmod +x ./init.sh
+                        ./init.sh
+                        sleep 15
+                        python -m robot.run -d ${BDD_LOG_PATH}/${APPLICATION_DIR} .
+
+                        killall gptn
+                        sleep 2
+                    '''
+
+                    script {
+                        if (env.IS_UPLOAD == 'true') {
+                            sh '''
+                                cd ${BASE_DIR}
+                                zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
+                                ./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                            '''
                         }
                     }
                 }
