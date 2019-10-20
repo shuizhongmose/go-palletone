@@ -285,8 +285,8 @@ pipeline {
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
                         		echo ${FTP_PWD}
-                        		chmod +x ./bdd/upload2JenkinsFtp.sh
-                        		./bdd/upload2JenkinsFtp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                        		chmod +x ./bdd/uploadJenkins2Ftp.sh
+                        		./bdd/uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
                     }
@@ -360,10 +360,11 @@ pipeline {
                         	sh '''
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/zMulti-node.zip ./logs/zMulti-node/*
-                        		./bdd/upload2JenkinsFtp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                        		chmod +x ./bdd/uploadJenkins2Ftp.sh
+                        		./bdd/uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         		cd ${BASE_DIR}/bdd
                         		source ./targz_node.sh
-                        		./upload2JenkinsFtp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                        		./uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
                     }
@@ -395,7 +396,8 @@ pipeline {
                             sh '''
                                 cd ${BASE_DIR}
                                 zip -j ./bdd/logs/application_log.zip ./bdd/application/node/log/*
-                                ./bdd/upload2JenkinsFtp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                        		chmod +x ./bdd/uploadJenkins2Ftp.sh
+                                ./bdd/uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                             '''
                         }
                     }
