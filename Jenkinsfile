@@ -47,7 +47,7 @@ pipeline {
         IS_RUN_LIGHT = 'false'
         IS_RUN_BLACKLIST = 'false'
 
-        IS_UPLOAD = 'false'
+        IS_UPLOAD = 'true'
     }
     stages {
         stage('UT') {
