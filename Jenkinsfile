@@ -36,16 +36,16 @@ pipeline {
         IS_RUN_MEDIATOR_VOTE = 'false'
 
         IS_RUN_DEPOSIT = 'true'
-        IS_RUN_TESTCONTRACTCASES = 'true'
-        IS_RUN_CREATE_TRANS = 'true'
-        IS_RUN_20CONTRACT = 'true'
-        IS_RUN_721SEQENCE = 'true'
-        IS_RUN_721UDID = 'true'
-        IS_RUN_GASTOKEN = 'true'
-        IS_RUN_VOTE = 'true'
-        IS_RUN_MULTIPLE = 'true'
+        IS_RUN_TESTCONTRACTCASES = 'false'
+        IS_RUN_CREATE_TRANS = 'false'
+        IS_RUN_20CONTRACT = 'false'
+        IS_RUN_721SEQENCE = 'false'
+        IS_RUN_721UDID = 'false'
+        IS_RUN_GASTOKEN = 'false'
+        IS_RUN_VOTE = 'false'
+        IS_RUN_MULTIPLE = 'false'
         IS_RUN_LIGHT = 'false'
-        IS_RUN_BLACKLIST = 'true'
+        IS_RUN_BLACKLIST = 'false'
 
         IS_UPLOAD = 'false'
     }
@@ -114,7 +114,6 @@ pipeline {
                                 export GO111MODULE=on
                         		go build -mod=vendor ./cmd/gptn
                         		cp gptn bdd/node/
-                        		ls bdd/node
                         		mkdir bdd/GasToken/node
                         		cp gptn bdd/GasToken/node
                         		cd bdd/node
@@ -122,7 +121,9 @@ pipeline {
                         		python init.py
                         		nohup ./gptn &
                         		sleep 15
+                        		ls ./
                         	'''
+                        	sh 'ls ${BASE_DIR}/bdd/node'
                             sh 'netstat -ap | grep gptn'
 
                         	script {
@@ -130,7 +131,6 @@ pipeline {
                         	        sh '''
                         	            cd ${BASE_DIR}/bdd/dct
                         	            pwd
-                        	            ls ../
                         	            ls ../node
                                         ./deposit_test.sh 7
                                     '''
