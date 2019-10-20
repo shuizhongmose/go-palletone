@@ -276,10 +276,14 @@ pipeline {
                     }
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            script {
+                                if (env.IS_RUN_GASTOKEN=='true') {
+                                    sh 'zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*'
+                                }
+                            }
                         	sh '''
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
-                        		zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*
                         		./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
