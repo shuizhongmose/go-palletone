@@ -290,13 +290,16 @@ pipeline {
                                     sh 'zip -j ./bdd/logs/gasToken_log.zip ./bdd/GasToken/node/log/*'
                                 }
                             }
-                        	sh '''
-                        		cd ${BASE_DIR}
-                        		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
-                        		echo ${FTP_PWD}
-                        		chmod +x ./bdd/uploadJenkins2Ftp.sh
-                        		./bdd/uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
-                        	'''
+
+                            withCredentials([usernamePassword(credentialsId: 'UPLOAD_TO_FTP_ID', passwordVariable: 'FTP_PWD', usernameVariable: 'FTP_USNAME')]) {
+                                sh '''
+                                    cd ${BASE_DIR}
+                                    zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
+                                    echo ${FTP_PWD}
+                                    chmod +x ./bdd/uploadJenkins2Ftp.sh
+                                    ./bdd/uploadJenkins2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
+                                '''
+                            }
                         }
                     }
                 }
