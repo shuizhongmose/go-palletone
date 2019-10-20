@@ -71,7 +71,6 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh '''
                         cd ${BASE_DIR}/bdd/UserContract/scripts
-                        ls
                         chmod +x start.sh
                         ./start.sh
 
@@ -108,6 +107,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
+                                cd ${BASE_DIR}/bdd
                         		rm -rf bdd/GasToken/node
                         		rm -rf bdd/node/palletone
 
