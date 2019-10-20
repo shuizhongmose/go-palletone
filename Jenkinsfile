@@ -128,6 +128,7 @@ pipeline {
                         	script {
                         	    if (env.IS_RUN_DEPOSIT == 'true') {
                         	        sh 'cd ${BASE_DIR}/bdd/dct'
+                        	        sh 'pwd'
                         	        sh 'ls ../'
                                     sh './deposit_test.sh 7'
                         	    }
