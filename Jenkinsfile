@@ -124,19 +124,7 @@ pipeline {
                         		ls ./
                         		pwd
                         	'''
-                        	sh 'ls ${BASE_DIR}/bdd/node'
                             sh 'netstat -ap | grep gptn'
-
-                        	script {
-                        	    if (env.IS_RUN_DEPOSIT == 'true') {
-                        	        sh '''
-                        	            cd ${BASE_DIR}/bdd/dct
-                        	            pwd
-                        	            ls ../node
-                                        ./deposit_test.sh 7
-                                    '''
-                        	    }
-                        	}
                         }
                     }
                 }
@@ -146,10 +134,10 @@ pipeline {
                     }
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh '''
+                            sh """
                                 cd ${BASE_DIR}/bdd/dct
                                 ./deposit_test.sh 7
-                            '''
+                            """
                         }
                     }
                 }

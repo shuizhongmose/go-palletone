@@ -4,8 +4,6 @@
 
 sleep 1
 
-pwd
-ls ../node
 listAccounts=`../node/gptn --exec 'personal.listAccounts' attach ../node/palletone/gptn.ipc` 
 key=`echo $listAccounts `
 echo $key
