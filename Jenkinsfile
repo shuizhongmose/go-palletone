@@ -48,8 +48,17 @@ pipeline {
         IS_RUN_BLACKLIST = 'false'
 
         IS_UPLOAD = 'true'
+        FTP_PWD = ''
     }
     stages {
+        stage('Prepare') {
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'UPLOAD_TO_FTP_ID', passwordVariable: 'FTP_PWD', usernameVariable: 'FTP_USNAME')]) {
+                    sh 'echo ${FTP_PWD}'
+                    sh 'echo ${FTP_USNAME}'
+                }
+            }
+        }
         stage('UT') {
             when {
                 environment name: 'IS_RUN_UT', value: 'true'
