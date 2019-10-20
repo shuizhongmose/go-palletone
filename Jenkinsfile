@@ -142,10 +142,9 @@ pipeline {
 
                         	script {
                         	    if (env.IS_RUN_DEPOSIT == 'true') {
-                        	        sh '''
-                                        cd ${BASE_DIR}/bdd/dct
-                                        ./deposit_test.sh 7
-                                    '''
+                        	        sh 'cd ${BASE_DIR}/bdd/dct'
+                        	        sh 'ls ../node'
+                                    sh ''./deposit_test.sh 7'
                         	    }
                         	}
                         }
