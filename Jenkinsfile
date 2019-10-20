@@ -137,8 +137,8 @@ pipeline {
                         		python init.py
                         		nohup ./gptn &
                         		sleep 15
-                        		netstat -ap | grep gptn
                         	'''
+                            sh 'netstat -ap | grep gptn'
 
                         	script {
                         	    if (env.IS_RUN_DEPOSIT == 'true') {
