@@ -285,6 +285,7 @@ pipeline {
                         		cd ${BASE_DIR}
                         		zip -j ./bdd/logs/oneNode_log.zip ./bdd/node/log/*
                         		echo ${FTP_PWD}
+                        		chmod +x ./bdd/upload2Ftp.sh
                         		./bdd/upload2Ftp.sh ${FTP_PWD} ${BRANCH_NAME} ${BUILD_NUMBER}
                         	'''
                         }
