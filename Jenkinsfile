@@ -54,8 +54,7 @@ pipeline {
         stage('Prepare') {
             steps{
                 withCredentials([usernamePassword(credentialsId: 'UPLOAD_TO_FTP_ID', passwordVariable: 'FTP_PWD', usernameVariable: 'FTP_USNAME')]) {
-                    sh 'echo ${FTP_PWD}'
-                    sh 'echo ${FTP_USNAME}'
+                        sh 'export env.FTP_PWD = ${FTP_PWD}'
                 }
             }
         }
