@@ -134,10 +134,10 @@ pipeline {
                     }
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            sh """
+                            sh '''
                                 cd ${BASE_DIR}/bdd/dct
                                 ./deposit_test.sh 7
-                            """
+                            '''
                         }
                     }
                 }
