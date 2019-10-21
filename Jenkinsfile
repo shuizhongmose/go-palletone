@@ -4,12 +4,12 @@ pipeline {
         BUILD_STATUS = 'success'
     }
     stages {
-        stage {
+        stage('TEST') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh 'exit 1'
                 }
-                echo currentBuild.result
+                sh 'echo currentBuild.result'
                 echo currentStage.result
             }
         }
