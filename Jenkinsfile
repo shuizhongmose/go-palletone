@@ -435,7 +435,12 @@ pipeline {
     }
     post {
         success {
-          updateGitlabCommitStatus name: 'Jenkins CI Integration', state: 'success'
+          sh '''
+	  	curl "https://api.github.com/repos/shuizhongmose/go-palletone/statuses/$GIT_COMMIT?access_token=317e884007dacf28672c389d127a9887d9424ba8" \
+  		-H "Content-Type: application/json" \
+  		-X POST \
+  		-d "{\"state\": \"SUCCESS\", \"description\": \"Jenkins\", \"target_url\": \"http://http://123.126.106.82:8080/job/dividata/$BUILD_NUMBER/console\"}"
+	  '''
         }
         failure {
           updateGitlabCommitStatus name: 'Jenkins CI Integration', state: 'failed'
