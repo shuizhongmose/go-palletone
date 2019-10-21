@@ -71,18 +71,13 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'export PATH=${GOPATH}:${PATH}'
-                    sh 'go build -mod=vendor ./cmd/gptn'
-                    sh 'make gptn'
-                    sh 'go test -mod=vendor ./...'
-                }
-            }
-            post {
-                success {
-                  updateGitlabCommitStatus name: 'Jenkins CI UI', state: 'success'
-                }
-                failure {
-                  updateGitlabCommitStatus name: 'Jenkins CI UI', state: 'failed'
+                    sh '''
+                        export PATH=${GOPATH}:${PATH}
+                        cd ${BASE_DIR}
+                        go build -mod=vendor ./cmd/gptn
+                        make gptn
+                        go test -mod=vendor ./...
+                    '''
                 }
             }
         }
@@ -436,6 +431,14 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        success {
+          updateGitlabCommitStatus name: 'Jenkins CI Integration', state: 'success'
+        }
+        failure {
+          updateGitlabCommitStatus name: 'Jenkins CI Integration', state: 'failed'
         }
     }
 }
