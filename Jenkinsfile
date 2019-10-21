@@ -30,7 +30,7 @@ pipeline {
         LOG_NAME='log.html'
         REPORT_NAME='report.html'
 
-        IS_RUN_UT='true'
+        IS_RUN_UT='false'
         IS_RUN_USER_CONTRACT='false'
         IS_RUN_DIGITAL = 'false'
         IS_RUN_APPLICATION = 'false'
