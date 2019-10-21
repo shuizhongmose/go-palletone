@@ -19,7 +19,7 @@ pipeline {
     }
     post {
         always {
-            sh 'echo env.BUILD_STATUS'
+            echo env.BUILD_STATUS
         }
     }
 }
