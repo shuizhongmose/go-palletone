@@ -2,16 +2,17 @@ pipeline {
     agent any
     options {
         disableConcurrentBuilds()
-        checkoutToSubdirectory('/home/JGithubgo/src/github.com/palletone/go-palletone')
+        checkoutToSubdirectory('/home/JGitlabGo/src/github.com/palletone/go-palletone')
+        gitLabConnection('palletone-gitlab')
     }
     environment {
-        GOPATH = '/home/JGithubgo'
-        GOCACHE = '/home/JGithubgo/caches/go'
+        GOPATH = '/home/JGitlabGo'
+        GOCACHE = '/home/JGitlabGo/caches/go'
 
-        BASE_DIR = '/home/JGithubgo/src/github.com/palletone/go-palletone'
-        ALL_LOG_PATH = '/home/JGithubgo/src/github.com/palletone/go-palletone/bdd/node/log/all.log'
-        GAS_TOKEN_ALL_LOG_PATH = '/home/JGithubgo/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log'
-        BDD_LOG_PATH = '/home/JGithubgo/src/github.com/palletone/go-palletone/bdd/logs'
+        BASE_DIR = '/home/JGitlabGo/src/github.com/palletone/go-palletone'
+        ALL_LOG_PATH = '/home/JGitlabGo/src/github.com/palletone/go-palletone/bdd/node/log/all.log'
+        GAS_TOKEN_ALL_LOG_PATH = '/home/JGitlabGo/src/github.com/palletone/go-palletone/bdd/GasToken/node/log/all.log'
+        BDD_LOG_PATH = '/home/JGitlabGo/src/github.com/palletone/go-palletone/bdd/logs'
         CREATE_TRANS_DIR = 'createTrans'
         CONTRACT20_DIR = 'crt20Contract'
         SEQENCE721_DIR = 'crt721Seqence'
@@ -50,6 +51,20 @@ pipeline {
         IS_UPLOAD = 'true'
     }
     stages {
+        stage('Install Requirements') {
+            steps{
+                sh '''
+                    pip install --upgrade pip
+                    pip install robotframework==2.8.5
+                    pip install requests
+                    pip install robotframework-requests
+                    pip install demjson
+                    pip install pexpect
+                    apt-get install expect
+                    apt-get install lftp
+                '''
+            }
+        }
         stage('UT') {
             when {
                 environment name: 'IS_RUN_UT', value: 'true'
@@ -60,6 +75,14 @@ pipeline {
                     sh 'go build -mod=vendor ./cmd/gptn'
                     sh 'make gptn'
                     sh 'go test -mod=vendor ./...'
+                }
+            }
+            post {
+                success {
+                  updateGitlabCommitStatus name: 'Jenkins CI UI', state: 'success'
+                }
+                failure {
+                  updateGitlabCommitStatus name: 'Jenkins CI UI', state: 'failed'
                 }
             }
         }
@@ -253,7 +276,7 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         	sh '''
-                        		cd ${BASE_DIR}/bdd
+                        		cd ${BASE_DIR}/bdd/GasToken
                         		chmod +x ./init_gas_token.sh
                         		./init_gas_token.sh
                         		sleep 15
@@ -302,6 +325,8 @@ pipeline {
                     steps {
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh '''
+                                cd ${BASE_DIR}
+                                export GO111MODULE=on
                                 make gptn
                                 cp build/bin/gptn bdd/node
                                 cd bdd/node
@@ -348,10 +373,13 @@ pipeline {
                 }
                 stage('After Running') {
                     steps {
-                        sh '''
-                            killall gptn
-                            sleep 2
-                        '''
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh '''
+                                killall gptn
+                                sleep 2
+                            '''
+                        }
+
                     }
                 }
                 stage('Upload Logs') {
@@ -381,6 +409,8 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh '''
+                        cd ${BASE_DIR}
+                        export GO111MODULE=on
                         go build -mod=vendor ./cmd/gptn
                         mkdir bdd/application/node
                         cp gptn bdd/application/node
