@@ -9,17 +9,17 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh 'exit 1'
                 }
-                scripts {
+                script {
                     if (currentBuild.result != 0) {
                         env.BUILD_STATUS = 'failure'
                     }
                 }
             }
         }
-        post {
-            always {
-                sh 'echo env.BUILD_STATUS'
-            }
+    }
+    post {
+        always {
+            sh 'echo env.BUILD_STATUS'
         }
     }
 }
