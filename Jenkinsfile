@@ -9,10 +9,11 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh 'exit 1'
                 }
+
             }
             post {
                 failure {
-                    script { BUILD_STATUS='failed'}
+                    BUILD_STATUS='failed'
                 }
                 success {
                     echo '22222'
