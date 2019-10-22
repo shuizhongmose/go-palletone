@@ -12,10 +12,11 @@ pipeline {
             }
             post {
                 failure {
-                    script {
-                        env.BUILD_STATUS = 'failed'
-                    }
-
+                    echo '1111111'
+                    script { env.BUILD_STATUS = 'failed' }
+                }
+                success {
+                    echo '22222'
                 }
             }
         }
