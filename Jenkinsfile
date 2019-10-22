@@ -12,7 +12,7 @@ pipeline {
             }
             post {
                 failure {
-                    sh '${BUILD_STATUS} = failed'
+                    sh '${BUILD_STATUS}=failed'
                 }
                 success {
                     echo '22222'
