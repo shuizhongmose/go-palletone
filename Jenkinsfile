@@ -10,7 +10,7 @@ pipeline {
                     sh 'exit 1'
                 }
                 echo currentBuild.result
-                echo stageStatus
+                echo stageResult
                 script {
                     if (currentBuild.result != 0) {
                         env.BUILD_STATUS = 'failed'
