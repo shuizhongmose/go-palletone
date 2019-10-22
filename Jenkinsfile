@@ -6,21 +6,16 @@ pipeline {
     stages {
         stage('TEST') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                     sh 'exit 1'
                 }
 
             }
-            post {
-                failure {
-                    echo '11111'
-                    script {
-                        BUILD_STATUS = "failed"
-                    }
+            script {
+                if (currentBuild.result=='FAILURE') {
+                    echo '111111'
+                    BUILD_STATUS = "failed"
                     echo "BUILD_STATUS is now '${BUILD_STATUS}'"
-                }
-                success {
-                    echo '22222'
                 }
             }
         }
