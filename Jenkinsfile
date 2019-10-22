@@ -1,51 +1,33 @@
 pipeline {
     agent any
-
     environment {
-        FOO = "initial FOO env value"
+        BUILD_STATUS = 'success'
     }
-
     stages {
-        stage("Stage 1") {
+        stage('TEST') {
             steps {
-                script {
-                    echo "FOO is '${FOO}'" // prints: FOO is 'initial FOO env value'
-
-                    env.BAR = "bar"
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'exit 1'
                 }
             }
-        }
-
-        stage("Stage 2") {
-            steps {
-                echo "env.BAR is '${BAR}'" // prints: env.BAR is 'bar'
-                echo "FOO is '${FOO}'" // prints: FOO is 'initial FOO env value'
-                echo "env.FOO is '${env.FOO}'" // prints: env.FOO is 'initial FOO env value'
-                script {
-                    FOO = "test2"
-                    env.BAR = "bar2"
+            post {
+                failure {
+                    script { BUILD_STATUS='failed'}
                 }
-            }
-        }
-
-        stage("Stage 3") {
-            steps {
-                echo "FOO is '${FOO}'" // prints: FOO is 'test2'
-                echo "env.FOO is '${env.FOO}'" // prints: env.FOO is 'initial FOO env value'
-                echo "env.BAR is '${BAR}'" // prints: env.BAR is 'bar2'
-
-                script {
-                    FOO = "test3"
+                success {
+                    echo '22222'
                 }
-
-                echo "FOO is '${FOO}'" // prints: FOO is 'test3'
             }
         }
     }
     post {
         always {
-            echo "FOO is '${FOO}'"
-            echo "env.BAR is '${BAR}'"
+            echo env.BUILD_STATUS
+            script {
+                if (env.BUILD_STATUS=='failed') {
+                    sh 'exit 1'
+                }
+            }
         }
     }
 }
