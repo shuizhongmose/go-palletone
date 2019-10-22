@@ -15,9 +15,9 @@ pipeline {
                 failure {
                     echo '11111'
                     script {
-                        BUILD_STATUS='failed'
+                        BUILD_STATUS = "failed"
                     }
-                    echo 'BUILD_STATUS is now ${BUILD_STATUS}'
+                    echo "BUILD_STATUS is now '${BUILD_STATUS}'"
                 }
                 success {
                     echo '22222'
@@ -27,7 +27,7 @@ pipeline {
     }
     post {
         always {
-            echo 'BUILD_STATUS is now ${BUILD_STATUS}'
+            echo "BUILD_STATUS is now '${BUILD_STATUS}'"
             script {
                 if (env.BUILD_STATUS=='failed') {
                     sh 'exit 1'
