@@ -10,12 +10,12 @@ pipeline {
                     sh 'exit 1'
                 }
 
-            }
-            script {
-                if (currentBuild.result=='FAILURE') {
-                    echo '111111'
-                    BUILD_STATUS = "failed"
-                    echo "BUILD_STATUS is now '${BUILD_STATUS}'"
+                script {
+                    if (currentBuild.result=='FAILURE') {
+                        echo '111111'
+                        BUILD_STATUS = "failed"
+                        echo "BUILD_STATUS is now '${BUILD_STATUS}'"
+                    }
                 }
             }
         }
