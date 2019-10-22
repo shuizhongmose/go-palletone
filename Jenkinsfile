@@ -12,7 +12,10 @@ pipeline {
             }
             post {
                 failure {
-                    env.BUILD_STATUS = 'failed'
+                    script {
+                        env.BUILD_STATUS = 'failed'
+                    }
+
                 }
             }
         }
