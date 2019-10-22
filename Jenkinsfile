@@ -499,7 +499,10 @@ pipeline {
     post {
         always {
             echo "BUILD_STATUS is now '${BUILD_STATUS}'"
-            updateGitlabCommitStatus name: 'continuous-integration/jenkins', state: '${BUILD_STATUS}'
+            updateGitlabCommitStatus name: 'continuous-integration/jenkins', state: "'${BUILD_STATUS}'"
+            script {
+                if (env.BUILD_STATUS=='failed') { sh 'exit 1' }
+            }
         }
     }
 }
