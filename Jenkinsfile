@@ -12,8 +12,7 @@ pipeline {
             }
             post {
                 failure {
-                    echo '1111111'
-                    sh "export BUILD_STATUS = 'failed'"
+                    sh 'BUILD_STATUS = failed'
                 }
                 success {
                     echo '22222'
