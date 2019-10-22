@@ -13,7 +13,7 @@ pipeline {
             post {
                 failure {
                     echo '1111111'
-                    sh "export env.BUILD_STATUS = 'failed'"
+                    sh "export BUILD_STATUS = 'failed'"
                 }
                 success {
                     echo '22222'
