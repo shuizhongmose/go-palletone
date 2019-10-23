@@ -1,5 +1,4 @@
 #!/usr/bin/expect
-#!/bin/bash
 set timeout 30
 spawn ../node/gptn account new
 expect "Passphrase:"
